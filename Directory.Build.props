@@ -1,0 +1,13 @@
+<Project>
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(MSBuildProjectName) != 'Jahoot.Core'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\Jahoot.Core\Jahoot.Core.csproj"/>
+    </ItemGroup>
+
+</Project>
