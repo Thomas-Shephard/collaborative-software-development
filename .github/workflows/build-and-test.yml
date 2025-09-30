@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+env:
+    DOTNET_VERSION: '9.0'
+
+jobs:
+    build-and-test:
+        name: Build and Test
+        runs-on: windows-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+            - name: Setup .NET ${{ env.DOTNET_VERSION }}
+              uses: actions/setup-dotnet@v5
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+            - name: Build
+              run: dotnet build --configuration Release
+            - name: Test
+              run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage
+            - name: Install Coverage Checker
+              run: dotnet tool install --global CoverageChecker.CommandLine
+            - name: Check Coverage
+              run: coveragechecker --format Cobertura --glob-patterns 'coverage/**/coverage.cobertura.xml' --line-threshold 80 --branch-threshold 80
