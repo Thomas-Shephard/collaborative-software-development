@@ -1,0 +1,44 @@
+services:
+    maria-db:
+        image: mariadb:latest
+        healthcheck:
+            test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect","--innodb_initialized" ]
+            start_period: 30s
+            start_interval: 1s
+            interval: 30s
+            retries: 3
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+        ports:
+            - "3306:3306"
+        volumes:
+            - maria-db-data:/var/lib/mysql
+            - ./database-init.sql:/docker-entrypoint-initdb.d/init.sql
+        env_file: .env
+    php-my-admin:
+        image: phpmyadmin:latest
+        environment:
+            - PMA_HOST=maria-db
+            - PMA_USER=${DB_USER}
+            - PMA_PASSWORD=${DB_PASSWORD}
+        ports:
+            - "8080:80"
+        depends_on:
+            maria-db:
+                condition: service_healthy
+        env_file: .env
+    jahoot-web-api:
+        build:
+            dockerfile: ./src/Jahoot.WebApi/Dockerfile
+        ports:
+            - "80:8080"
+        depends_on:
+            maria-db:
+                condition: service_healthy
+        env_file: .env
+
+volumes:
+    maria-db-data:
