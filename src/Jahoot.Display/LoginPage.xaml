@@ -1,0 +1,32 @@
+﻿<Window x:Class="Jahoot.Display.LoginPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sign In" Height="350" Width="400"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="ToolWindow"
+        xmlns:local="clr-namespace:Jahoot.Display">
+
+    <Grid Margin="20">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Application Login" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+            <TextBlock Text="Username:" Margin="0,10,0,5"/>
+            <TextBox x:Name="TxtUsername" Padding="5" FontSize="14"/>
+
+            <TextBlock Text="Password:" Margin="0,10,0,5"/>
+            <PasswordBox x:Name="TxtPassword" Padding="5" FontSize="14"/>
+
+            <Button Content="Sign In" 
+                    x:Name="BtnSignIn" 
+                    Margin="0,20,0,0" 
+                    Padding="10,5" 
+                    FontSize="16" 
+                    FontWeight="Bold" 
+                    Click="BtnSignIn_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
