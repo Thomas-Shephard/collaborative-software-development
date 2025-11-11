@@ -9,7 +9,7 @@ using Jahoot.Display.Models;
 
 namespace Jahoot.Display.ViewModels
 {
-    public abstract class BaseViewModel : INotifyPropertyChanged
+    public class StudentDashboardViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -52,13 +52,15 @@ namespace Jahoot.Display.ViewModels
 
         public StudentDashboardViewModel()
         {
-            TabItems = new ObservableCollection<string> { "Overview", "Available Tests", "Completed Tests", "Leaderboard", "Statistics" };
-            UpdateVisibleContent();
-        }
+            // Sample data for demo / tests
+            UpcomingTests.Add(new TestItem{ Title = "Math Midterm", Date = DateTime.Today.AddDays(3), Course = "Math 101" });
+            UpcomingTests.Add(new TestItem{ Title = "History Quiz", Date = DateTime.Today.AddDays(7), Course = "History 201" });
 
-        public int TestsAvailable => UpcomingTests.Count;
-        public int TestsCompleted => CompletedTests.Count;
-        public int UpcomingDueDates => UpcomingTests.Count(t => t.DueDate.HasValue && t.DueDate.Value <= DateTime.Today.AddDays(7));
+            CompletedTests.Add(new TestItem{ Title = "Intro Quiz", Date = DateTime.Today.AddDays(-14), Score = 78, Course = "Math 101" });
+            CompletedTests.Add(new TestItem{ Title = "Chapter 1 Test", Date = DateTime.Today.AddDays(-10), Score = 85, Course = "History 201" });
+            CompletedTests.Add(new TestItem{ Title = "Pop Quiz", Date = DateTime.Today.AddDays(-3), Score = 92, Course = "Math 101" });
+
+        }
 
         public double AverageScore
         {
@@ -70,80 +72,6 @@ namespace Jahoot.Display.ViewModels
             }
         }
 
-        public string AverageScoreDisplay => CompletedTests.Any() ? AverageScore.ToString("0.0") : "N/A";
-
-        public int SelectedTabIndex
-        {
-            get => _selectedTabIndex;
-            set
-            {
-                if (_selectedTabIndex != value)
-                {
-                    _selectedTabIndex = value;
-                    OnPropertyChanged();
-                    UpdateVisibleContent();
-                }
-            }
-        }
-        
-        public Visibility OverviewVisibility
-        {
-            get => _overviewVisibility;
-            set
-            {
-                _overviewVisibility = value;
-                OnPropertyChanged();
-            }
-        }
-        
-        public Visibility OtherContentVisibility
-        {
-            get => _otherContentVisibility;
-            set
-            {
-                _otherContentVisibility = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public object? CurrentView
-        {
-            get => _currentView;
-            set
-            {
-                _currentView = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private void UpdateVisibleContent()
-        {
-            if (SelectedTabIndex == 0) // Overview
-            {
-                OverviewVisibility = Visibility.Visible;
-                OtherContentVisibility = Visibility.Collapsed;
-            }
-            else
-            {
-                OverviewVisibility = Visibility.Collapsed;
-                OtherContentVisibility = Visibility.Visible;
-
-                switch (TabItems[SelectedTabIndex])
-                {
-                    case "Available Tests":
-                        CurrentView = new ItemsControl { ItemsSource = UpcomingTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("AvailableTestTemplate") };
-                        break;
-                    case "Completed Tests":
-                        CurrentView = new ItemsControl { ItemsSource = CompletedTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("CompletedTestTemplate") };
-                        break;
-                    case "Leaderboard":
-                        CurrentView = new TextBlock { Text = "Leaderboard coming soon...", Margin = new Thickness(20) };
-                        break;
-                    case "Statistics":
-                        CurrentView = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };
-                        break;
-                }
-            }
-        }
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
