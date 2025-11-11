@@ -10,5 +10,6 @@
         WindowStartupLocation="CenterScreen">
     <Grid>
         <views:StudentDashboard />
+        <local:Views.StudentDashboard />
     </Grid>
 </Window>

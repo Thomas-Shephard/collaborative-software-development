@@ -33,6 +33,9 @@ namespace Jahoot.Display.ViewModels
                 DueDate = DateTime.Today.AddDays(7),
                 QuestionCount = 15
             });
+            // Sample data for demo / tests
+            UpcomingTests.Add(new TestItem{ Title = "Math Midterm", Date = DateTime.Today.AddDays(3), Course = "Math 101" });
+            UpcomingTests.Add(new TestItem{ Title = "History Quiz", Date = DateTime.Today.AddDays(7), Course = "History 201" });
 
             // Sample completed tests
             CompletedTests.Add(new TestItem
@@ -69,10 +72,14 @@ namespace Jahoot.Display.ViewModels
                 TestInfo = "15 questions • Completed"
             });
         }
+            CompletedTests.Add(new TestItem{ Title = "Intro Quiz", Date = DateTime.Today.AddDays(-14), Score = 78, Course = "Math 101" });
+            CompletedTests.Add(new TestItem{ Title = "Chapter 1 Test", Date = DateTime.Today.AddDays(-10), Score = 85, Course = "History 201" });
+            CompletedTests.Add(new TestItem{ Title = "Pop Quiz", Date = DateTime.Today.AddDays(-3), Score = 92, Course = "Math 101" });
 
         public int TestsAvailable => UpcomingTests.Count;
         public int TestsCompleted => CompletedTests.Count;
         public int UpcomingDueDates => UpcomingTests.Count(t => t.DueDate.HasValue && t.DueDate.Value <= DateTime.Today.AddDays(7));
+        }
 
         public double AverageScore
         {
