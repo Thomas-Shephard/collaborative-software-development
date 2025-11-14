@@ -1,16 +1,16 @@
 using Jahoot.Core.Models;
 using Jahoot.Core.Utils;
-using Jahoot.WebApi.Controllers;
+using Jahoot.WebApi.Controllers.Auth;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace Jahoot.WebApi.Tests.Controllers;
+namespace Jahoot.WebApi.Tests.Controllers.Auth;
 
-public class AuthControllerTests
+public class LoginControllerTests
 {
-    private AuthController _authController;
+    private LoginController _loginController;
     private Mock<IUserRepository> _userRepositoryMock;
 
     [SetUp]
@@ -23,7 +23,7 @@ public class AuthControllerTests
             Issuer = "Jahoot",
             Audience = "Jahoot"
         };
-        _authController = new AuthController(_userRepositoryMock.Object, jwtSettings);
+        _loginController = new LoginController(_userRepositoryMock.Object, jwtSettings);
     }
 
     [Test]
@@ -32,7 +32,7 @@ public class AuthControllerTests
         LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(() => null);
 
-        IActionResult result = await _authController.Login(loginRequest);
+        IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
     }
@@ -50,7 +50,7 @@ public class AuthControllerTests
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
 
-        IActionResult result = await _authController.Login(loginRequest);
+        IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
     }
@@ -68,7 +68,7 @@ public class AuthControllerTests
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
 
-        IActionResult result = await _authController.Login(loginRequest);
+        IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult okResult = (OkObjectResult)result;
@@ -82,9 +82,9 @@ public class AuthControllerTests
         LoginRequest loginRequest = new() { Email = "invalid-email", Password = "password" };
 
         // Manually add a model error to simulate an invalid model state
-        _authController.ModelState.AddModelError("Email", "The Email field is not a valid email address.");
+        _loginController.ModelState.AddModelError("Email", "The Email field is not a valid email address.");
 
-        IActionResult result = await _authController.Login(loginRequest);
+        IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
     }

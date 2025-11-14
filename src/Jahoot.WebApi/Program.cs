@@ -1,8 +1,10 @@
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Dapper;
 using Jahoot.WebApi.Repositories;
+using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -47,6 +49,8 @@ public static class Program
         };
         builder.Services.AddSingleton(jwtSettings);
 
+        builder.Services.AddSingleton<ITokenDenyService, TokenDenyService>();
+
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -62,6 +66,18 @@ public static class Program
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    ITokenDenyService denylist = context.HttpContext.RequestServices.GetRequiredService<ITokenDenyService>();
+                    string? jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                    if (jti != null && await denylist.IsDeniedAsync(jti))
+                    {
+                        context.Fail("Token is denied.");
+                    }
+                }
             };
         });
 
