@@ -1,11 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Jahoot.WebApi\Jahoot.WebApi.csproj"/>
+        <ProjectReference Include="..\..\src\Jahoot.WebApi\Jahoot.WebApi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SQLite" Version="10.0.0"/>
     </ItemGroup>
 
 </Project>
