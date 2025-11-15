@@ -2,22 +2,14 @@ using System.Collections.Concurrent;
 
 namespace Jahoot.WebApi.Services;
 
-public class TokenDenyService : ITokenDenyService, IDisposable
+public class TokenDenyService : TimedBackgroundService, ITokenDenyService
 {
-    private readonly Timer? _cleanupTimer;
     private readonly ConcurrentDictionary<string, DateTime> _denylist = new();
-    protected bool Disposed;
 
     public TokenDenyService(TimeSpan? cleanupInterval = null)
     {
         cleanupInterval ??= TimeSpan.FromHours(1);
-        _cleanupTimer = new Timer(CleanupExpiredTokens, null, cleanupInterval.Value, cleanupInterval.Value);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        InitializeTimer(CleanupExpiredTokens, cleanupInterval.Value);
     }
 
     public Task DenyAsync(string jti, DateTime expiry)
@@ -39,20 +31,5 @@ public class TokenDenyService : ITokenDenyService, IDisposable
         {
             _denylist.TryRemove(expiredToken, out _);
         }
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (Disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            _cleanupTimer?.Dispose();
-        }
-
-        Disposed = true;
     }
 }

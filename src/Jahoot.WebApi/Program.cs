@@ -50,6 +50,7 @@ public static class Program
         builder.Services.AddSingleton(jwtSettings);
 
         builder.Services.AddSingleton<ITokenDenyService, TokenDenyService>();
+        builder.Services.AddSingleton<ILoginAttemptService, LoginAttemptService>();
 
         builder.Services.AddAuthentication(options =>
         {
