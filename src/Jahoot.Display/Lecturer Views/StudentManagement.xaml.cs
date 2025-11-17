@@ -1,11 +1,8 @@
-using System.Windows.Controls;
+using System.Windows;
 
 namespace Jahoot.Display.Lecturer_Views
 {
-    /// <summary>
-    /// Interaction logic for StudentManagement.xaml
-    /// </summary>
-    public partial class StudentManagement : UserControl
+    public partial class StudentManagement : Window
     {
         public StudentManagement()
         {
