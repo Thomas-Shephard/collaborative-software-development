@@ -21,7 +21,7 @@ services:
     php-my-admin:
         image: phpmyadmin:latest
         environment:
-            - PMA_HOST=maria-db
+            - PMA_HOST=${DB_HOST}
             - PMA_USER=${DB_USER}
             - PMA_PASSWORD=${DB_PASSWORD}
         ports:
