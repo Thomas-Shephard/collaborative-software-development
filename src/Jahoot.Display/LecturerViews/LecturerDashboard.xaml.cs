@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Jahoot.Display.Lecturer_Views
+namespace Jahoot.Display.LecturerViews
 {
     public partial class LecturerDashboard : Window
     {
@@ -76,8 +76,8 @@ namespace Jahoot.Display.Lecturer_Views
             }
         }
 
-        public required ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
-        public required ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
+        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
+        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
 
         public LecturerDashboardViewModel()
         {

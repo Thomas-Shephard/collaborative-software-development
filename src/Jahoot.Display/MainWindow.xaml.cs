@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Jahoot.Display.Lecturer_Views;
+using Jahoot.Display.LecturerViews;
 
 namespace Jahoot.Display;
 
