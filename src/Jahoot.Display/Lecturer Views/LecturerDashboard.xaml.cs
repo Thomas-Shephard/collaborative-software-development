@@ -2,9 +2,9 @@ using System.Windows;
 
 namespace Jahoot.Display.Lecturer_Views
 {
-    public partial class StudentManagement : Window
+    public partial class LecturerDashboard : Window
     {
-        public StudentManagement()
+        public LecturerDashboard()
         {
             InitializeComponent();
         }
