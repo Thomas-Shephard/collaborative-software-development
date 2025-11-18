@@ -76,8 +76,8 @@ namespace Jahoot.Display.Lecturer_Views
             }
         }
 
-        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
-        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
+        public required ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
+        public required ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
 
         public LecturerDashboardViewModel()
         {
@@ -97,7 +97,7 @@ namespace Jahoot.Display.Lecturer_Views
             };
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName)
         {
@@ -107,18 +107,18 @@ namespace Jahoot.Display.Lecturer_Views
 
     public class RecentActivityItem
     {
-        public string StudentInitials { get; set; }
-        public string DescriptionPrefix { get; set; }
-        public string TestName { get; set; }
-        public string TimeAgo { get; set; }
-        public bool IsInProgress { get; set; }
-        public string ResultOrStatus { get; set; }
+        public required string StudentInitials { get; set; }
+        public required string DescriptionPrefix { get; set; }
+        public required string TestName { get; set; }
+        public required string TimeAgo { get; set; }
+        public required bool IsInProgress { get; set; }
+        public required string ResultOrStatus { get; set; }
     }
 
     public class PerformanceSubject
     {
-        public string SubjectName { get; set; }
-        public string ScoreText { get; set; }
-        public double ScoreValue { get; set; }
+        public required string SubjectName { get; set; }
+        public required string ScoreText { get; set; }
+        public required double ScoreValue { get; set; }
     }
 }
