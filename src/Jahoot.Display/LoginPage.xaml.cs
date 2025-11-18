@@ -14,6 +14,6 @@ public partial class LoginPage : Window
 
     private void BtnSignIn_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: Implement sign-in logic
+        
     }
 }

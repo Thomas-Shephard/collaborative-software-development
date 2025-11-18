@@ -1,18 +1,18 @@
 ﻿<Window x:Class="Jahoot.Display.LoginPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sign In" Height="350" Width="400"
+        Title="Login" Height="450" Width="800"
         WindowStartupLocation="CenterScreen"
         WindowStyle="ToolWindow"
         xmlns:local="clr-namespace:Jahoot.Display">
 
     <Grid Margin="20">
         <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="Application Login" 
+            <TextBlock 
                        FontSize="24" 
                        FontWeight="Bold" 
                        HorizontalAlignment="Center" 
-                       Margin="0,0,0,20"/>
+                       Margin="0,0,0,20"><Run Language="en-gb" Text="Welcome to Jahoot"/></TextBlock>
 
             <TextBlock Text="Username:" Margin="0,10,0,5"/>
             <TextBox x:Name="TxtUsername" Padding="5" FontSize="14"/>
