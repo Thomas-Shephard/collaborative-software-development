@@ -50,10 +50,6 @@
 ﻿            }
 ﻿        }
 
-        /// <summary>
-        /// This happens when the "Register" button is clicked.
-        /// It tries to register the user.
-        /// </summary>
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Register button clicked!");

@@ -17,7 +17,7 @@
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="5"/>
             </Border.Effect>
-            <Grid>
+    <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -84,7 +84,7 @@
                                FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
 
                     <Button Content="Register" Margin="0,20,0,0" Padding="10" Background="#28A745" Foreground="White" FontWeight="Bold" Click="RegisterButton_Click"/>
-                </StackPanel>
+        </StackPanel>
             </Border>
         </Grid>
     </Grid>
