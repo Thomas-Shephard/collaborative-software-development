@@ -8,13 +8,13 @@ using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Jahoot.WebApi.Controllers;
+namespace Jahoot.WebApi.Controllers.Auth;
 
 [ApiController]
-[Route("api/auth")]
-public class AuthController(IUserRepository userRepository, JwtSettings jwtSettings) : ControllerBase
+[Route("api/auth/login")]
+public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings) : ControllerBase
 {
-    [HttpPost("login")]
+    [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
@@ -46,16 +46,18 @@ public class AuthController(IUserRepository userRepository, JwtSettings jwtSetti
         [
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
-            new(JwtRegisteredClaimNames.Name, user.Name)
+            new(JwtRegisteredClaimNames.Name, user.Name),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         ];
 
+        DateTime expires = loginTime.AddDays(7);
         JwtSecurityToken token = new(
                                      jwtSettings.Issuer,
                                      jwtSettings.Audience,
                                      claims,
                                      loginTime,
-                                     loginTime.AddDays(7),
-                                     signingCredentials: credentials);
+                                     expires,
+                                     credentials);
 
         string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
