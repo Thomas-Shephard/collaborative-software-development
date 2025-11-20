@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Jahoot.Display.LecturerViews
+namespace Jahoot.Display.Utilities
 {
     public class BoolToVisibilityConverter : IValueConverter
     {

@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace Jahoot.Display.LecturerViews
+namespace Jahoot.Display.Utilities
 {
     public class TabWidthConverter : IValueConverter
     {
