@@ -1,5 +1,7 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -19,7 +21,17 @@ namespace Jahoot.Display.LecturerViews
         }
     }
 
-    public class LecturerDashboardViewModel : INotifyPropertyChanged
+    public abstract class BaseViewModel : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class LecturerDashboardViewModel : BaseViewModel
     {
         private string _lecturerInitials = "JD";
         public string LecturerInitials
@@ -28,7 +40,7 @@ namespace Jahoot.Display.LecturerViews
             set
             {
                 _lecturerInitials = value;
-                OnPropertyChanged(nameof(LecturerInitials));
+                OnPropertyChanged();
             }
         }
 
@@ -39,7 +51,7 @@ namespace Jahoot.Display.LecturerViews
             set
             {
                 _totalStudents = value;
-                OnPropertyChanged(nameof(TotalStudents));
+                OnPropertyChanged();
             }
         }
 
@@ -50,7 +62,7 @@ namespace Jahoot.Display.LecturerViews
             set
             {
                 _activeTests = value;
-                OnPropertyChanged(nameof(ActiveTests));
+                OnPropertyChanged();
             }
         }
 
@@ -61,7 +73,7 @@ namespace Jahoot.Display.LecturerViews
             set
             {
                 _averageScore = value;
-                OnPropertyChanged(nameof(AverageScore));
+                OnPropertyChanged();
             }
         }
 
@@ -72,7 +84,7 @@ namespace Jahoot.Display.LecturerViews
             set
             {
                 _completionRate = value;
-                OnPropertyChanged(nameof(CompletionRate));
+                OnPropertyChanged();
             }
         }
 
@@ -95,13 +107,6 @@ namespace Jahoot.Display.LecturerViews
                 new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
                 new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
             };
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
