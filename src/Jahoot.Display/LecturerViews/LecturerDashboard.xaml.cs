@@ -91,9 +91,9 @@ namespace Jahoot.Display.LecturerViews
         {
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
             {
-                new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", IsInProgress = true, ResultOrStatus = "In Progress" },
-                new RecentActivityItem { StudentInitials = "BM", DescriptionPrefix = "Student ", TestName = "Science Test", TimeAgo = "1 hour ago", IsInProgress = false, ResultOrStatus = "85%" },
-                new RecentActivityItem { StudentInitials = "CJ", DescriptionPrefix = "Student ", TestName = "History Exam", TimeAgo = "2 hours ago", IsInProgress = false, ResultOrStatus = "72%" }
+                new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
+                new RecentActivityItem { StudentInitials = "BM", DescriptionPrefix = "Student ", TestName = "Science Test", TimeAgo = "1 hour ago", Result = "85%" },
+                new RecentActivityItem { StudentInitials = "CJ", DescriptionPrefix = "Student ", TestName = "History Exam", TimeAgo = "2 hours ago", Result = "72%" }
             };
 
             PerformanceSubjects = new ObservableCollection<PerformanceSubject>
@@ -112,8 +112,7 @@ namespace Jahoot.Display.LecturerViews
         public required string DescriptionPrefix { get; set; }
         public required string TestName { get; set; }
         public required string TimeAgo { get; set; }
-        public required bool IsInProgress { get; set; }
-        public required string ResultOrStatus { get; set; }
+        public required string Result { get; set; }
     }
 
     public class PerformanceSubject

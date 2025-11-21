@@ -4,14 +4,15 @@
         xmlns:util="clr-namespace:Jahoot.Display.Utilities"
         Title="Lecturer Dashboard"
         Height="800" Width="1200"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        MinWidth="800">
 
     <Window.Resources>
         <util:TabWidthConverter x:Key="TabWidthConverter"/>
-        <util:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
         <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
         <SolidColorBrush x:Key="AccentColor" Color="#4CAF50"/>
+
         <Style x:Key="StatValueStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="36"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -23,64 +24,37 @@
             <Setter Property="Foreground" Value="{StaticResource SecondaryTextColor}"/>
         </Style>
 
-            <DataTemplate x:Key="RecentActivityTemplate">
-                <StackPanel>
-                    <Grid Margin="0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+        <DataTemplate x:Key="RecentActivityTemplate">
+            <StackPanel>
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Width="30" Height="30" Background="#F0F0F0" CornerRadius="15" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding StudentInitials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
-                        </Border>
+                    <Border Grid.Column="0" Width="30" Height="30" Background="#F0F0F0" CornerRadius="15" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding StudentInitials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
+                    </Border>
 
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock>
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock>
                             <Run Text="{Binding DescriptionPrefix}"/>
                             <Run Text="{Binding TestName}" FontWeight="SemiBold"/>
-                            </TextBlock>
-                            <TextBlock Text="{Binding TimeAgo}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
-                        </StackPanel>
+                        </TextBlock>
+                        <TextBlock Text="{Binding TimeAgo}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                    </StackPanel>
 
-                        <Border Grid.Column="2" Padding="5,2" VerticalAlignment="Center"
-                            CornerRadius="4"
-                            Visibility="{Binding IsInProgress, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsInProgress}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource AccentColor}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
+                    <TextBlock Grid.Column="2" 
+                               Text="{Binding Result}" 
+                               FontWeight="SemiBold"  
+                               FontSize="16"
+                               VerticalAlignment="Center"/>
 
-                            <TextBlock Text="{Binding ResultOrStatus}" 
-                                   FontWeight="SemiBold" 
-                                   VerticalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsInProgress}" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
-                                                <Setter Property="FontSize" Value="12"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsInProgress}" Value="False">
-                                                <Setter Property="FontSize" Value="16"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Border>
-                    </Grid>
-                    <Separator Margin="0,5"/>
-                </StackPanel>
-            </DataTemplate>
+                </Grid>
+                <Separator Margin="0,5"/>
+            </StackPanel>
+        </DataTemplate>
 
     </Window.Resources>
 
