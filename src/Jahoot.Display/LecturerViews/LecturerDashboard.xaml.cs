@@ -33,60 +33,56 @@ namespace Jahoot.Display.LecturerViews
 
     public class LecturerDashboardViewModel : BaseViewModel
     {
-        private string _lecturerInitials = "JD";
         public string LecturerInitials
         {
-            get => _lecturerInitials;
+            get => field;
             set
             {
-                _lecturerInitials = value;
+                field = value;
                 OnPropertyChanged();
             }
-        }
+        } = "JD";
 
-        private int _totalStudents = 120;
         public int TotalStudents
         {
-            get => _totalStudents;
+            get => field;
             set
             {
-                _totalStudents = value;
+                field = value;
                 OnPropertyChanged();
             }
-        }
+        } = 120;
 
-        private int _activeTests = 5;
         public int ActiveTests
         {
-            get => _activeTests;
+            get => field;
             set
             {
-                _activeTests = value;
+                field = value;
                 OnPropertyChanged();
             }
-        }
+        } = 5;
 
-        private double _averageScore = 78.5;
         public double AverageScore
         {
-            get => _averageScore;
+            get => field;
             set
             {
-                _averageScore = value;
+                field = value;
                 OnPropertyChanged();
             }
-        }
+        } = 78.5;
 
-        private string _completionRate = "85%";
         public string CompletionRate
         {
-            get => _completionRate;
+            get => field;
             set
             {
-                _completionRate = value;
+                field = value;
                 OnPropertyChanged();
             }
-        }
+        } = "85%";
+
 
         public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
