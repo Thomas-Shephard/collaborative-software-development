@@ -10,4 +10,3 @@ namespace Jahoot.Display;
 public partial class App : Application
 {
 }
-
