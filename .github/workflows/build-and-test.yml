@@ -27,7 +27,7 @@ jobs:
             -   name: Install Coverage Checker
                 run: dotnet tool install --global CoverageChecker.CommandLine
             -   name: Check Coverage
-                run: coveragechecker --format Cobertura --glob-patterns 'coverage/**/coverage.cobertura.xml' --line-threshold 80 --branch-threshold 80
+                run: coveragechecker --format Cobertura --glob-patterns 'coverage/**/coverage.cobertura.xml' --line-threshold 100 --branch-threshold 100
 
     build-api-image:
         name: Build API Image
