@@ -14,8 +14,24 @@ public class UserRepositoryTests : RepositoryTestBase
         _userRepository = new UserRepository(Connection);
     }
 
+    private async Task<int> InsertUser(User user)
+    {
+        const string insertQuery = "INSERT INTO User (email, name, password_hash, created_at, updated_at) VALUES (@Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt); SELECT LAST_INSERT_ID();";
+        return await Connection.QuerySingleAsync<int>(insertQuery, user);
+    }
+
+    private async Task InsertLecturer(int userId, bool isAdmin)
+    {
+        await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, @IsAdmin)", new { UserId = userId, IsAdmin = isAdmin });
+    }
+
+    private async Task InsertStudent(int userId)
+    {
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+    }
+
     [Test]
-    public async Task GetUserByEmailAsync_UserExists_ReturnsUser()
+    public async Task GetUserByEmailAsync_UserExistsWithoutRoles_ReturnsUserWithEmptyRoles()
     {
         User user = new()
         {
@@ -23,14 +39,125 @@ public class UserRepositoryTests : RepositoryTestBase
             Name = "Test User",
             PasswordHash = "password_hash",
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = []
         };
-        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash, created_at, updated_at) VALUES (@Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt)", user);
+        await InsertUser(user);
 
         User? result = await _userRepository.GetUserByEmailAsync("test@example.com");
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Email, Is.EqualTo(user.Email));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.Empty);
+        }
+    }
+
+    [Test]
+    public async Task GetUserByEmailAsync_UserExistsAsStudent_ReturnsUserWithStudentRole()
+    {
+        User user = new()
+        {
+            Email = "student@example.com",
+            Name = "Student User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = []
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId);
+
+        User? result = await _userRepository.GetUserByEmailAsync("student@example.com");
+
+        Assert.That(result, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.EquivalentTo([Role.Student]));
+        }
+    }
+
+    [Test]
+    public async Task GetUserByEmailAsync_UserExistsAsLecturer_ReturnsUserWithLecturerRole()
+    {
+        User user = new()
+        {
+            Email = "lecturer@example.com",
+            Name = "Lecturer User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = []
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, false); // Not an admin lecturer
+
+        User? result = await _userRepository.GetUserByEmailAsync("lecturer@example.com");
+
+        Assert.That(result, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.EquivalentTo([Role.Lecturer]));
+        }
+    }
+
+    [Test]
+    public async Task GetUserByEmailAsync_UserExistsAsAdminLecturer_ReturnsUserWithAdminAndLecturerRoles()
+    {
+        User user = new()
+        {
+            Email = "admin@example.com",
+            Name = "Admin User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = []
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, true); // Admin lecturer
+
+        User? result = await _userRepository.GetUserByEmailAsync("admin@example.com");
+
+        Assert.That(result, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.EquivalentTo([Role.Lecturer, Role.Admin]));
+        }
+    }
+
+    [Test]
+    public async Task GetUserByEmailAsync_UserExistsAsStudentAndLecturer_ReturnsUserWithBothRoles()
+    {
+        User user = new()
+        {
+            Email = "studentlecturer@example.com",
+            Name = "Student Lecturer User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = []
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId);
+        await InsertLecturer(userId, false); // Not an admin lecturer
+
+        User? result = await _userRepository.GetUserByEmailAsync("studentlecturer@example.com");
+
+        Assert.That(result, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.EquivalentTo([Role.Student, Role.Lecturer]));
+        }
     }
 
     [Test]
@@ -50,10 +177,11 @@ public class UserRepositoryTests : RepositoryTestBase
             Name = "Original Name",
             PasswordHash = "original_hash",
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            Roles = []
         };
-        const string insertQuery = "INSERT INTO User (email, name, password_hash, created_at, updated_at) VALUES (@Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt); SELECT LAST_INSERT_ID();";
-        int userId = await Connection.QuerySingleAsync<int>(insertQuery, originalUser);
+
+        int userId = await InsertUser(originalUser);
 
         User updatedUser = new()
         {
@@ -63,7 +191,8 @@ public class UserRepositoryTests : RepositoryTestBase
             PasswordHash = "updated_hash",
             CreatedAt = originalUser.CreatedAt,
             UpdatedAt = DateTime.UtcNow,
-            LastLogin = DateTime.UtcNow
+            LastLogin = DateTime.UtcNow,
+            Roles = []
         };
 
         await _userRepository.UpdateUserAsync(updatedUser);

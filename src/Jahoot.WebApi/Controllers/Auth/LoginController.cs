@@ -63,7 +63,8 @@ public class LoginController(IUserRepository userRepository, JwtSettings jwtSett
             new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Name, user.Name),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            ..user.Roles.Select(role => new Claim(ClaimTypes.Role, role.ToString()))
         ];
 
         DateTime expires = loginTime.AddDays(7);
