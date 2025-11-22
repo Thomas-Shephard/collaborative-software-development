@@ -13,6 +13,6 @@ public class UserRepository(IDbConnection connection) : IUserRepository
 
     public async Task UpdateUserAsync(User user)
     {
-        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @Id", user);
+        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @UserId", user);
     }
 }

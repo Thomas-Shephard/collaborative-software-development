@@ -58,18 +58,18 @@ public class UserRepositoryTests
     {
         User originalUser = new()
         {
-            Id = 1,
+            UserId = 1,
             Email = "user@example.com",
             Name = "Original Name",
             PasswordHash = "original_hash",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-        await _connection.ExecuteAsync("INSERT INTO User (user_id, email, name, password_hash, created_at, updated_at) VALUES (@Id, @Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt)", originalUser);
+        await _connection.ExecuteAsync("INSERT INTO User (user_id, email, name, password_hash, created_at, updated_at) VALUES (@UserId, @Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt)", originalUser);
 
         User updatedUser = new()
         {
-            Id = 1,
+            UserId = 1,
             Email = "updated-user@example.com",
             Name = "Updated Name",
             PasswordHash = "updated_hash",
@@ -80,7 +80,7 @@ public class UserRepositoryTests
 
         await _userRepository.UpdateUserAsync(updatedUser);
 
-        User? result = await _connection.QuerySingleOrDefaultAsync<User>("SELECT * FROM User WHERE user_id = @Id", new { updatedUser.Id });
+        User? result = await _connection.QuerySingleOrDefaultAsync<User>("SELECT * FROM User WHERE user_id = @UserId", new { updatedUser.UserId });
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
