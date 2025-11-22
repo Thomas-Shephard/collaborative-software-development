@@ -12,8 +12,6 @@ services:
             - MYSQL_DATABASE=${DB_NAME}
             - MYSQL_USER=${DB_USER}
             - MYSQL_PASSWORD=${DB_PASSWORD}
-        ports:
-            - "3306:3306"
         volumes:
             - maria-db-data:/var/lib/mysql
             - ./database-init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -25,7 +23,7 @@ services:
             - PMA_USER=${DB_USER}
             - PMA_PASSWORD=${DB_PASSWORD}
         ports:
-            - "8080:80"
+            - "${PHP_MY_ADMIN_PORT:-8080}:80"
         depends_on:
             maria-db:
                 condition: service_healthy
@@ -34,7 +32,7 @@ services:
         build:
             dockerfile: ./src/Jahoot.WebApi/Dockerfile
         ports:
-            - "80:8080"
+            - "${APP_PORT:-80}:8080"
         depends_on:
             maria-db:
                 condition: service_healthy
