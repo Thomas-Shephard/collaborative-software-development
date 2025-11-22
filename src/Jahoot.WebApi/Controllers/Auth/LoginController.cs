@@ -4,6 +4,7 @@ using System.Text;
 using Jahoot.Core.Models;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Repositories;
+using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -12,11 +13,23 @@ namespace Jahoot.WebApi.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/login")]
-public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings) : ControllerBase
+public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings, ILoginAttemptService loginAttemptService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            return BadRequest("Could not determine IP address.");
+        }
+
+        if (await loginAttemptService.IsLockedOut(request.Email, ipAddress))
+        {
+            return StatusCode(429, "Too many failed login attempts. Please try again later.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -30,8 +43,11 @@ public class LoginController(IUserRepository userRepository, JwtSettings jwtSett
 
         if (!isPasswordCorrect)
         {
+            await loginAttemptService.RecordFailedLoginAttempt(request.Email, ipAddress);
             return Unauthorized();
         }
+
+        await loginAttemptService.ResetFailedLoginAttempts(request.Email, ipAddress);
 
         DateTime loginTime = DateTime.UtcNow;
 

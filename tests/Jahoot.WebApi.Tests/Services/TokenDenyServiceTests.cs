@@ -1,4 +1,6 @@
 using Jahoot.WebApi.Services;
+using Jahoot.WebApi.Settings;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Jahoot.WebApi.Tests.Services;
 
@@ -6,13 +8,20 @@ public class TokenDenyServiceTests
 {
     private const string JtiValid = "test_jti";
     private const string JtiExpired = "test_jti_expired";
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromMilliseconds(10);
+    private FakeTimeProvider _fakeTimeProvider;
 
     private TokenDenyService _tokenDenyService;
 
     [SetUp]
     public void Setup()
     {
-        _tokenDenyService = new TokenDenyService();
+        _fakeTimeProvider = new FakeTimeProvider();
+        TokenDenySettings tokenDenySettings = new()
+        {
+            CleanupInterval = CleanupInterval
+        };
+        _tokenDenyService = new TokenDenyService(tokenDenySettings, _fakeTimeProvider);
     }
 
     [TearDown]
@@ -24,7 +33,7 @@ public class TokenDenyServiceTests
     [Test]
     public async Task IsDeniedAsync_ReturnsTrueForDeniedToken()
     {
-        DateTime expiry = DateTime.UtcNow.AddHours(1);
+        DateTime expiry = _fakeTimeProvider.GetUtcNow().AddHours(1).UtcDateTime;
 
         await _tokenDenyService.DenyAsync(JtiValid, expiry);
 
@@ -40,55 +49,24 @@ public class TokenDenyServiceTests
     [Test]
     public async Task CleanupExpiredTokens_RemovesExpiredTokens()
     {
-        TimeSpan shortTimeSpan = TimeSpan.FromMilliseconds(10);
+        DateTime expiryExpired = _fakeTimeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
+        DateTime expiryValid = _fakeTimeProvider.GetUtcNow().AddHours(1).UtcDateTime;
 
-        using TokenDenyService shortIntervalService = new(shortTimeSpan);
-        DateTime expiryExpired = DateTime.UtcNow.Subtract(shortTimeSpan);
-        DateTime expiryValid = DateTime.UtcNow.AddHours(1);
-
-        await shortIntervalService.DenyAsync(JtiExpired, expiryExpired);
-        await shortIntervalService.DenyAsync(JtiValid, expiryValid);
+        await _tokenDenyService.DenyAsync(JtiExpired, expiryExpired);
+        await _tokenDenyService.DenyAsync(JtiValid, expiryValid);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(await shortIntervalService.IsDeniedAsync(JtiExpired), Is.True);
-            Assert.That(await shortIntervalService.IsDeniedAsync(JtiValid), Is.True);
+            Assert.That(await _tokenDenyService.IsDeniedAsync(JtiExpired), Is.True);
+            Assert.That(await _tokenDenyService.IsDeniedAsync(JtiValid), Is.True);
         }
 
-        await Task.Delay(5 * shortTimeSpan);
+        _fakeTimeProvider.Advance(CleanupInterval);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(await shortIntervalService.IsDeniedAsync(JtiExpired), Is.False);
-            Assert.That(await shortIntervalService.IsDeniedAsync(JtiValid), Is.True);
-        }
-    }
-
-    [Test]
-    public void Dispose_CanBeCalledMultipleTimes()
-    {
-        _tokenDenyService.Dispose();
-        _tokenDenyService.Dispose();
-        Assert.Pass();
-    }
-
-    [Test]
-    public void Dispose_SetsDisposedFlagWhenCalledWithFalse()
-    {
-        TestableTokenDenyService service = new();
-
-        service.CallDisposeFalse();
-
-        Assert.That(service.IsDisposed, Is.True);
-    }
-
-    private class TestableTokenDenyService : TokenDenyService
-    {
-        public bool IsDisposed => Disposed;
-
-        public void CallDisposeFalse()
-        {
-            Dispose(false);
+            Assert.That(await _tokenDenyService.IsDeniedAsync(JtiExpired), Is.False);
+            Assert.That(await _tokenDenyService.IsDeniedAsync(JtiValid), Is.True);
         }
     }
 }

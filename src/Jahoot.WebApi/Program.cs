@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Dapper;
+using Jahoot.WebApi.Extensions;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
@@ -49,7 +50,11 @@ public static class Program
         };
         builder.Services.AddSingleton(jwtSettings);
 
-        builder.Services.AddSingleton<ITokenDenyService, TokenDenyService>();
+        LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
+        TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
+
+        builder.Services.AddSingleton<ITokenDenyService>(_ => new TokenDenyService(tokenDenySettings, TimeProvider.System));
+        builder.Services.AddSingleton<ILoginAttemptService>(_ => new LoginAttemptService(loginAttemptSettings, TimeProvider.System));
 
         builder.Services.AddAuthentication(options =>
         {
