@@ -10,7 +10,7 @@ namespace Jahoot.WebApi.Controllers.Auth;
 public class LogoutController(ITokenDenyService tokenDenyService) : ControllerBase
 {
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Logout()
     {
         string? jti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
