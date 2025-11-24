@@ -9,6 +9,6 @@
         Title="Jahoot - Student Dashboard" Height="931" Width="1536"
         WindowStartupLocation="CenterScreen">
     <Grid>
-        <local:Views.StudentDashboard />
+        <views:StudentDashboard />
     </Grid>
 </Window>
