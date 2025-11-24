@@ -55,6 +55,7 @@ namespace Jahoot.Display.StudentViews
             };
             if (MainContent == null)
             {
+                MessageBox.Show("MainContent is not initialized. Please check XAML and project setup.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             MainContent.Content = itemsControl;
@@ -69,6 +70,7 @@ namespace Jahoot.Display.StudentViews
             };
             if (MainContent == null)
             {
+                MessageBox.Show("MainContent is not initialized. Please check XAML and project setup.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             MainContent.Content = itemsControl;
@@ -78,6 +80,7 @@ namespace Jahoot.Display.StudentViews
         {
             if (MainContent == null)
             {
+                MessageBox.Show("MainContent is not initialized. Please check XAML and project setup.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             MainContent.Content = new TextBlock { Text = "Leaderboard coming soon...", Margin = new Thickness(20) };
@@ -89,6 +92,7 @@ namespace Jahoot.Display.StudentViews
         {
             if (MainContent == null)
             {
+                MessageBox.Show("MainContent is not initialized. Please check XAML and project setup.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             MainContent.Content = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };
