@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Jahoot.Display"
+        xmlns:views="clr-namespace:Jahoot.Display.StudentViews"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Jahoot - Student Dashboard" Height="931" Width="1536"
+        WindowStartupLocation="CenterScreen">
     <Grid>
-        <local:Views.StudentDashboard />
+        <views:StudentDashboard />
     </Grid>
 </Window>
