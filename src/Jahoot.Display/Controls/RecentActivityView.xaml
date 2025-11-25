@@ -1,0 +1,51 @@
+<UserControl x:Class="Jahoot.Display.Controls.RecentActivityView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
+        <DataTemplate x:Key="RecentActivityTemplate">
+            <StackPanel>
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="30" Height="30" Background="#F0F0F0" CornerRadius="15" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding StudentInitials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock>
+                            <Run Text="{Binding DescriptionPrefix}"/>
+                            <Run Text="{Binding TestName}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding TimeAgo}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="2" 
+                               Text="{Binding Result}" 
+                               FontWeight="SemiBold"  
+                               FontSize="16"
+                               VerticalAlignment="Center"/>
+
+                </Grid>
+                <Separator Margin="0,5"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0">
+        <StackPanel>
+            <TextBlock Text="Recent Activity" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Text="Latest student activities and submissions" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,15"/>
+
+            <ItemsControl ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}" ItemTemplate="{StaticResource RecentActivityTemplate}"/>
+
+        </StackPanel>
+    </Border>
+</UserControl>
