@@ -48,4 +48,17 @@ public partial class LoginPage : Window
     {
         MessageBox.Show("Register button clicked!");
     }
+
+    private void ForgotPassword_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("forgot password clicked");
+    }
+
+    private void SignInPasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            LoginButton_Click(sender, e);
+        }
+    }
 }
