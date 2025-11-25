@@ -87,6 +87,26 @@ namespace Jahoot.Display.LecturerViews
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
         public ObservableCollection<TabItem> TabItems { get; set; }
 
+        public ObservableCollection<string> AvailableRoles
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+
+        public string SelectedRole
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = "Lecturer";
+
         public int SelectedTabIndex
         {
             get => field;
@@ -120,8 +140,7 @@ namespace Jahoot.Display.LecturerViews
                 new TabItem { Header = "Students" },
                 new TabItem { Header = "Tests" },
                 new TabItem { Header = "Progress" },
-                new TabItem { Header = "Leaderboard" },
-                new TabItem { Header = "Admin" }
+                new TabItem { Header = "Leaderboard" }
             };
         }
     }
