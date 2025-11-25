@@ -4,140 +4,141 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Jahoot.Display.LecturerViews;
-
-public partial class LecturerDashboard : Window
+namespace Jahoot.Display.LecturerViews
 {
-    public LecturerDashboard()
+    public partial class LecturerDashboard : Window
     {
-        InitializeComponent();
-        this.DataContext = new LecturerDashboardViewModel();
+        public LecturerDashboard()
+        {
+            InitializeComponent();
+            this.DataContext = new LecturerDashboardViewModel();
+        }
+
+        private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            // Future functionality
+        }
     }
 
-    private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
+    public abstract class BaseViewModel : INotifyPropertyChanged
     {
-        // Future functionality
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
-}
 
-public abstract class BaseViewModel : INotifyPropertyChanged
-{
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public class LecturerDashboardViewModel : BaseViewModel
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public string LecturerInitials
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = "JD";
+
+        public int TotalStudents
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 120;
+
+        public int ActiveTests
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 5;
+
+        public double AverageScore
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 78.5;
+
+        public double CompletionRate
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 85;
+
+
+        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
+        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
+        public ObservableCollection<TabItem> TabItems { get; set; }
+
+        public int SelectedTabIndex
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 0;
+
+        public LecturerDashboardViewModel()
+        {
+            RecentActivityItems = new ObservableCollection<RecentActivityItem>
+            {
+                new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
+                new RecentActivityItem { StudentInitials = "BM", DescriptionPrefix = "Student ", TestName = "Science Test", TimeAgo = "1 hour ago", Result = "85%" },
+                new RecentActivityItem { StudentInitials = "CJ", DescriptionPrefix = "Student ", TestName = "History Exam", TimeAgo = "2 hours ago", Result = "72%" }
+            };
+
+            PerformanceSubjects = new ObservableCollection<PerformanceSubject>
+            {
+                new PerformanceSubject { SubjectName = "Mathematics", ScoreText = "88%", ScoreValue = 88 },
+                new PerformanceSubject { SubjectName = "Science", ScoreText = "75%", ScoreValue = 75 },
+                new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
+                new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
+            };
+
+            TabItems = new ObservableCollection<TabItem>
+            {
+                new TabItem { Header = "Overview" },
+                new TabItem { Header = "Students" },
+                new TabItem { Header = "Tests" },
+                new TabItem { Header = "Progress" },
+                new TabItem { Header = "Leaderboard" },
+                new TabItem { Header = "Admin" }
+            };
+        }
     }
-}
 
-public class LecturerDashboardViewModel : BaseViewModel
-{
-    public string LecturerInitials
+    public class RecentActivityItem
     {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = "JD";
-
-    public int TotalStudents
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = 120;
-
-    public int ActiveTests
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = 5;
-
-    public double AverageScore
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = 78.5;
-
-    public double CompletionRate
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = 85;
-
-
-    public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
-    public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
-    public ObservableCollection<TabItem> TabItems { get; set; }
-
-    public int SelectedTabIndex
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    } = 0;
-
-    public LecturerDashboardViewModel()
-    {
-        RecentActivityItems = new ObservableCollection<RecentActivityItem>
-        {
-            new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
-            new RecentActivityItem { StudentInitials = "BM", DescriptionPrefix = "Student ", TestName = "Science Test", TimeAgo = "1 hour ago", Result = "85%" },
-            new RecentActivityItem { StudentInitials = "CJ", DescriptionPrefix = "Student ", TestName = "History Exam", TimeAgo = "2 hours ago", Result = "72%" }
-        };
-
-        PerformanceSubjects = new ObservableCollection<PerformanceSubject>
-        {
-            new PerformanceSubject { SubjectName = "Mathematics", ScoreText = "88%", ScoreValue = 88 },
-            new PerformanceSubject { SubjectName = "Science", ScoreText = "75%", ScoreValue = 75 },
-            new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
-            new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
-        };
-        
-        TabItems = new ObservableCollection<TabItem>
-        {
-            new TabItem { Header = "Overview" },
-            new TabItem { Header = "Students" },
-            new TabItem { Header = "Tests" },
-            new TabItem { Header = "Progress" },
-            new TabItem { Header = "Leaderboard" },
-            new TabItem { Header = "Admin" }
-        };
+        public required string StudentInitials { get; set; }
+        public required string DescriptionPrefix { get; set; }
+        public required string TestName { get; set; }
+        public required string TimeAgo { get; set; }
+        public required string Result { get; set; }
     }
-}
 
-public class RecentActivityItem
-{
-    public required string StudentInitials { get; set; }
-    public required string DescriptionPrefix { get; set; }
-    public required string TestName { get; set; }
-    public required string TimeAgo { get; set; }
-    public required string Result { get; set; }
-}
-
-public class PerformanceSubject
-{
-    public required string SubjectName { get; set; }
-    public required string ScoreText { get; set; }
-    public required double ScoreValue { get; set; }
+    public class PerformanceSubject
+    {
+        public required string SubjectName { get; set; }
+        public required string ScoreText { get; set; }
+        public required double ScoreValue { get; set; }
+    }
 }
