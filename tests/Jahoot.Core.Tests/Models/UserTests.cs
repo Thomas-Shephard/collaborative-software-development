@@ -16,7 +16,7 @@ public class UserTests
         DateTime now = DateTime.UtcNow;
         User user = new()
         {
-            Id = UserId,
+            UserId = UserId,
             Email = UserInitEmail,
             Name = UserInitName,
             PasswordHash = UserInitPasswordHash,
@@ -27,7 +27,7 @@ public class UserTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(user.Id, Is.EqualTo(UserId));
+            Assert.That(user.UserId, Is.EqualTo(UserId));
             Assert.That(user.Email, Is.EqualTo(UserInitEmail));
             Assert.That(user.Name, Is.EqualTo(UserInitName));
             Assert.That(user.PasswordHash, Is.EqualTo(UserInitPasswordHash));

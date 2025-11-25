@@ -43,7 +43,7 @@ public class LoginControllerTests
         LoginRequest loginRequest = new() { Email = "test@example.com", Password = "wrong-password" };
         User user = new()
         {
-            Id = 1,
+            UserId = 1,
             Name = "Test User",
             Email = loginRequest.Email,
             PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
@@ -61,7 +61,7 @@ public class LoginControllerTests
         LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
         User user = new()
         {
-            Id = 1,
+            UserId = 1,
             Name = "Test User",
             Email = loginRequest.Email,
             PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
@@ -74,6 +74,30 @@ public class LoginControllerTests
         OkObjectResult okResult = (OkObjectResult)result;
         object? token = okResult.Value?.GetType().GetProperty("Token")?.GetValue(okResult.Value, null);
         Assert.That(token, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Login_CorrectCredentials_UpdatesLastLogin()
+    {
+        LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
+        User user = new()
+        {
+            UserId = 1,
+            Name = "Test User",
+            Email = loginRequest.Email,
+            PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
+        };
+        _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
+
+        DateTime testStartTime = DateTime.UtcNow;
+        await _loginController.Login(loginRequest);
+
+        _userRepositoryMock.Verify(
+                                   repo => repo.UpdateUserAsync(It.Is<User>(u =>
+                                                                                u.UserId == user.UserId &&
+                                                                                u.LastLogin.HasValue &&
+                                                                                u.LastLogin.Value >= testStartTime)),
+                                   Times.Once);
     }
 
     [Test]
