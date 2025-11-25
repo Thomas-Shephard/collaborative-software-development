@@ -16,7 +16,7 @@ namespace Jahoot.Display.Controls
         }
 
         public static readonly DependencyProperty SelectedIndexProperty =
-            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(NavigationalTabs), new PropertyMetadata(0));
+            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(NavigationalTabs), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public int SelectedIndex
         {

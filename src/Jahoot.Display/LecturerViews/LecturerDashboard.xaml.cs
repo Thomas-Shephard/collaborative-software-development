@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -63,7 +62,7 @@ namespace Jahoot.Display.LecturerViews
             }
         } = 5;
 
-        public string AverageScore
+        public double AverageScore
         {
             get => field;
             set
@@ -71,9 +70,9 @@ namespace Jahoot.Display.LecturerViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = "78.5";
+        } = 78.5;
 
-        public string CompletionRate
+        public double CompletionRate
         {
             get => field;
             set
@@ -81,7 +80,7 @@ namespace Jahoot.Display.LecturerViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = "85%";
+        } = 85;
 
 
         public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }

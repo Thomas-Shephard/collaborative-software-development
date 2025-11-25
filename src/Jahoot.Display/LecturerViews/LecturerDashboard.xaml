@@ -56,13 +56,13 @@
             <controls:StatCard Grid.Column="0" Title="Total Students" Value="{Binding TotalStudents}" Icon="👤" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="1" Title="Active Tests" Value="{Binding ActiveTests}" Icon="📄" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="2" Title="Average Score" Value="{Binding AverageScore}" Icon="👁️" Margin="0,0,20,0"/>
-            <controls:StatCard Grid.Column="3" Title="Completion Rate" Value="{Binding CompletionRate}" Icon="✅"/>
+            <controls:StatCard Grid.Column="3" Title="Completion Rate (%)" Value="{Binding CompletionRate}" Icon="✅"/>
         </Grid>
 
         <controls:NavigationalTabs Grid.Row="2"
                                    x:Name="MainTabs"
                                    ItemsSource="{Binding TabItems}"
-                                   SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                                   SelectedIndex="{Binding SelectedTabIndex}"
                                    SelectionChanged="MainTabs_SelectionChanged"/>
 
         <Grid Grid.Row="3" Margin="20,10,20,20">
