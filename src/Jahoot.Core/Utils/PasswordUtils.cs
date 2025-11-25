@@ -3,24 +3,39 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Jahoot.Core.Utils;
 
-// a helper for all our password stuff
+/// <summary>
+/// This is a helper for all our password stuff.
+/// It can hash passwords and check if they are correct.
+/// </summary>
 public static class PasswordUtils
 {
-    // we should probably follow what NIST says:
-    // salt should be at least 128 bits (16 bytes)
-    // hash function should be SHA-256
-    
-    // OWASP says we should do at least 600,000 iterations
-    
+    // When using PBKDF2, NIST makes the following recommendations:
+    // • A salt length of at least 128 bits (16 bytes)
+    // • A hash function that is specified in FIPS 180-4 (e.g. SHA-256)
+    // National Institute of Standards and Technology Computer Security Division (2010)
+    // NIST Special Publication 800-132: Recommendation for Password-Based Key Derivation [online].
+    // Available from: https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf [Accessed 11 November 2025]
+
+    // When using PBKDF2 with SHA256, OWASP makes the following recommendation for the iteration count:
+    // • A minimum of 600,000 iterations
+    // Open Worldwide Application Security Project (OWASP) Cheat Sheet Series (2024)
+    // Password Storage Cheat Sheet [online].
+    // Available from: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html [Accessed 11 November 2025]
+
     private const int SaltLength = 16;
     private const int HashLength = 32;
     private const KeyDerivationPrf Prf = KeyDerivationPrf.HMACSHA256;
     private const int IterationCount = 600_000;
 
-    // this is a dummy password hash to stop people from guessing users by how long it takes to check the password
+    // To prevent timing attacks, the code path should be the same whether the user is found or not.
+    // The password verification will then fail, but it will have taken the same amount of time.
     private const string DummyPasswordSaltAndHash = "jk7PLv+C/Vzwxos1JITzLCvfdBi2E2NtplmwXvg15UhSHkPN/Iopn71HvJ88aM4I";
 
-    // this takes a password and hashes it with a new salt
+    /// <summary>
+    /// This takes a password and hashes it with a new salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <returns>The hashed password with the salt.</returns>
     public static string HashPasswordWithSalt(string password)
     {
         byte[] hash = HashPassword(password, out byte[] salt);
@@ -32,7 +47,12 @@ public static class PasswordUtils
         return Convert.ToBase64String(saltAndHash);
     }
 
-    // this checks if a password is correct
+    /// <summary>
+    /// This checks if a password is correct.
+    /// </summary>
+    /// <param name="password">The password to check.</param>
+    /// <param name="saltAndHash">The hashed password with the salt.</param>
+    /// <returns>True if the password is correct.</returns>
     public static bool VerifyPassword(string password, string? saltAndHash)
     {
         bool saltAndHashProvided = saltAndHash is not null;
@@ -51,7 +71,7 @@ public static class PasswordUtils
             throw new ArgumentException("Salt and Hash lengths are invalid", baseException);
         }
 
-        // make sure the salt and hash are the right length
+        // Ensure that the saltAndHash is of the correct length
         if (convertedSaltAndHash.Length != SaltLength + HashLength)
         {
             throw new ArgumentException("Salt and Hash lengths are invalid");
@@ -65,22 +85,32 @@ public static class PasswordUtils
 
         byte[] hashedPassword = HashPassword(password, salt);
 
-        // this is a special way to check the hashes that takes the same amount of time, so people can't guess the hash
+        // Do not use short-circuiting and operation to prevent timing attacks
         return CryptographicOperations.FixedTimeEquals(hashedPassword, hash) & saltAndHashProvided;
     }
 
-    // this hashes a password with a new salt
+    /// <summary>
+    /// This hashes a password with a new salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <param name="salt">The salt to use.</param>
+    /// <returns>The hashed password.</returns>
     private static byte[] HashPassword(string password, out byte[] salt)
     {
-        // the salt is just some random bytes to make the hash unique
+        // The salt is a cryptographically secure byte array of the specified length
         salt = RandomNumberGenerator.GetBytes(SaltLength);
         return HashPassword(password, salt);
     }
 
-    // this hashes a password with a given salt
+    /// <summary>
+    /// This hashes a password with a given salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <param name="salt">The salt to use.</param>
+    /// <returns>The hashed password.</returns>
     private static byte[] HashPassword(string password, byte[] salt)
     {
-        // Pbkdf2 is the recommended way to hash passwords in .NET
+        // The Pbkdf2 method is the recommended way to hash passwords in .NET
         return KeyDerivation.Pbkdf2(password, salt, Prf, IterationCount, HashLength);
     }
 }
