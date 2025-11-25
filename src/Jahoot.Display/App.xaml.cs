@@ -46,7 +46,8 @@ namespace Jahoot.Display
             // Our login/logout service, make a new one each time it's asked for.
             services.AddTransient<IAuthService, AuthService>();
             // Our main window, make a new one each time it's asked for.
-            services.AddTransient<MainWindow>();
+            services.AddTransient<LoginPage>();
+            services.AddTransient<LecturerViews.LecturerDashboard>();
         }
 
         /// <summary>

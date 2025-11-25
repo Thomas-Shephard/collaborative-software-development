@@ -82,4 +82,3 @@ namespace Jahoot.Display.Services;
             _secureStorageService.DeleteToken();
         }
     }
-}

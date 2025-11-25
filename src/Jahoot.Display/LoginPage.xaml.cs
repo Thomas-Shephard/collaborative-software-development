@@ -1,26 +1,27 @@
 ﻿using Jahoot.Core.Models;
-﻿using Jahoot.Display.Services;
-﻿using System.Windows;
-﻿
-﻿namespace Jahoot.Display;
+using Jahoot.Display.Services;
+using System.Windows;
+
+namespace Jahoot.Display;
 ﻿    /// <summary>
 ﻿    /// This is the main window of our app. It's where users can log in.
 ﻿    /// </summary>
 ﻿    public partial class LoginPage : Window
 ﻿    {
-﻿        // This is our special service that handles all the login and logout stuff.
-﻿        private readonly IAuthService _authService;
-﻿
-﻿        /// <summary>
-﻿        /// Sets up the main window. It gets the login service ready.
-﻿        /// </summary>
-﻿        /// <param name="authService">The login service we need.</param>
-﻿        public LoginPage(IAuthService authService)
-﻿        {
-﻿            InitializeComponent(); // Get all the buttons and text boxes ready.
-﻿            _authService = authService; // Keep hold of the login service.
-﻿        }
-﻿
+﻿                // This is our special service that handles all the login and logout stuff.
+﻿                private readonly IAuthService _authService;
+﻿                private readonly LecturerViews.LecturerDashboard _lecturerDashboard;
+﻿        
+﻿                /// <summary>
+﻿                /// Sets up the main window. It gets the login service ready.
+﻿                /// </summary>
+﻿                /// <param name="authService">The login service we need.</param>
+﻿                public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard)
+﻿                {
+﻿                    InitializeComponent(); // Get all the buttons and text boxes ready.
+﻿                    _authService = authService; // Keep hold of the login service.
+﻿                    _lecturerDashboard = lecturerDashboard;
+﻿                }﻿
 ﻿        /// <summary>
 ﻿        /// This happens when the "Login" button is clicked.
 ﻿        /// It tries to log the user in.
@@ -40,15 +41,15 @@
 ﻿            var (success, message) = await _authService.Login(loginRequest);
 ﻿
 ﻿            // Tell the user if it worked or not.
-﻿            if (success)
-﻿            {
-﻿                MessageBox.Show("Login successful!"); // Yay, we're in!
-﻿            }
-﻿            else
-﻿            {
-﻿                MessageBox.Show($"Login failed: {message}"); // Boo, something went wrong. Show the error message.
-﻿            }
-﻿        }
+﻿                        if (success)
+﻿                        {
+﻿                            _lecturerDashboard.Show();
+﻿                            Close();
+﻿                        }
+﻿                        else
+﻿                        {
+﻿                            MessageBox.Show($"Login failed: {message}"); // Boo, something went wrong. Show the error message.
+﻿                        }﻿        }
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
