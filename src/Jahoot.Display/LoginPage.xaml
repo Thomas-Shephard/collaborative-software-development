@@ -12,7 +12,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Border Grid.Row="0" Background="White" CornerRadius="5" Margin="10" Padding="10">
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="5"/>
@@ -35,14 +34,12 @@
             </Grid>
         </Border>
 
-        <!-- Forms Container -->
         <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Sign In Form -->
             <Border Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,0,1,0" Padding="20">
                 <StackPanel>
                     <TextBlock Text="Sign In" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,5"/>
@@ -65,7 +62,6 @@
                 </StackPanel>
             </Border>
 
-            <!-- Registration Form -->
             <Border Grid.Column="1" Padding="20">
                 <StackPanel>
                     <TextBlock Text="Create Account" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,5"/>

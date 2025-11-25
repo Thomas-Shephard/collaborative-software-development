@@ -8,19 +8,7 @@ public class JwtSettings
     /// <summary>
     /// This is the secret key we use to sign our tokens.
     /// </summary>
-    public required string Secret
-    {
-        get;
-        init
-        {
-            if (value.Length < 32)
-            {
-                throw new InvalidOperationException("Secret must be at least 32 characters long.");
-            }
-
-            field = value;
-        }
-    }
+    public required string Secret { get; init; }
 
     /// <summary>
     /// This is who gives out the tokens.
