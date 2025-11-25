@@ -5,8 +5,7 @@ using System;
 using System.Net.Http;
 using System.Windows;
 
-namespace Jahoot.Display
-{
+namespace Jahoot.Display;
     /// <summary>
     /// This is the main brain of our app! It sets up everything when the app starts,
     /// like all the services and the main window.
@@ -46,7 +45,7 @@ namespace Jahoot.Display
             // Our login/logout service, make a new one each time it's asked for.
             services.AddTransient<IAuthService, AuthService>();
             // Our main window, make a new one each time it's asked for.
-            services.AddTransient<MainWindow>();
+            services.AddTransient<LoginPage>();
         }
 
         /// <summary>
@@ -57,8 +56,7 @@ namespace Jahoot.Display
         {
             base.OnStartup(e);
             // Get our main window from the service provider and show it!
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            var loginPage = ServiceProvider.GetRequiredService<LoginPage>();
+            loginPage.Show();
         }
     }
-}

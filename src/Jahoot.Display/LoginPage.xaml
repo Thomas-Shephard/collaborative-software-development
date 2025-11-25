@@ -1,18 +1,91 @@
-﻿<Window x:Class="Jahoot.Display.MainWindow"
+<Window x:Class="Jahoot.Display.LoginPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Jahoot.Display"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
-            <Label Content="Username"/>
-            <TextBox x:Name="UsernameTextBox"/>
-            <Label Content="Password"/>
-            <PasswordBox x:Name="PasswordBox"/>
-            <Button Content="Login" Click="LoginButton_Click" Margin="0,10,0,0"/>
-        </StackPanel>
+        Title="Jahoot - Authentication" Height="600" Width="900">
+    <Grid Background="#F0F0F0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" CornerRadius="5" Margin="10" Padding="10">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="5"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Jahoot" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="University Centre Weston - Student testing platform" FontSize="14" Foreground="Gray"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="LightGray" CornerRadius="15" Width="30" Height="30" Margin="0,0,10,0">
+                        <TextBlock Text="G" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="GUEST" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Forms Container -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sign In Form -->
+            <Border Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,0,1,0" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Sign In" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBlock Text="Access your account" FontSize="14" Foreground="Gray" Margin="0,0,0,20"/>
+
+                    <TextBlock Text="Email Address" Margin="0,0,0,5"/>
+                    <TextBox x:Name="SignInEmailTextBox" Padding="5"/>
+                    
+                    <TextBlock Text="Password" Margin="0,10,0,5"/>
+                    <PasswordBox x:Name="SignInPasswordBox" Padding="5"/>
+
+                    <Grid Margin="0,10,0,0">
+                        <CheckBox Content="Remember me"/>
+                        <TextBlock HorizontalAlignment="Right">
+                            <Hyperlink>Forgot password?</Hyperlink>
+                        </TextBlock>
+                    </Grid>
+
+                    <Button Content="Sign In" Margin="0,20,0,0" Padding="10" Background="#007BFF" Foreground="White" FontWeight="Bold" Click="LoginButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Registration Form -->
+            <Border Grid.Column="1" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Create Account" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBlock Text="Register for access" FontSize="14" Foreground="Gray" Margin="0,0,0,20"/>
+
+                    <TextBlock Text="Full Name" Margin="0,0,0,5"/>
+                    <TextBox x:Name="RegisterFullNameTextBox" Padding="5"/>
+
+                    <TextBlock Text="Email Address" Margin="0,10,0,5"/>
+                    <TextBox x:Name="RegisterEmailTextBox" Padding="5"/>
+
+                    <TextBlock Text="Password" Margin="0,10,0,5"/>
+                    <PasswordBox x:Name="RegisterPasswordBox" Padding="5"/>
+                    <ProgressBar x:Name="PasswordStrengthBar" Height="5" Margin="0,5,0,0"/>
+                    <TextBlock Text="Password must be at least 8 characters long, contain a number, an uppercase and a lowercase letter." 
+                               FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
+
+                    <Button Content="Register" Margin="0,20,0,0" Padding="10" Background="#28A745" Foreground="White" FontWeight="Bold" Click="RegisterButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

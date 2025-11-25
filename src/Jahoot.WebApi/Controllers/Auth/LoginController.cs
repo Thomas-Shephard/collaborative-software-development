@@ -11,10 +11,18 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Jahoot.WebApi.Controllers.Auth;
 
+/// <summary>
+/// This is the controller for logging in.
+/// </summary>
 [ApiController]
 [Route("api/auth/login")]
 public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings, ILoginAttemptService loginAttemptService) : ControllerBase
 {
+    /// <summary>
+    /// This is the method that logs a user in.
+    /// </summary>
+    /// <param name="request">The user's login details.</param>
+    /// <returns>A token if the login is successful.</returns>
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {

@@ -5,10 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jahoot.WebApi.Controllers.Auth;
 
+/// <summary>
+/// This is the controller for logging out.
+/// </summary>
 [ApiController]
 [Route("api/auth/logout")]
 public class LogoutController(ITokenDenyService tokenDenyService) : ControllerBase
 {
+    /// <summary>
+    /// This is the method that logs a user out.
+    /// </summary>
+    /// <returns>An OK result if the logout is successful.</returns>
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Logout()

@@ -3,8 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Jahoot.Display.Services
-{
+namespace Jahoot.Display.Services;
     /// <summary>
     /// Implements DPAPI to securely store and retrieve authentication tokens.
     /// </summary>
@@ -62,4 +61,3 @@ namespace Jahoot.Display.Services
             }
         }
     }
-}

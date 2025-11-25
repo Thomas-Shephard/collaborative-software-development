@@ -18,6 +18,11 @@ public class TokenDenyService : TimedBackgroundService, ITokenDenyService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// This checks if a token is denied.
+    /// </summary>
+    /// <param name="jti">The token's unique identifier.</param>
+    /// <returns>True if the token is denied.</returns>
     public Task<bool> IsDeniedAsync(string jti)
     {
         return Task.FromResult(_denylist.ContainsKey(jti));

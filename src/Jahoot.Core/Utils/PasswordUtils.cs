@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Jahoot.Core.Utils;
 
+/// <summary>
+/// This is a helper for all our password stuff.
+/// It can hash passwords and check if they are correct.
+/// </summary>
 public static class PasswordUtils
 {
     // When using PBKDF2, NIST makes the following recommendations:
@@ -27,6 +31,11 @@ public static class PasswordUtils
     // The password verification will then fail, but it will have taken the same amount of time.
     private const string DummyPasswordSaltAndHash = "jk7PLv+C/Vzwxos1JITzLCvfdBi2E2NtplmwXvg15UhSHkPN/Iopn71HvJ88aM4I";
 
+    /// <summary>
+    /// This takes a password and hashes it with a new salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <returns>The hashed password with the salt.</returns>
     public static string HashPasswordWithSalt(string password)
     {
         byte[] hash = HashPassword(password, out byte[] salt);
@@ -38,6 +47,12 @@ public static class PasswordUtils
         return Convert.ToBase64String(saltAndHash);
     }
 
+    /// <summary>
+    /// This checks if a password is correct.
+    /// </summary>
+    /// <param name="password">The password to check.</param>
+    /// <param name="saltAndHash">The hashed password with the salt.</param>
+    /// <returns>True if the password is correct.</returns>
     public static bool VerifyPassword(string password, string? saltAndHash)
     {
         bool saltAndHashProvided = saltAndHash is not null;
@@ -74,6 +89,12 @@ public static class PasswordUtils
         return CryptographicOperations.FixedTimeEquals(hashedPassword, hash) & saltAndHashProvided;
     }
 
+    /// <summary>
+    /// This hashes a password with a new salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <param name="salt">The salt to use.</param>
+    /// <returns>The hashed password.</returns>
     private static byte[] HashPassword(string password, out byte[] salt)
     {
         // The salt is a cryptographically secure byte array of the specified length
@@ -81,6 +102,12 @@ public static class PasswordUtils
         return HashPassword(password, salt);
     }
 
+    /// <summary>
+    /// This hashes a password with a given salt.
+    /// </summary>
+    /// <param name="password">The password to hash.</param>
+    /// <param name="salt">The salt to use.</param>
+    /// <returns>The hashed password.</returns>
     private static byte[] HashPassword(string password, byte[] salt)
     {
         // The Pbkdf2 method is the recommended way to hash passwords in .NET

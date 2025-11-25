@@ -4,8 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Jahoot.Display.Services
-{
+namespace Jahoot.Display.Services;
     /// <summary>
     /// This service helps users log in and out, and keeps their login tokens safe.
     /// </summary>
@@ -83,4 +82,3 @@ namespace Jahoot.Display.Services
             _secureStorageService.DeleteToken();
         }
     }
-}
