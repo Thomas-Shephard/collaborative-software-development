@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -15,7 +14,7 @@ namespace Jahoot.Display.LecturerViews
             this.DataContext = new LecturerDashboardViewModel();
         }
 
-        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
             // Future functionality
         }
@@ -73,7 +72,7 @@ namespace Jahoot.Display.LecturerViews
             }
         } = 78.5;
 
-        public string CompletionRate
+        public double CompletionRate
         {
             get => field;
             set
@@ -81,11 +80,22 @@ namespace Jahoot.Display.LecturerViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = "85%";
+        } = 85;
 
 
         public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
+        public ObservableCollection<TabItem> TabItems { get; set; }
+
+        public int SelectedTabIndex
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 0;
 
         public LecturerDashboardViewModel()
         {
@@ -102,6 +112,16 @@ namespace Jahoot.Display.LecturerViews
                 new PerformanceSubject { SubjectName = "Science", ScoreText = "75%", ScoreValue = 75 },
                 new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
                 new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
+            };
+            
+            TabItems = new ObservableCollection<TabItem>
+            {
+                new TabItem { Header = "Overview" },
+                new TabItem { Header = "Students" },
+                new TabItem { Header = "Tests" },
+                new TabItem { Header = "Progress" },
+                new TabItem { Header = "Leaderboard" },
+                new TabItem { Header = "Admin" }
             };
         }
     }
