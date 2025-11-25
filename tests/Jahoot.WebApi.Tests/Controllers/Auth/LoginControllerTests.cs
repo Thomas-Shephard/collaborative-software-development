@@ -1,8 +1,11 @@
+using System.Net;
 using Jahoot.Core.Models;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Controllers.Auth;
 using Jahoot.WebApi.Repositories;
+using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -10,6 +13,8 @@ namespace Jahoot.WebApi.Tests.Controllers.Auth;
 
 public class LoginControllerTests
 {
+    private Mock<HttpContext> _httpContextMock;
+    private Mock<ILoginAttemptService> _loginAttemptServiceMock;
     private LoginController _loginController;
     private Mock<IUserRepository> _userRepositoryMock;
 
@@ -17,13 +22,36 @@ public class LoginControllerTests
     public void Setup()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
+        _loginAttemptServiceMock = new Mock<ILoginAttemptService>();
         JwtSettings jwtSettings = new()
         {
             Secret = "a-very-secure-secret-key-that-is-long-enough",
             Issuer = "Jahoot",
             Audience = "Jahoot"
         };
-        _loginController = new LoginController(_userRepositoryMock.Object, jwtSettings);
+        _loginController = new LoginController(_userRepositoryMock.Object, jwtSettings, _loginAttemptServiceMock.Object);
+        _httpContextMock = new Mock<HttpContext>();
+        Mock<ConnectionInfo> connection = new();
+        connection.Setup(c => c.RemoteIpAddress).Returns(new IPAddress(new byte[] { 127, 0, 0, 1 }));
+        _httpContextMock.Setup(c => c.Connection).Returns(connection.Object);
+        _loginController.ControllerContext = new ControllerContext
+        {
+            HttpContext = _httpContextMock.Object
+        };
+    }
+
+    [Test]
+    public async Task Login_LockedOut_ReturnsTooManyRequests()
+    {
+        LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
+        _loginAttemptServiceMock.Setup(s => s.IsLockedOut(loginRequest.Email, It.IsAny<string>()))
+                                .ReturnsAsync(true);
+
+        IActionResult result = await _loginController.Login(loginRequest);
+
+        Assert.That(result, Is.TypeOf<ObjectResult>());
+        ObjectResult objectResult = (ObjectResult)result;
+        Assert.That(objectResult.StatusCode, Is.EqualTo(429));
     }
 
     [Test]
@@ -35,6 +63,8 @@ public class LoginControllerTests
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
+        _loginAttemptServiceMock.Verify(
+                                        s => s.RecordFailedLoginAttempt(loginRequest.Email, It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -53,6 +83,8 @@ public class LoginControllerTests
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
+        _loginAttemptServiceMock.Verify(
+                                        s => s.RecordFailedLoginAttempt(loginRequest.Email, It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -74,6 +106,8 @@ public class LoginControllerTests
         OkObjectResult okResult = (OkObjectResult)result;
         object? token = okResult.Value?.GetType().GetProperty("Token")?.GetValue(okResult.Value, null);
         Assert.That(token, Is.Not.Null);
+        _loginAttemptServiceMock.Verify(s => s.ResetFailedLoginAttempts(loginRequest.Email, It.IsAny<string>()),
+                                        Times.Once);
     }
 
     [Test]
@@ -111,5 +145,20 @@ public class LoginControllerTests
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+    }
+
+    [Test]
+    public async Task Login_MissingIpAddress_ReturnsBadRequest()
+    {
+        LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
+        Mock<ConnectionInfo> connection = new();
+        connection.Setup(c => c.RemoteIpAddress).Returns(() => null);
+        _httpContextMock.Setup(c => c.Connection).Returns(connection.Object);
+
+        IActionResult result = await _loginController.Login(loginRequest);
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        BadRequestObjectResult badRequestResult = (BadRequestObjectResult)result;
+        Assert.That(badRequestResult.Value, Is.EqualTo("Could not determine IP address."));
     }
 }
