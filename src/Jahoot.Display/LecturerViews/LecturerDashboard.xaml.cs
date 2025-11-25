@@ -88,6 +88,16 @@ namespace Jahoot.Display.LecturerViews
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
         public ObservableCollection<TabItem> TabItems { get; set; }
 
+        public int SelectedTabIndex
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = 0;
+
         public LecturerDashboardViewModel()
         {
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
@@ -107,7 +117,7 @@ namespace Jahoot.Display.LecturerViews
             
             TabItems = new ObservableCollection<TabItem>
             {
-                new TabItem { Header = "Overview", IsSelected = true },
+                new TabItem { Header = "Overview" },
                 new TabItem { Header = "Students" },
                 new TabItem { Header = "Tests" },
                 new TabItem { Header = "Progress" },

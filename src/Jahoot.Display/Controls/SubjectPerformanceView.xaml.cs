@@ -4,9 +4,6 @@ using System.Windows.Controls;
 
 namespace Jahoot.Display.Controls
 {
-    /// <summary>
-    /// Interaction logic for SubjectPerformanceView.xaml
-    /// </summary>
     public partial class SubjectPerformanceView : UserControl
     {
         public static readonly DependencyProperty ItemsSourceProperty =

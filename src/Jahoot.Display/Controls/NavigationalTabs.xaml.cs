@@ -4,9 +4,6 @@ using System.Windows.Controls;
 
 namespace Jahoot.Display.Controls
 {
-    /// <summary>
-    /// Interaction logic for NavigationalTabs.xaml
-    /// </summary>
     public partial class NavigationalTabs : UserControl
     {
         public static readonly DependencyProperty ItemsSourceProperty =
@@ -16,6 +13,15 @@ namespace Jahoot.Display.Controls
         {
             get { return (IEnumerable)GetValue(ItemsSourceProperty); }
             set { SetValue(ItemsSourceProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedIndexProperty =
+            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(NavigationalTabs), new PropertyMetadata(0));
+
+        public int SelectedIndex
+        {
+            get { return (int)GetValue(SelectedIndexProperty); }
+            set { SetValue(SelectedIndexProperty, value); }
         }
 
         public static readonly RoutedEvent SelectionChangedEvent =
@@ -34,6 +40,7 @@ namespace Jahoot.Display.Controls
 
         private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            this.SelectedIndex = MainTabs.SelectedIndex;
             RaiseEvent(new RoutedEventArgs(SelectionChangedEvent, sender));
         }
     }

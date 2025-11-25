@@ -4,9 +4,6 @@ using System.Windows.Controls;
 
 namespace Jahoot.Display.Controls
 {
-    /// <summary>
-    /// Interaction logic for RecentActivityView.xaml
-    /// </summary>
     public partial class RecentActivityView : UserControl
     {
         public static readonly DependencyProperty ItemsSourceProperty =

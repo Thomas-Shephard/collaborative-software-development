@@ -3,9 +3,6 @@ using System.Windows.Controls;
 
 namespace Jahoot.Display.Controls
 {
-    /// <summary>
-    /// Interaction logic for StatCard.xaml
-    /// </summary>
     public partial class StatCard : UserControl
     {
         public static readonly DependencyProperty TitleProperty =
