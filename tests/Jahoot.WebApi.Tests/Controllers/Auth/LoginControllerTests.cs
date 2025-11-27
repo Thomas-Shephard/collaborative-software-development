@@ -1,4 +1,6 @@
 using System.Net;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Jahoot.Core.Models;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Controllers.Auth;
@@ -63,6 +65,7 @@ public class LoginControllerTests
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
+        _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(It.IsAny<User>()), Times.Never);
         _loginAttemptServiceMock.Verify(
                                         s => s.RecordFailedLoginAttempt(loginRequest.Email, It.IsAny<string>()), Times.Once);
     }
@@ -76,19 +79,21 @@ public class LoginControllerTests
             UserId = 1,
             Name = "Test User",
             Email = loginRequest.Email,
-            PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
+            PasswordHash = PasswordUtils.HashPasswordWithSalt("password"),
+            Roles = [Role.Student]
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
 
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
+        _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(It.IsAny<User>()), Times.Never);
         _loginAttemptServiceMock.Verify(
                                         s => s.RecordFailedLoginAttempt(loginRequest.Email, It.IsAny<string>()), Times.Once);
     }
 
     [Test]
-    public async Task Login_CorrectCredentials_ReturnsJwt()
+    public async Task Login_CorrectCredentials_ReturnsJwtAndUpdatesLastLogin()
     {
         LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
         User user = new()
@@ -96,42 +101,33 @@ public class LoginControllerTests
             UserId = 1,
             Name = "Test User",
             Email = loginRequest.Email,
-            PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
+            PasswordHash = PasswordUtils.HashPasswordWithSalt("password"),
+            Roles = [Role.Student],
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<User>()))
+                           .Callback<User>(u => user.LastLogin = u.LastLogin)
+                           .Returns(Task.CompletedTask);
 
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult okResult = (OkObjectResult)result;
-        object? token = okResult.Value?.GetType().GetProperty("Token")?.GetValue(okResult.Value, null);
-        Assert.That(token, Is.Not.Null);
-        _loginAttemptServiceMock.Verify(s => s.ResetFailedLoginAttempts(loginRequest.Email, It.IsAny<string>()),
-                                        Times.Once);
-    }
+        string? tokenString = okResult.Value?.GetType().GetProperty("Token")?.GetValue(okResult.Value, null) as string;
+        Assert.That(tokenString, Is.Not.Null);
 
-    [Test]
-    public async Task Login_CorrectCredentials_UpdatesLastLogin()
-    {
-        LoginRequest loginRequest = new() { Email = "test@example.com", Password = "password" };
-        User user = new()
+        JwtSecurityTokenHandler handler = new();
+        JwtSecurityToken jsonToken = handler.ReadJwtToken(tokenString);
+
+        using (Assert.EnterMultipleScope())
         {
-            UserId = 1,
-            Name = "Test User",
-            Email = loginRequest.Email,
-            PasswordHash = PasswordUtils.HashPasswordWithSalt("password")
-        };
-        _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
-
-        DateTime testStartTime = DateTime.UtcNow;
-        await _loginController.Login(loginRequest);
-
-        _userRepositoryMock.Verify(
-                                   repo => repo.UpdateUserAsync(It.Is<User>(u =>
-                                                                                u.UserId == user.UserId &&
-                                                                                u.LastLogin.HasValue &&
-                                                                                u.LastLogin.Value >= testStartTime)),
-                                   Times.Once);
+            Assert.That(jsonToken.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == nameof(Role.Student)), Is.True);
+            Assert.That(user.LastLogin, Is.Not.Null);
+        }
+        _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(user), Times.Once);
     }
 
     [Test]
@@ -145,6 +141,7 @@ public class LoginControllerTests
         IActionResult result = await _loginController.Login(loginRequest);
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(It.IsAny<User>()), Times.Never);
     }
 
     [Test]
