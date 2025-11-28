@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Jahoot.Core.Models;
+namespace Jahoot.Core.Models.Requests;
 
-public class LoginRequest
+public class LoginRequestModel
 {
     [Required]
     [EmailAddress]

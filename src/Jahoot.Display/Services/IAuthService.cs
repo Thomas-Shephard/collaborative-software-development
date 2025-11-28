@@ -1,4 +1,4 @@
-using Jahoot.Core.Models;
+using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display.Services;
 
@@ -10,7 +10,7 @@ public class LoginResult
 
 public interface IAuthService
 {
-    Task<LoginResult> Login(LoginRequest loginRequest);
+    Task<LoginResult> Login(LoginRequestModel loginRequest);
 
     Task Logout();
 }
