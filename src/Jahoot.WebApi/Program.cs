@@ -44,6 +44,7 @@ public static class Program
         builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 
         JwtSettings jwtSettings = new()
         {

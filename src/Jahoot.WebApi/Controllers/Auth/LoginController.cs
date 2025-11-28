@@ -16,7 +16,7 @@ namespace Jahoot.WebApi.Controllers.Auth;
 public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings, ILoginAttemptService loginAttemptService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestModel requestModel)
     {
         string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
@@ -25,7 +25,7 @@ public class LoginController(IUserRepository userRepository, JwtSettings jwtSett
             return BadRequest("Could not determine IP address.");
         }
 
-        if (await loginAttemptService.IsLockedOut(request.Email, ipAddress))
+        if (await loginAttemptService.IsLockedOut(requestModel.Email, ipAddress))
         {
             return StatusCode(429, "Too many failed login attempts. Please try again later.");
         }
@@ -35,19 +35,19 @@ public class LoginController(IUserRepository userRepository, JwtSettings jwtSett
             return BadRequest(ModelState);
         }
 
-        User? user = await userRepository.GetUserByEmailAsync(request.Email);
+        User? user = await userRepository.GetUserByEmailAsync(requestModel.Email);
 
         // To prevent timing attacks, the code path should be the same whether the user is found or not.
         // The password verification will then fail, but it will have taken the same amount of time.
-        bool isPasswordCorrect = PasswordUtils.VerifyPassword(request.Password, user?.PasswordHash);
+        bool isPasswordCorrect = PasswordUtils.VerifyPassword(requestModel.Password, user?.PasswordHash);
 
         if (!isPasswordCorrect)
         {
-            await loginAttemptService.RecordFailedLoginAttempt(request.Email, ipAddress);
+            await loginAttemptService.RecordFailedLoginAttempt(requestModel.Email, ipAddress);
             return Unauthorized();
         }
 
-        await loginAttemptService.ResetFailedLoginAttempts(request.Email, ipAddress);
+        await loginAttemptService.ResetFailedLoginAttempts(requestModel.Email, ipAddress);
 
         DateTime loginTime = DateTime.UtcNow;
 
