@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Jahoot.Core.Attributes;
 
 namespace Jahoot.Core.Models;
 
@@ -8,6 +9,6 @@ public class ResetPasswordRequest
     public required string Token { get; init; }
 
     [Required]
-    [MinLength(8)]
+    [StrongPassword]
     public required string NewPassword { get; init; }
 }

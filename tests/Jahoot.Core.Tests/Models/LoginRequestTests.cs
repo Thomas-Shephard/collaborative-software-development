@@ -7,7 +7,7 @@ namespace Jahoot.Core.Tests.Models;
 public class LoginRequestTests
 {
     private const string LoginRequestEmail = "test@example.com";
-    private const string LoginRequestPassword = "password123";
+    private const string LoginRequestPassword = "Password123";
 
     [Test]
     public void LoginRequest_WithValidData_IsValid()
