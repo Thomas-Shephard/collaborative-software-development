@@ -6,9 +6,16 @@
 
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.66" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0"/>
+        <PackageReference Include="MailKit" Version="4.14.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
         <PackageReference Include="MySqlConnector" Version="2.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Templates\EmailTemplate.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

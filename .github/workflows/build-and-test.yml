@@ -34,7 +34,7 @@ jobs:
                 with:
                     dotnet-version: ${{ env.DOTNET_VERSION }}
             -   name: Test
-                run: dotnet test backend.slnx --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+                run: dotnet test backend.slnx --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage --settings coverlet.runsettings
             -   name: Install Coverage Checker
                 run: dotnet tool install --global CoverageChecker.CommandLine
             -   name: Check Coverage
