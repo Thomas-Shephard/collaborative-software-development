@@ -93,3 +93,14 @@ CREATE TABLE StudentAnswer
     FOREIGN KEY (test_result_id) REFERENCES TestResult (test_result_id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES Question (question_id) ON DELETE CASCADE
 );
+
+CREATE TABLE PasswordResetToken
+(
+    token_id   INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT          NOT NULL,
+    token      VARCHAR(255) NOT NULL,
+    expiration TIMESTAMP    NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL 15 MINUTE),
+    is_used    BOOL         NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE
+);

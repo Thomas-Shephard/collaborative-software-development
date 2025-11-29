@@ -44,6 +44,8 @@ public static class Program
         builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+        builder.Services.AddSingleton<IEmailService, DummyEmailService>();
 
         JwtSettings jwtSettings = new()
         {
