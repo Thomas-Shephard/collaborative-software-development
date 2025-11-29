@@ -7,6 +7,7 @@
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.66" />
         <PackageReference Include="dbup-mysql" Version="6.1.0" />
+        <PackageReference Include="MailKit" Version="4.14.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
         <PackageReference Include="MySqlConnector" Version="2.5.0" />
@@ -15,6 +16,12 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Scripts\*.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Templates\EmailTemplate.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
