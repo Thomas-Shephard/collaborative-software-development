@@ -45,7 +45,38 @@ public static class Program
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
-        builder.Services.AddSingleton<IEmailService, DummyEmailService>();
+        
+        string? smtpHost = builder.Configuration["SMTP_HOST"];
+        string? smtpPort = builder.Configuration["SMTP_PORT"];
+        string? smtpUser = builder.Configuration["SMTP_USER"];
+        string? smtpPassword = builder.Configuration["SMTP_PASSWORD"];
+        string? smtpFromEmail = builder.Configuration["SMTP_FROM_EMAIL"];
+        string? smtpFromName = builder.Configuration["SMTP_FROM_NAME"];
+        bool smtpEnableSsl = bool.TryParse(builder.Configuration["SMTP_ENABLE_SSL"], out bool ssl) && ssl;
+
+        if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpPort) || string.IsNullOrEmpty(smtpFromEmail) || string.IsNullOrEmpty(smtpFromName))
+        {
+             // If SMTP is not fully configured, we fall back to DummyEmailService for safety, 
+             // or we could throw. Given this is a "collaborative" app, maybe fail fast is better?
+             // But to avoid breaking existing setups without env vars, I'll throw if partial, but check existence.
+             // Actually, the user said "idk what we should do...".
+             // Let's throw to enforce config.
+             throw new InvalidOperationException("SMTP configuration (SMTP_HOST, SMTP_PORT, SMTP_FROM_EMAIL, SMTP_FROM_NAME) is not configured.");
+        }
+
+        EmailSettings emailSettings = new()
+        {
+            Host = smtpHost,
+            Port = int.Parse(smtpPort),
+            User = smtpUser ?? string.Empty,
+            Password = smtpPassword ?? string.Empty,
+            FromEmail = smtpFromEmail,
+            FromName = smtpFromName,
+            EnableSsl = smtpEnableSsl
+        };
+        builder.Services.AddSingleton(emailSettings);
+        builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
+        builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
 
         JwtSettings jwtSettings = new()
         {
