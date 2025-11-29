@@ -14,22 +14,6 @@ public class UserRepositoryTests : RepositoryTestBase
         _userRepository = new UserRepository(Connection);
     }
 
-    private async Task<int> InsertUser(User user)
-    {
-        const string insertQuery = "INSERT INTO User (email, name, password_hash, created_at, updated_at) VALUES (@Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt); SELECT LAST_INSERT_ID();";
-        return await Connection.QuerySingleAsync<int>(insertQuery, user);
-    }
-
-    private async Task InsertLecturer(int userId, bool isAdmin)
-    {
-        await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, @IsAdmin)", new { UserId = userId, IsAdmin = isAdmin });
-    }
-
-    private async Task InsertStudent(int userId)
-    {
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
-    }
-
     [Test]
     public async Task GetUserByEmailAsync_UserExistsWithoutRoles_ReturnsUserWithEmptyRoles()
     {
