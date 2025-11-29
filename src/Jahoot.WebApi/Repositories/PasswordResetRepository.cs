@@ -17,4 +17,10 @@ public class PasswordResetRepository(IDbConnection connection) : IPasswordResetR
         const string query = "SELECT * FROM PasswordResetToken WHERE token = @Token";
         return await connection.QuerySingleOrDefaultAsync<PasswordResetToken>(query, new { Token = token });
     }
+
+    public async Task UpdateTokenAsync(PasswordResetToken token)
+    {
+        const string query = "UPDATE PasswordResetToken SET is_used = @IsUsed WHERE token_id = @TokenId";
+        await connection.ExecuteAsync(query, token);
+    }
 }
