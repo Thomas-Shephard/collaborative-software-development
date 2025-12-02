@@ -100,10 +100,10 @@ namespace Jahoot.Display.ViewModels
         {
             get => _otherContentVisibility;
             set
-                {
+            {
                 _otherContentVisibility = value;
-                    OnPropertyChanged();
-                }
+                OnPropertyChanged();
+            }
         }
 
         public object? CurrentView
