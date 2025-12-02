@@ -106,10 +106,6 @@
                            Foreground="{StaticResource SecondaryTextColor}" FontSize="14" />
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
-                <!-- Removed ComboBox and TextBlock from here -->
-            </StackPanel>
-
             <Border Grid.Column="2" Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Text="{Binding UserInitials, RelativeSource={RelativeSource AncestorType=UserControl}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
             </Border>
