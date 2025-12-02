@@ -20,7 +20,7 @@ namespace Jahoot.Display.ViewModels
     }
 
     public class RecentActivityItem
-        {
+    {
         public required string StudentInitials { get; set; }
         public required string DescriptionPrefix { get; set; }
         public required string TestName { get; set; }
