@@ -1,0 +1,115 @@
+<UserControl x:Class="Jahoot.Display.Controls.DashboardHeader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="1200"
+             x:Name="Root">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
+
+        <Style x:Key="RoleComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                          ClickMode="Press"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Focusable="false"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Padding="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter 
+                                        Grid.Column="0"
+                                        Content="{Binding SelectedRole, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                        ContentStringFormat="{}{0} Dashboard"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Margin="{TemplateBinding Padding}"
+                                        />
+                                    <Path x:Name="Arrow"
+                                          Grid.Column="1"
+                                          HorizontalAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Margin="10,0,10,0"
+                                          Data="M0,0 L8,8 L16,0 Z"
+                                          Fill="{StaticResource SecondaryTextColor}"
+                                          Visibility="Visible"
+                                          />
+                                </Grid>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite"
+                                              IsHitTestVisible="False"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              />
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Placement="Bottom"
+                                   Margin="1"
+                                   PopupAnimation="Slide"
+                                   >
+                                <Border x:Name="DropDownBorder"
+                                        BorderThickness="1"
+                                        BorderBrush="#DDD"
+                                        Background="White"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        SnapsToDevicePixels="True"
+                                        >
+                                    <ScrollViewer SnapsToDevicePixels="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding AvailableRoles.Count, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="1">
+                                <Setter TargetName="Arrow" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="ToggleButton" Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+    <Border Background="White" BorderBrush="#DDD" BorderThickness="0 0 0 1" Margin="0,0,0,5">
+        <Grid Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox 
+                        ItemsSource="{Binding AvailableRoles, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        SelectedItem="{Binding SelectedRole, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Style="{StaticResource RoleComboBoxStyle}"
+                        FontSize="26" FontWeight="Bold" Background="Transparent" BorderThickness="0" Padding="0"
+                        ItemStringFormat="{}{0} Dashboard"
+                        />
+                </StackPanel>
+                <TextBlock Text="{Binding SubHeaderText, ElementName=Root}"
+                           Foreground="{StaticResource SecondaryTextColor}" FontSize="14" />
+            </StackPanel>
+
+            <Border Grid.Column="2" Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <TextBlock Text="{Binding UserInitials, RelativeSource={RelativeSource AncestorType=UserControl}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
