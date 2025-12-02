@@ -141,9 +141,9 @@ public class LeaderboardViewModel : INotifyPropertyChanged
     {
         return rank switch
         {
-            1 => "??",  // Gold medal
-            2 => "??",  // Silver medal
-            3 => "??",  // Bronze medal
+            1 => "🥇",  // Gold medal
+            2 => "🥈",  // Silver medal
+            3 => "🥉",  // Bronze medal
             _ => null
         };
     }
