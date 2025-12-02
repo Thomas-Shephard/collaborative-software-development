@@ -18,6 +18,15 @@ public partial class LoginPage : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
+        LoginErrorBanner.Visibility = Visibility.Collapsed;
+
+        if (string.IsNullOrWhiteSpace(SignInEmailTextBox.Text) || !SignInEmailTextBox.Text.Contains("@") || !SignInEmailTextBox.Text.Contains("."))
+        {
+            LoginErrorText.Text = "Please enter a valid email address.";
+            LoginErrorBanner.Visibility = Visibility.Visible;
+            return;
+        }
+
         var loginRequest = new LoginRequest
         {
             Email = SignInEmailTextBox.Text, 
@@ -26,21 +35,23 @@ public partial class LoginPage : Window
 
         try
         {
-            var (success, message) = await _authService.Login(loginRequest);
+            var result = await _authService.Login(loginRequest);
 
-            if (success)
+            if (result.Success)
             {
                 _lecturerDashboard.Show();
                 this.Close();
             }
             else
             {
-                MessageBox.Show($"Login failed: {message}");
+                LoginErrorText.Text = result.ErrorMessage;
+                LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"An error occurred: {ex.Message}");
+            LoginErrorText.Text = $"An error occurred: {ex.Message}";
+            LoginErrorBanner.Visibility = Visibility.Visible;
         }
     }
 

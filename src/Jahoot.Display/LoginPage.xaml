@@ -9,9 +9,32 @@
         Title="Jahoot - Authentication" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         MinWidth="900"
+        MinHeight="750"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
     <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#007BFF"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="PasswordBox">
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#007BFF"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="Black"/>
             <Setter Property="Foreground" Value="White"/>
@@ -52,12 +75,20 @@
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <controls:HeaderControl Grid.Row="0" Margin="40,20,40,10" Header="Jahoot" Subheader="University Centre Weston - Student testing platform" />
 
-        <Border Grid.Row="1" Background="#F5F5F5" CornerRadius="10" Margin="40,20,40,40">
+        <Border Grid.Row="1" x:Name="LoginErrorBanner" Background="#F8D7DA" BorderBrush="#F5C6CB" BorderThickness="1" CornerRadius="5" Margin="40,0,40,10" Padding="15" Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="⚠" Foreground="#721C24" Margin="0,0,10,0" FontSize="14"/>
+                <TextBlock x:Name="LoginErrorText" Foreground="#721C24" Text="Error message goes here" FontSize="14" FontWeight="Medium"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Background="#F5F5F5" CornerRadius="10" Margin="40,10,40,40">
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="10"/>
             </Border.Effect>

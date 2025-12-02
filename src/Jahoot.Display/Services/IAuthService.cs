@@ -1,9 +1,16 @@
 using Jahoot.Core.Models;
 
 namespace Jahoot.Display.Services;
+
+public class LoginResult
+{
+    public bool Success { get; set; }
+    public string? ErrorMessage { get; set; }
+}
+
 public interface IAuthService
 {
-    Task<Tuple<bool, string>> Login(LoginRequest loginRequest);
+    Task<LoginResult> Login(LoginRequest loginRequest);
 
-    void Logout();
+    Task Logout();
 }

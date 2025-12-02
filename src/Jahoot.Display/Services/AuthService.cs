@@ -17,7 +17,7 @@ public class AuthService : IAuthService
         _secureStorageService = secureStorageService;
     }
 
-    public async Task<Tuple<bool, string>> Login(LoginRequest loginRequest)
+    public async Task<LoginResult> Login(LoginRequest loginRequest)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
@@ -32,14 +32,19 @@ public class AuthService : IAuthService
                     if (token != null)
                     {
                         _secureStorageService.SaveToken(token);
-                        return new Tuple<bool, string>(true, string.Empty);
+                        return new LoginResult { Success = true, ErrorMessage = string.Empty };
                     }
                 }
             }
-            return new Tuple<bool, string>(false, "Token not found in response.");
+            return new LoginResult { Success = false, ErrorMessage = "Token not found in response." };
         }
         else
         {
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                return new LoginResult { Success = false, ErrorMessage = "Your credentials were incorrect." };
+            }
+
             var errorContent = await response.Content.ReadAsStringAsync();
             
             try
@@ -48,21 +53,22 @@ public class AuthService : IAuthService
                 {
                     if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
                     {
-                        return new Tuple<bool, string>(false, messageElement.GetString() ?? "An unknown error occurred.");
+                        return new LoginResult { Success = false, ErrorMessage = messageElement.GetString() ?? "An unknown error occurred." };
                     }
                 }
             }
             catch (JsonException)
             {
-                return new Tuple<bool, string>(false, errorContent);
+                return new LoginResult { Success = false, ErrorMessage = errorContent };
             }
 
-            return new Tuple<bool, string>(false, "An unknown error occurred.");
+            return new LoginResult { Success = false, ErrorMessage = "An unknown error occurred." };
         }
     }
 
-    public void Logout()
+    public async Task Logout()
     {
         _secureStorageService.DeleteToken();
+        await _httpClient.PostAsync("api/auth/logout", null);
     }
 }
