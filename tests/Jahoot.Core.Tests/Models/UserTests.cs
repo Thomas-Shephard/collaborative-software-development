@@ -9,6 +9,7 @@ public class UserTests
     private const string UserInitEmail = "test@example.com";
     private const string UserInitName = "Initial Name";
     private const string UserInitPasswordHash = "initial_hash";
+    private static readonly List<Role> UserInitRoles = [Role.Admin, Role.Lecturer];
 
     [Test]
     public void User_CanBeCreated_WithValidProperties()
@@ -20,6 +21,7 @@ public class UserTests
             Email = UserInitEmail,
             Name = UserInitName,
             PasswordHash = UserInitPasswordHash,
+            Roles = UserInitRoles,
             LastLogin = now,
             CreatedAt = now,
             UpdatedAt = now
@@ -31,6 +33,7 @@ public class UserTests
             Assert.That(user.Email, Is.EqualTo(UserInitEmail));
             Assert.That(user.Name, Is.EqualTo(UserInitName));
             Assert.That(user.PasswordHash, Is.EqualTo(UserInitPasswordHash));
+            Assert.That(user.Roles, Is.EqualTo(UserInitRoles));
             Assert.That(user.LastLogin, Is.EqualTo(now));
             Assert.That(user.CreatedAt, Is.EqualTo(now));
             Assert.That(user.UpdatedAt, Is.EqualTo(now));
@@ -44,7 +47,8 @@ public class UserTests
         {
             Email = UserInitEmail,
             Name = UserInitName,
-            PasswordHash = UserInitPasswordHash
+            PasswordHash = UserInitPasswordHash,
+            Roles = UserInitRoles
         };
 
         const string newEmail = "new@example.com";
@@ -62,6 +66,7 @@ public class UserTests
             Assert.That(user.Email, Is.EqualTo(newEmail));
             Assert.That(user.Name, Is.EqualTo(newName));
             Assert.That(user.PasswordHash, Is.EqualTo(newPasswordHash));
+            Assert.That(user.Roles, Is.EqualTo(UserInitRoles));
             Assert.That(user.LastLogin, Is.EqualTo(newLastLogin));
         }
     }
