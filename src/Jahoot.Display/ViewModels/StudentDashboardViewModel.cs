@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using Jahoot.Display.Models;
+using Jahoot.Display.Controls;
 
 namespace Jahoot.Display.ViewModels
 {
@@ -55,58 +56,8 @@ namespace Jahoot.Display.ViewModels
 
         public StudentDashboardViewModel()
         {
-            // Sample upcoming tests
-            UpcomingTests.Add(new TestItem
-            {
-                Title = "Mathematics Midterm",
-                Course = "Math 101",
-                TestInfo = "20 questions • 60 mins",
-                DueDate = DateTime.Today.AddDays(3),
-                QuestionCount = 20
-            });
-            UpcomingTests.Add(new TestItem
-            {
-                Title = "History Chapter 5 Quiz",
-                Course = "History 201",
-                TestInfo = "15 questions • 30 mins",
-                DueDate = DateTime.Today.AddDays(7),
-                QuestionCount = 15
-            });
-
-            // Sample completed tests
-            CompletedTests.Add(new TestItem
-            {
-                Title = "Intro to Algebra",
-                Course = "Math 101",
-                Date = DateTime.Today.AddDays(-14),
-                Score = 78,
-                QuestionCount = 10,
-                PercentageCorrect = 78,
-                TotalPoints = 210,
-                TestInfo = "10 questions • Completed"
-            });
-            CompletedTests.Add(new TestItem
-            {
-                Title = "World War II",
-                Course = "History 201",
-                Date = DateTime.Today.AddDays(-10),
-                Score = 85,
-                QuestionCount = 12,
-                PercentageCorrect = 85,
-                TotalPoints = 270,
-                TestInfo = "12 questions • Completed"
-            });
-            CompletedTests.Add(new TestItem
-            {
-                Title = "Calculus Basics",
-                Course = "Math 101",
-                Date = DateTime.Today.AddDays(-3),
-                Score = 92,
-                QuestionCount = 15,
-                PercentageCorrect = 92,
-                TotalPoints = 390,
-                TestInfo = "15 questions • Completed"
-            });
+            TabItems = new ObservableCollection<string> { "Overview", "Available Tests", "Completed Tests", "Leaderboard", "Statistics" };
+            UpdateVisibleContent();
         }
 
         public int TestsAvailable => UpcomingTests.Count;
@@ -130,19 +81,63 @@ namespace Jahoot.Display.ViewModels
             get => _selectedTab;
             set
             {
-                if (_selectedTab != value)
+                if (_selectedTabIndex != value)
                 {
-                    _selectedTab = value;
+                    _selectedTabIndex = value;
                     OnPropertyChanged();
+                    UpdateVisibleContent();
                 }
+            }
+        }
+        
+        public Visibility OverviewVisibility
+        {
+            get => _overviewVisibility;
+            set
+            {
+                _overviewVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public Visibility OtherContentVisibility
+        {
+            get => _otherContentVisibility;
+            set
+            {
+                _otherContentVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public object? CurrentView
+        {
+            get => _currentView;
+            set
+            {
+                _currentView = value;
+                OnPropertyChanged();
             }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                switch (TabItems[SelectedTabIndex])
+                {
+                    case "Available Tests":
+                        CurrentView = new ItemsControl { ItemsSource = UpcomingTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("AvailableTestTemplate") };
+                        break;
+                    case "Completed Tests":
+                        CurrentView = new ItemsControl { ItemsSource = CompletedTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("CompletedTestTemplate") };
+                        break;
+                    case "Leaderboard":
+                        CurrentView = new LeaderboardView();
+                        break;
+                    case "Statistics":
+                        CurrentView = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };
+                        break;
+                }
+            }
         }
     }
 }
