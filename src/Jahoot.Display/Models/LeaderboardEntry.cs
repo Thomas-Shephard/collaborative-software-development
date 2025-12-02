@@ -8,6 +8,9 @@ public class LeaderboardEntry
     public required string StudentName { get; set; }
     public required string StudentInitials { get; set; }
     public required double Score { get; set; }
+    public required string ScoreText { get; set; }
+    public required int TestsCompleted { get; set; }
+    public required bool IsCurrentUser { get; set; }
     public string? RankIcon { get; set; }
     
     public string RankDisplay

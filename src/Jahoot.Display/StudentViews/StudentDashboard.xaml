@@ -9,32 +9,122 @@
              MinWidth="800"
              Background="#F6F7FB">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
         <util:TabWidthConverter x:Key="TabWidthConverter"/>
         <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
         <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
         <SolidColorBrush x:Key="AccentColor" Color="#4CAF50"/>
 
+        <Style x:Key="StatValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
+
+        <Style x:Key="StatTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextColor}"/>
+        </Style>
+
         <DataTemplate x:Key="AvailableTestTemplate">
-            <Border Background="#F9FAFB" CornerRadius="8" Padding="20" Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}"/>
-                    <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
-                    <TextBlock Text="Due: {Binding DueDate, StringFormat='{}{0:MMM d, yyyy}'}" FontSize="14" Foreground="#4A5565"/>
-                    <Button Content="Take Test" Background="#2B7FFF" Foreground="White" FontSize="16" Padding="10,5" Margin="0,10,0,0"/>
-                </StackPanel>
+            <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                        <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
+                        <TextBlock Text="{Binding DueDate, StringFormat='Due: {0:MMM d, yyyy}'}" 
+                                   FontSize="14" 
+                                   Foreground="#D97706" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    
+                    <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                            Content="Start Test" 
+                            Background="#2B7FFF" 
+                            Foreground="White" 
+                            FontSize="16" 
+                            FontWeight="SemiBold"
+                            Padding="16,10" 
+                            Margin="0,12,0,0"
+                            BorderThickness="0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#1E66D6"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
             </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="CompletedTestTemplate">
-            <Border Background="#F9FAFB" CornerRadius="8" Padding="20" Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}"/>
-                    <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
-                    <TextBlock Text="Completed: {Binding Date, StringFormat='{}{0:MMM d, yyyy}'}" FontSize="14" Foreground="#4A5565"/>
-                    <TextBlock Text="Score: {Binding Score, StringFormat='{}{0:0}%'}" FontSize="16" FontWeight="Bold" Foreground="#016630" Margin="0,10,0,0"/>
-                </StackPanel>
+            <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Date, StringFormat='Completed: {0:MMM d, yyyy}'}" 
+                                   FontSize="13" 
+                                   Foreground="#6B7280" 
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Score, StringFormat='{}{0:0.0}%'}" 
+                                   FontSize="28" 
+                                   FontWeight="Bold" 
+                                   Foreground="#059669" 
+                                   HorizontalAlignment="Right"/>
+                        <TextBlock Text="Score" 
+                                   FontSize="12" 
+                                   Foreground="{StaticResource SecondaryTextColor}"
+                                   HorizontalAlignment="Right"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                        <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
+                    </StackPanel>
+                </Grid>
             </Border>
         </DataTemplate>
 
@@ -46,6 +136,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        
         <!-- Header -->
         <Border Grid.Row="0" Background="White" BorderBrush="#DDD" BorderThickness="0 0 0 1" Margin="0,0,0,5">
             <Grid Margin="20">
@@ -60,13 +151,14 @@
                                Foreground="{StaticResource SecondaryTextColor}" FontSize="14" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
-                    <TextBlock Text="Student" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding StudentName}" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,5,0"/>
                 </StackPanel>
                 <Border Grid.Column="2" Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock Text="ST" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <TextBlock Text="{Binding StudentInitials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                 </Border>
             </Grid>
         </Border>
+        
         <!-- Stat Cards -->
         <Grid Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
             <Grid.ColumnDefinitions>
@@ -80,6 +172,7 @@
             <controls:StatCard Grid.Column="2" Title="Average Score" Value="{Binding AverageScoreDisplay}" Icon="??" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="3" Title="Upcoming Due Dates" Value="{Binding UpcomingDueDates}" Icon="??"/>
         </Grid>
+        
         <!-- Tabs -->
         <controls:NavigationalTabs Grid.Row="2"
                                    x:Name="MainTabs"
@@ -95,17 +188,222 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <controls:RecentActivityView Grid.Column="0" ItemsSource="{Binding RecentActivityItems}"/>
-                <controls:SubjectPerformanceView Grid.Column="1" ItemsSource="{Binding PerformanceSubjects}"/>
+                <!-- Performance Overview replaces Recent Activity for students -->
+                <controls:SubjectPerformanceView Grid.Column="0" ItemsSource="{Binding PerformanceSubjects}"/>
+                
+                <!-- Performance Chart/Trend -->
+                <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Grade Trend" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="Your performance over recent tests" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,15"/>
+                        
+                        <ItemsControl ItemsSource="{Binding GradeTrendItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,5">
+                                        <Grid>
+                                            <TextBlock Text="{Binding TestName}" VerticalAlignment="Center" FontSize="14"/>
+                                            <TextBlock Text="{Binding ScoreText}" HorizontalAlignment="Right" FontWeight="SemiBold" FontSize="14"/>
+                                        </Grid>
+                                        <Grid Margin="0,5,0,10">
+                                            <ProgressBar Value="{Binding Score}" Maximum="100" Height="8" Foreground="{Binding ProgressBarColor}" Background="#E0E0E0"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
             </Grid>
 
-                <TabItem Header="Available Tests" IsSelected="True"/>
-                <TabItem Header="Completed Tests"/>
-                <TabItem Header="Leaderboard"/>
-                <TabItem Header="Statistics"/>
-            </TabControl>
-        </Border>
-        <!-- Recent Activity & Performance Overview -->
-        <ContentControl Grid.Row="3" x:Name="MainContent" Margin="20,10,20,20"/>
+            <!-- Upcoming Tests Tab -->
+            <ScrollViewer Visibility="{Binding UpcomingTestsVisibility}" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Upcoming Tests" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <ItemsControl ItemsSource="{Binding UpcomingTests}" ItemTemplate="{StaticResource AvailableTestTemplate}"/>
+                    <TextBlock Text="No upcoming tests" 
+                               FontSize="16" 
+                               Foreground="{StaticResource SecondaryTextColor}"
+                               Visibility="{Binding NoUpcomingTestsVisibility}"
+                               Margin="20"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Completed Tests Tab -->
+            <ScrollViewer Visibility="{Binding CompletedTestsVisibility}" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Completed Tests" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <ItemsControl ItemsSource="{Binding CompletedTests}" ItemTemplate="{StaticResource CompletedTestTemplate}"/>
+                    <TextBlock Text="No completed tests yet" 
+                               FontSize="16" 
+                               Foreground="{StaticResource SecondaryTextColor}"
+                               Visibility="{Binding NoCompletedTestsVisibility}"
+                               Margin="20"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Statistics Tab -->
+            <ScrollViewer Visibility="{Binding StatisticsVisibility}" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Detailed Statistics" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+                    
+                    <!-- Summary Stats -->
+                    <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                <TextBlock Text="Total Tests Taken" Foreground="{StaticResource SecondaryTextColor}" FontSize="14"/>
+                                <TextBlock Text="{Binding TestsCompleted}" FontSize="32" FontWeight="Bold" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                                <TextBlock Text="Average Score" Foreground="{StaticResource SecondaryTextColor}" FontSize="14"/>
+                                <TextBlock Text="{Binding AverageScoreDisplay}" FontSize="32" FontWeight="Bold" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Highest Score" Foreground="{StaticResource SecondaryTextColor}" FontSize="14"/>
+                                <TextBlock Text="{Binding HighestScoreDisplay}" FontSize="32" FontWeight="Bold" Foreground="#059669" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Subject Performance -->
+                    <controls:SubjectPerformanceView ItemsSource="{Binding PerformanceSubjects}"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Leaderboard Tab -->
+            <ScrollViewer Visibility="{Binding LeaderboardVisibility}" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Class Leaderboard" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <TextBlock Text="See how you rank against your classmates" 
+                               FontSize="14" 
+                               Foreground="{StaticResource SecondaryTextColor}"
+                               Margin="0,0,0,20"/>
+                    
+                    <!-- Leaderboard Header -->
+                    <Border Background="White" CornerRadius="8,8,0,0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" Text="Rank" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
+                            <TextBlock Grid.Column="1" Text="Student" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
+                            <TextBlock Grid.Column="2" Text="Avg Score" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
+                            <TextBlock Grid.Column="3" Text="Tests" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Leaderboard Entries -->
+                    <ItemsControl ItemsSource="{Binding LeaderboardEntries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCurrentUser}" Value="True">
+                                                    <Setter Property="Background" Value="#EFF6FF"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Rank with medal icons for top 3 -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <TextBlock FontSize="20" FontWeight="Bold" VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{Binding Rank}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="1">
+                                                                <Setter Property="Text" Value="??"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="2">
+                                                                <Setter Property="Text" Value="??"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="3">
+                                                                <Setter Property="Text" Value="??"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Rank}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="1">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="2">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Rank}" Value="3">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        
+                                        <!-- Student Info -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Border Width="36" Height="36" Background="#DDD" CornerRadius="18" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding StudentInitials}" 
+                                                           HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           FontWeight="Bold" 
+                                                           FontSize="14"/>
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StudentName}" FontSize="16" FontWeight="SemiBold"/>
+                                                <TextBlock Text="You" 
+                                                           FontSize="12" 
+                                                           Foreground="#2563EB" 
+                                                           FontWeight="SemiBold"
+                                                           Visibility="{Binding IsCurrentUser, Converter={StaticResource BoolToVisConverter}}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        
+                                        <!-- Average Score -->
+                                        <TextBlock Grid.Column="2" 
+                                                   Text="{Binding ScoreText}" 
+                                                   FontSize="18" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="#059669"
+                                                   VerticalAlignment="Center"/>
+                                        
+                                        <!-- Tests Completed -->
+                                        <TextBlock Grid.Column="3" 
+                                                   Text="{Binding TestsCompleted}" 
+                                                   FontSize="16"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>

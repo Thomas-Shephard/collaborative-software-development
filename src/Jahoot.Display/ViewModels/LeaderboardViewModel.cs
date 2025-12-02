@@ -131,6 +131,9 @@ public class LeaderboardViewModel : INotifyPropertyChanged
             StudentName = data.Name,
             StudentInitials = GetStudentInitials(data.Name),
             Score = data.Score,
+            ScoreText = $"{data.Score:0.0}%",
+            TestsCompleted = 10 + index,
+            IsCurrentUser = false,
             RankIcon = GetRankIcon(index + 1)
         });
 
