@@ -10,11 +10,20 @@ public class LeaderboardEntry
     public required double Score { get; set; }
     public string? RankIcon { get; set; }
     
-    public string RankDisplay => Rank switch
+    public string RankDisplay
     {
-        1 => "1st",
-        2 => "2nd",
-        3 => "3rd",
-        _ => $"{Rank}th"
-    };
+        get
+        {
+            int rem100 = Rank % 100;
+            if (rem100 == 11 || rem100 == 12 || rem100 == 13)
+                return $"{Rank}th";
+            switch (Rank % 10)
+            {
+                case 1: return $"{Rank}st";
+                case 2: return $"{Rank}nd";
+                case 3: return $"{Rank}rd";
+                default: return $"{Rank}th";
+            }
+        }
+    }
 }
