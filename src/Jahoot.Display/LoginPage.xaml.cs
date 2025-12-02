@@ -1,5 +1,6 @@
 ﻿using Jahoot.Core.Models;
 using Jahoot.Display.Services;
+using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
 
@@ -20,7 +21,7 @@ public partial class LoginPage : Window
     {
         LoginErrorBanner.Visibility = Visibility.Collapsed;
 
-        if (string.IsNullOrWhiteSpace(SignInEmailTextBox.Text) || !SignInEmailTextBox.Text.Contains("@") || !SignInEmailTextBox.Text.Contains("."))
+        if (!new EmailAddressAttribute().IsValid(SignInEmailTextBox.Text))
         {
             LoginErrorText.Text = "Please enter a valid email address.";
             LoginErrorBanner.Visibility = Visibility.Visible;
