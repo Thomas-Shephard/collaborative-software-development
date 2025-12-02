@@ -1,7 +1,5 @@
     using Jahoot.Display.Services;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using System;
     using System.Net.Http;
     using System.Windows;
 
@@ -9,7 +7,7 @@
 
     public partial class App : Application
     {
-        public static IServiceProvider ServiceProvider { get; private set; } = null!;
+        public IServiceProvider ServiceProvider { get; private set; }
 
         public App()
         {
@@ -20,7 +18,6 @@
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(configure => configure.AddDebug());
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
             services.AddSingleton<HttpClient>(new HttpClient
             {

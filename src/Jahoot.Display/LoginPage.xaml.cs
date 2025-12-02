@@ -1,7 +1,7 @@
 ﻿using Jahoot.Core.Models;
 using Jahoot.Display.Services;
-using System;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Jahoot.Display;
 public partial class LoginPage : Window
@@ -54,7 +54,7 @@ public partial class LoginPage : Window
         MessageBox.Show("forgot password clicked");
     }
 
-    private void SignInPasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void SignInPasswordBox_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == System.Windows.Input.Key.Enter)
         {

@@ -1,5 +1,4 @@
 using Jahoot.Core.Models;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -11,13 +10,11 @@ public class AuthService : IAuthService
 {
     private readonly HttpClient _httpClient; 
     private readonly ISecureStorageService _secureStorageService;
-    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(HttpClient httpClient, ISecureStorageService secureStorageService, ILogger<AuthService> logger)
+    public AuthService(HttpClient httpClient, ISecureStorageService secureStorageService)
     {
         _httpClient = httpClient;
         _secureStorageService = secureStorageService;
-        _logger = logger;
     }
 
     public async Task<Tuple<bool, string>> Login(LoginRequest loginRequest)
@@ -44,7 +41,6 @@ public class AuthService : IAuthService
         else
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError("Login failed with status code {StatusCode} and content: {ErrorContent}", response.StatusCode, errorContent);
             
             try
             {

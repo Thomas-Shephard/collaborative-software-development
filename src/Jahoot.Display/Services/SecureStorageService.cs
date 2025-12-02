@@ -6,7 +6,6 @@ using System.Text;
 namespace Jahoot.Display.Services;
 public class SecureStorageService : ISecureStorageService
 {
-    private static readonly byte[] Entropy = { 1, 2, 3, 4, 5, 6, 7, 8 };
     private readonly string _tokenPath;
     
     public SecureStorageService()
@@ -17,7 +16,7 @@ public class SecureStorageService : ISecureStorageService
     
     public void SaveToken(string token)
     {
-        var encryptedData = ProtectedData.Protect(Encoding.UTF8.GetBytes(token), Entropy, DataProtectionScope.CurrentUser);
+        var encryptedData = ProtectedData.Protect(Encoding.UTF8.GetBytes(token), null, DataProtectionScope.CurrentUser);
         File.WriteAllBytes(_tokenPath, encryptedData);
     }
     
@@ -29,7 +28,7 @@ public class SecureStorageService : ISecureStorageService
         }
         
         var encryptedData = File.ReadAllBytes(_tokenPath);
-        var decryptedData = ProtectedData.Unprotect(encryptedData, Entropy, DataProtectionScope.CurrentUser);
+        var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
         return Encoding.UTF8.GetString(decryptedData);
     }
     
