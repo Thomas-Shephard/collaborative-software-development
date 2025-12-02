@@ -26,6 +26,7 @@
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<LoginPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<StudentViews.StudentDashboard>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
