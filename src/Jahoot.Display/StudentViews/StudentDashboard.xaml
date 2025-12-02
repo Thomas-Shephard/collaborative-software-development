@@ -110,20 +110,6 @@
                 <controls:RecentActivityView Grid.Column="0" ItemsSource="{Binding RecentActivityItems}"/>
                 <controls:SubjectPerformanceView Grid.Column="1" ItemsSource="{Binding PerformanceSubjects}"/>
                                     </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="BorderBrush" Value="#007ACC"/>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </TabControl.Resources>
 
             <!-- Other Tab Content -->
             <ContentControl Visibility="{Binding OtherContentVisibility}" Content="{Binding CurrentView}"/>
