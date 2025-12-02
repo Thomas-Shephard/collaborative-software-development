@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="database-init.sql" />
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Jahoot.Core/Jahoot.Core.csproj" />
+    <Project Path="src/Jahoot.Display/Jahoot.Display.csproj" />
+    <Project Path="src/Jahoot.WebApi/Jahoot.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jahoot.Core.Tests/Jahoot.Core.Tests.csproj" />
+    <Project Path="tests/Jahoot.WebApi.Tests/Jahoot.WebApi.Tests.csproj" />
+  </Folder>
+</Solution>

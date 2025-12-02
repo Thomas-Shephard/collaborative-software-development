@@ -21,29 +21,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" BorderBrush="#DDD" BorderThickness="0 0 0 1" Margin="0,0,0,5">
-            <Grid Margin="20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Lecturer Dashboard" FontSize="26" FontWeight="Bold" />
-                    <TextBlock Text="Manage students, tests, and monitor progress"
-                               Foreground="{StaticResource SecondaryTextColor}" FontSize="14" />
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
-                    <TextBlock Text="Lecturer" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,5,0"/>
-                </StackPanel>
-
-                <Border Grid.Column="2" Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding LecturerInitials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-                </Border>
-            </Grid>
-        </Border>
+        <controls:DashboardHeader Grid.Row="0"
+                                  AvailableRoles="{Binding AvailableRoles}"
+                                  SelectedRole="{Binding SelectedRole}"
+                                  UserInitials="{Binding LecturerInitials}"
+                                  SubHeaderText="Manage students, tests, and monitor progress"/>
 
         <Grid Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
             <Grid.ColumnDefinitions>

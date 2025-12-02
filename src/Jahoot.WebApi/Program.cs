@@ -4,10 +4,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Dapper;
 using Jahoot.WebApi.Extensions;
+using Jahoot.Core.Models;
+using Jahoot.WebApi.Authorization;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 
@@ -55,6 +58,12 @@ public static class Program
 
         builder.Services.AddSingleton<ITokenDenyService>(_ => new TokenDenyService(tokenDenySettings, TimeProvider.System));
         builder.Services.AddSingleton<ILoginAttemptService>(_ => new LoginAttemptService(loginAttemptSettings, TimeProvider.System));
+        builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
+
+        builder.Services.AddAuthorizationBuilder()
+               .AddPolicy(nameof(Role.Admin), policy => policy.Requirements.Add(new RoleRequirement(Role.Admin)))
+               .AddPolicy(nameof(Role.Lecturer), policy => policy.Requirements.Add(new RoleRequirement(Role.Lecturer)))
+               .AddPolicy(nameof(Role.Student), policy => policy.Requirements.Add(new RoleRequirement(Role.Student)));
 
         builder.Services.AddAuthentication(options =>
         {
