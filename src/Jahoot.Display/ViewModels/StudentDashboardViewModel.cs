@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using Jahoot.Display.Models;
+using Jahoot.Display.Controls;
 
 namespace Jahoot.Display.ViewModels
 {
@@ -20,7 +21,7 @@ namespace Jahoot.Display.ViewModels
     }
 
     public class RecentActivityItem
-        {
+    {
         public required string StudentInitials { get; set; }
         public required string DescriptionPrefix { get; set; }
         public required string TestName { get; set; }
@@ -29,7 +30,7 @@ namespace Jahoot.Display.ViewModels
     }
 
     public class PerformanceSubject
-            {
+    {
         public required string SubjectName { get; set; }
         public required string ScoreText { get; set; }
         public required double ScoreValue { get; set; }
@@ -37,7 +38,7 @@ namespace Jahoot.Display.ViewModels
 
 
     public class StudentDashboardViewModel : BaseViewModel
-            {
+    {
         private int _selectedTabIndex = 0;
         private Visibility _overviewVisibility = Visibility.Visible;
         private Visibility _otherContentVisibility = Visibility.Collapsed;
@@ -51,7 +52,7 @@ namespace Jahoot.Display.ViewModels
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; } = new();
 
         public StudentDashboardViewModel()
-            {
+        {
             TabItems = new ObservableCollection<string> { "Overview", "Available Tests", "Completed Tests", "Leaderboard", "Statistics" };
             UpdateVisibleContent();
         }
@@ -100,10 +101,10 @@ namespace Jahoot.Display.ViewModels
         {
             get => _otherContentVisibility;
             set
-                {
+            {
                 _otherContentVisibility = value;
-                    OnPropertyChanged();
-                }
+                OnPropertyChanged();
+            }
         }
 
         public object? CurrentView
@@ -129,7 +130,7 @@ namespace Jahoot.Display.ViewModels
                 OtherContentVisibility = Visibility.Visible;
 
                 switch (TabItems[SelectedTabIndex])
-        {
+                {
                     case "Available Tests":
                         CurrentView = new ItemsControl { ItemsSource = UpcomingTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("AvailableTestTemplate") };
                         break;
@@ -137,7 +138,7 @@ namespace Jahoot.Display.ViewModels
                         CurrentView = new ItemsControl { ItemsSource = CompletedTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("CompletedTestTemplate") };
                         break;
                     case "Leaderboard":
-                        CurrentView = new TextBlock { Text = "Leaderboard coming soon...", Margin = new Thickness(20) };
+                        CurrentView = new LeaderboardView();
                         break;
                     case "Statistics":
                         CurrentView = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };

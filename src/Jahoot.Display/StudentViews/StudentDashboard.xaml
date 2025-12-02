@@ -14,17 +14,6 @@
         <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
         <SolidColorBrush x:Key="AccentColor" Color="#4CAF50"/>
 
-        <Style x:Key="StatValueStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="36"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,10,0,0"/>
-        </Style>
-
-        <Style x:Key="StatTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryTextColor}"/>
-        </Style>
-
         <DataTemplate x:Key="AvailableTestTemplate">
             <Border Background="#F9FAFB" CornerRadius="8" Padding="20" Margin="0,0,0,10">
                 <StackPanel>
@@ -90,37 +79,6 @@
             <controls:StatCard Grid.Column="1" Title="Tests Completed" Value="{Binding TestsCompleted}" Icon="✅" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="2" Title="Average Score" Value="{Binding AverageScoreDisplay}" Icon="🎯" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="3" Title="Upcoming Due Dates" Value="{Binding UpcomingDueDates}" Icon="📅"/>
-                    </Grid>
-                    <TextBlock Text="{Binding TestsAvailable}" Style="{StaticResource StatValueStyle}"/>
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="1" Background="White" CornerRadius="8" Margin="0,0,20,0" Padding="20">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Text="Tests Completed" Style="{StaticResource StatTitleStyle}"/>
-                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="20" Foreground="{StaticResource SecondaryTextColor}"/>
-                    </Grid>
-                    <TextBlock Text="{Binding TestsCompleted}" Style="{StaticResource StatValueStyle}"/>
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="2" Background="White" CornerRadius="8" Margin="0,0,20,0" Padding="20">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Text="Average Score" Style="{StaticResource StatTitleStyle}"/>
-                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="20" Foreground="{StaticResource SecondaryTextColor}"/>
-                    </Grid>
-                    <TextBlock Text="{Binding AverageScoreDisplay}" Style="{StaticResource StatValueStyle}"/>
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="3" Background="White" CornerRadius="8" Padding="20">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Text="Upcoming Due Dates" Style="{StaticResource StatTitleStyle}"/>
-                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="20" Foreground="{StaticResource SecondaryTextColor}"/>
-                    </Grid>
-                    <TextBlock Text="{Binding UpcomingDueDates}" Style="{StaticResource StatValueStyle}"/>
-                </StackPanel>
-            </Border>
         </Grid>
         <!-- Tabs -->
         <controls:NavigationalTabs Grid.Row="2"
@@ -139,21 +97,7 @@
 
                 <controls:RecentActivityView Grid.Column="0" ItemsSource="{Binding RecentActivityItems}"/>
                 <controls:SubjectPerformanceView Grid.Column="1" ItemsSource="{Binding PerformanceSubjects}"/>
-                                    </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="BorderBrush" Value="#007ACC"/>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </TabControl.Resources>
+            </Grid>
 
             <!-- Other Tab Content -->
             <ContentControl Visibility="{Binding OtherContentVisibility}" Content="{Binding CurrentView}"/>
