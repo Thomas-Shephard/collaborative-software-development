@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Jahoot.Display.Models;
+using Jahoot.Display.Controls;
 
 namespace Jahoot.Display.ViewModels
 {
@@ -18,11 +19,12 @@ namespace Jahoot.Display.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
 
         private int _selectedTabIndex = 0;
 
         public int SelectedTabIndex
-        {
+    {
             get => _selectedTabIndex;
             set
             {
@@ -31,7 +33,7 @@ namespace Jahoot.Display.ViewModels
                     _selectedTabIndex = value;
                     OnPropertyChanged();
                     UpdateTabVisibility();
-                }
+    }
             }
         }
 
@@ -41,9 +43,18 @@ namespace Jahoot.Display.ViewModels
         public ObservableCollection<TabItem> TabItems { get; set; }
         public ObservableCollection<TestItem> UpcomingTests { get; } = new();
         public ObservableCollection<TestItem> CompletedTests { get; } = new();
+
+        public ObservableCollection<string> TabItems { get; set; }
+        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; } = new();
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; } = new();
         public ObservableCollection<GradeTrendItem> GradeTrendItems { get; set; } = new();
         public ObservableCollection<LeaderboardEntry> LeaderboardEntries { get; set; } = new();
+
+        public StudentDashboardViewModel()
+        {
+            TabItems = new ObservableCollection<string> { "Overview", "Available Tests", "Completed Tests", "Leaderboard", "Statistics" };
+            UpdateVisibleContent();
+        }
 
         public int TestsAvailable => UpcomingTests.Count;
         public int TestsCompleted => CompletedTests.Count;
@@ -82,9 +93,10 @@ namespace Jahoot.Display.ViewModels
             set
             {
                 _overviewVisibility = value;
-                OnPropertyChanged();
+                    OnPropertyChanged();
+                    UpdateVisibleContent();
+                }
             }
-        }
 
         public Visibility UpcomingTestsVisibility
         {
@@ -93,9 +105,9 @@ namespace Jahoot.Display.ViewModels
             {
                 _upcomingTestsVisibility = value;
                 OnPropertyChanged();
-            }
         }
-
+        }
+        
         public Visibility CompletedTestsVisibility
         {
             get => _completedTestsVisibility;
@@ -105,7 +117,7 @@ namespace Jahoot.Display.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        
         public Visibility StatisticsVisibility
         {
             get => _statisticsVisibility;
@@ -132,7 +144,7 @@ namespace Jahoot.Display.ViewModels
         public StudentDashboardViewModel()
         {
             TabItems = new ObservableCollection<TabItem>
-            {
+        {
                 new TabItem { Header = "Overview" },
                 new TabItem { Header = "Upcoming Tests" },
                 new TabItem { Header = "Completed Tests" },
@@ -145,13 +157,13 @@ namespace Jahoot.Display.ViewModels
         }
 
         private void UpdateTabVisibility()
-        {
+            {
             OverviewVisibility = SelectedTabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
             UpcomingTestsVisibility = SelectedTabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
             CompletedTestsVisibility = SelectedTabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
             LeaderboardVisibility = SelectedTabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
             StatisticsVisibility = SelectedTabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
-        }
+            }
 
         private void LoadMockData()
         {
@@ -186,7 +198,7 @@ namespace Jahoot.Display.ViewModels
             });
 
             CompletedTests.Add(new TestItem
-            {
+                {
                 Title = "Chemistry Midterm",
                 Course = "CHEM202",
                 TestInfo = "30 questions • 90 mins",
@@ -211,15 +223,15 @@ namespace Jahoot.Display.ViewModels
             LeaderboardEntries.Add(new LeaderboardEntry { Rank = 2, StudentName = "Bob Smith", StudentInitials = "BS", Score = 92.3, ScoreText = "92.3%", TestsCompleted = 11, IsCurrentUser = false });
             LeaderboardEntries.Add(new LeaderboardEntry { Rank = 3, StudentName = "John Doe", StudentInitials = "JD", Score = 88.7, ScoreText = "88.7%", TestsCompleted = 10, IsCurrentUser = true });
             LeaderboardEntries.Add(new LeaderboardEntry { Rank = 4, StudentName = "Carol White", StudentInitials = "CW", Score = 85.2, ScoreText = "85.2%", TestsCompleted = 9, IsCurrentUser = false });
-        }
-    }
+                }
+            }
 
     public class PerformanceSubject
     {
         public required string SubjectName { get; set; }
         public required string ScoreText { get; set; }
         public required double ScoreValue { get; set; }
-    }
+        }
 
     public class GradeTrendItem
     {

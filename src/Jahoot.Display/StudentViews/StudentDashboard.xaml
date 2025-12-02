@@ -40,18 +40,18 @@
                     </Grid.ColumnDefinitions>
                     
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
                     </StackPanel>
                     
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
-                        <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
+                    <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
                         <TextBlock Text="{Binding DueDate, StringFormat='Due: {0:MMM d, yyyy}'}" 
                                    FontSize="14" 
                                    Foreground="#D97706" 
                                    FontWeight="SemiBold"
                                    Margin="0,4,0,0"/>
-                    </StackPanel>
+                </StackPanel>
                     
                     <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                             Content="Start Test" 
@@ -72,7 +72,7 @@
                                                     CornerRadius="6"
                                                     Padding="{TemplateBinding Padding}">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
+            </Border>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -101,7 +101,7 @@
                     </Grid.ColumnDefinitions>
                     
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
                         <TextBlock Text="{Binding Date, StringFormat='Completed: {0:MMM d, yyyy}'}" 
                                    FontSize="13" 
@@ -122,8 +122,10 @@
                     </StackPanel>
                     
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
-                        <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
-                    </StackPanel>
+                    <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
+                    <TextBlock Text="{Binding Date, StringFormat='Completed: {0:MMM d, yyyy}'}" FontSize="14" Foreground="#4A5565"/>
+                    <TextBlock Text="{Binding Score, StringFormat='Score: {0:0}%'}" FontSize="16" FontWeight="Bold" Foreground="#016630" Margin="0,10,0,0"/>
+                </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -301,9 +303,9 @@
                             <TextBlock Grid.Column="1" Text="Student" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
                             <TextBlock Grid.Column="2" Text="Avg Score" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
                             <TextBlock Grid.Column="3" Text="Tests" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextColor}"/>
-                        </Grid>
+            </Grid>
                     </Border>
-                    
+
                     <!-- Leaderboard Entries -->
                     <ItemsControl ItemsSource="{Binding LeaderboardEntries}">
                         <ItemsControl.ItemTemplate>
