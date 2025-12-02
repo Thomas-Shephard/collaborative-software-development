@@ -28,30 +28,25 @@ public static class Program
 
         builder.Services.AddControllers();
 
-        string? dbHost = builder.Configuration["DB_HOST"];
-        string? dbPort = builder.Configuration["DB_PORT"];
-        string? dbName = builder.Configuration["DB_NAME"];
-        string? dbUser = builder.Configuration["DB_USER"];
-        string? dbPassword = builder.Configuration["DB_PASSWORD"];
-
-        if (string.IsNullOrEmpty(dbHost) || string.IsNullOrEmpty(dbPort) || string.IsNullOrEmpty(dbName) || string.IsNullOrEmpty(dbUser) || string.IsNullOrEmpty(dbPassword))
-        {
-            throw new InvalidOperationException("DB configuration (DB_HOST, DB_PORT, DB_NAME, DB_USER, or DB_PASSWORD) is not configured.");
-        }
-
-        string connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User={dbUser};Password={dbPassword}";
-
-        builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
+        DatabaseSettings dbSettings = builder.Services.AddAndConfigureFromEnv<DatabaseSettings>(builder.Configuration, "DB");
+        builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(dbSettings.ConnectionString));
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-        JwtSettings jwtSettings = new()
+        bool useMockEmailService = bool.TryParse(builder.Configuration["USE_MOCK_EMAIL_SERVICE"], out bool useMock) && useMock;
+
+        if (useMockEmailService)
         {
-            Secret = builder.Configuration["JWT_SECRET"] ?? throw new InvalidOperationException("JWT_SECRET is not configured."),
-            Issuer = builder.Configuration["JWT_ISSUER"] ?? throw new InvalidOperationException("JWT_ISSUER is not configured."),
-            Audience = builder.Configuration["JWT_AUDIENCE"] ?? throw new InvalidOperationException("JWT_AUDIENCE is not configured.")
-        };
-        builder.Services.AddSingleton(jwtSettings);
+            builder.Services.AddSingleton<IEmailService, MockEmailService>();
+        }
+        else
+        {
+            builder.Services.AddAndConfigureFromEnv<EmailSettings>(builder.Configuration, "SMTP");
+            builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
+            builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+        }
+
+        JwtSettings jwtSettings = builder.Services.AddAndConfigureFromEnv<JwtSettings>(builder.Configuration, "JWT");
 
         LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
         TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
