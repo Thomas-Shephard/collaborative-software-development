@@ -1,4 +1,5 @@
 using Dapper;
+using Jahoot.Core.Models;
 using MySqlConnector;
 using Testcontainers.MariaDb;
 
@@ -48,5 +49,21 @@ public abstract class RepositoryTestBase
     {
         await Connection.CloseAsync();
         await Connection.DisposeAsync();
+    }
+
+    protected async Task<int> InsertUser(User user)
+    {
+        const string insertQuery = "INSERT INTO User (email, name, password_hash, created_at, updated_at) VALUES (@Email, @Name, @PasswordHash, @CreatedAt, @UpdatedAt); SELECT LAST_INSERT_ID();";
+        return await Connection.QuerySingleAsync<int>(insertQuery, user);
+    }
+
+    protected async Task InsertLecturer(int userId, bool isAdmin)
+    {
+        await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, @IsAdmin)", new { UserId = userId, IsAdmin = isAdmin });
+    }
+
+    protected async Task InsertStudent(int userId)
+    {
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
     }
 }
