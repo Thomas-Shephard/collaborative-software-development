@@ -51,7 +51,7 @@ namespace Jahoot.Display.ViewModels
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; } = new();
 
         public StudentDashboardViewModel()
-            {
+        {
             TabItems = new ObservableCollection<string> { "Overview", "Available Tests", "Completed Tests", "Leaderboard", "Statistics" };
             UpdateVisibleContent();
         }
