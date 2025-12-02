@@ -7,7 +7,7 @@ namespace Jahoot.Display.Controls
     public partial class DashboardHeader : UserControl
     {
         public static readonly DependencyProperty AvailableRolesProperty =
-            DependencyProperty.Register("AvailableRoles", typeof(ObservableCollection<string>), typeof(DashboardHeader), new FrameworkPropertyMetadata(new ObservableCollection<string>(), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            DependencyProperty.Register(nameof(AvailableRoles), typeof(ObservableCollection<string>), typeof(DashboardHeader), new FrameworkPropertyMetadata(new ObservableCollection<string>(), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public ObservableCollection<string> AvailableRoles
         {
@@ -16,7 +16,7 @@ namespace Jahoot.Display.Controls
         }
 
         public static readonly DependencyProperty SelectedRoleProperty =
-            DependencyProperty.Register("SelectedRole", typeof(string), typeof(DashboardHeader), new FrameworkPropertyMetadata("Lecturer", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            DependencyProperty.Register(nameof(SelectedRole), typeof(string), typeof(DashboardHeader), new FrameworkPropertyMetadata("Lecturer", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string SelectedRole
         {
@@ -25,12 +25,21 @@ namespace Jahoot.Display.Controls
         }
 
         public static readonly DependencyProperty UserInitialsProperty =
-            DependencyProperty.Register("UserInitials", typeof(string), typeof(DashboardHeader), new PropertyMetadata("JD"));
+            DependencyProperty.Register(nameof(UserInitials), typeof(string), typeof(DashboardHeader), new PropertyMetadata("JD"));
 
         public string UserInitials
         {
             get { return (string)GetValue(UserInitialsProperty); }
             set { SetValue(UserInitialsProperty, value); }
+        }
+
+        public static readonly DependencyProperty SubHeaderTextProperty =
+            DependencyProperty.Register(nameof(SubHeaderText), typeof(string), typeof(DashboardHeader), new FrameworkPropertyMetadata("Manage students, tests, and monitor progress", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string SubHeaderText
+        {
+            get { return (string)GetValue(SubHeaderTextProperty); }
+            set { SetValue(SubHeaderTextProperty, value); }
         }
 
         public DashboardHeader()

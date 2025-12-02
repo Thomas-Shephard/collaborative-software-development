@@ -24,7 +24,8 @@
         <controls:DashboardHeader Grid.Row="0"
                                   AvailableRoles="{Binding AvailableRoles}"
                                   SelectedRole="{Binding SelectedRole}"
-                                  UserInitials="{Binding LecturerInitials}"/>
+                                  UserInitials="{Binding LecturerInitials}"
+                                  SubHeaderText="Manage students, tests, and monitor progress"/>
 
         <Grid Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
             <Grid.ColumnDefinitions>
