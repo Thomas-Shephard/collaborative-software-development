@@ -113,7 +113,7 @@ namespace Jahoot.Display.LecturerViews
                 new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
                 new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
             };
-
+            
             TabItems = new ObservableCollection<TabItem>
             {
                 new TabItem { Header = "Overview" },

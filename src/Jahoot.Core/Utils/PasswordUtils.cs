@@ -6,14 +6,14 @@ namespace Jahoot.Core.Utils;
 public static class PasswordUtils
 {
     // When using PBKDF2, NIST makes the following recommendations:
-    // • A salt length of at least 128 bits (16 bytes)
-    // • A hash function that is specified in FIPS 180-4 (e.g. SHA-256)
+    // â€¢ A salt length of at least 128 bits (16 bytes)
+    // â€¢ A hash function that is specified in FIPS 180-4 (e.g. SHA-256)
     // National Institute of Standards and Technology Computer Security Division (2010)
     // NIST Special Publication 800-132: Recommendation for Password-Based Key Derivation [online].
     // Available from: https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf [Accessed 11 November 2025]
 
     // When using PBKDF2 with SHA256, OWASP makes the following recommendation for the iteration count:
-    // • A minimum of 600,000 iterations
+    // â€¢ A minimum of 600,000 iterations
     // Open Worldwide Application Security Project (OWASP) Cheat Sheet Series (2024)
     // Password Storage Cheat Sheet [online].
     // Available from: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html [Accessed 11 November 2025]
