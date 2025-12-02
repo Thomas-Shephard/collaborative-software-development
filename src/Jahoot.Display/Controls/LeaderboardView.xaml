@@ -65,10 +65,26 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <TextBlock Text="??" 
-                                       FontSize="24" 
+                            <TextBlock FontSize="24" 
                                        HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value=""/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Rank}" Value="1">
+                                                <Setter Property="Text" Value="🥇"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Rank}" Value="2">
+                                                <Setter Property="Text" Value="🥈"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Rank}" Value="3">
+                                                <Setter Property="Text" Value="🥉"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </Border>
 
                         <!-- Rank number for 4-5 -->
