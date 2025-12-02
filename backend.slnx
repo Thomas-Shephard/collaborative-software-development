@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Jahoot.Core/Jahoot.Core.csproj" />
+    <Project Path="src/Jahoot.WebApi/Jahoot.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jahoot.Core.Tests/Jahoot.Core.Tests.csproj" />
+    <Project Path="tests/Jahoot.WebApi.Tests/Jahoot.WebApi.Tests.csproj" />
+  </Folder>
+</Solution>
