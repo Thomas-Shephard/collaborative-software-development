@@ -4,7 +4,7 @@ This document provides context and guidelines for AI assistants (such as Gemini)
 
 ## 1. Project Architecture
 
--   **Frontend**: Windows Presentation Foundation (WPF) application.
+-   **Frontend**: Windows Presentation Foundation (WPF) application. Uses .NET 10.
 -   **Backend**: Containerised services running in Docker.
 
 ## 2. Language and Localisation
@@ -39,3 +39,4 @@ This document provides context and guidelines for AI assistants (such as Gemini)
 
 -   **Clean Code**: Adhere to SOLID principles and DRY (Don't Repeat Yourself).
 -   **Error Handling**: Implement robust error handling, especially for network requests between the WPF client and backend containers.
+-   **Git Best Practices**: Do not commit code, just edit it.
