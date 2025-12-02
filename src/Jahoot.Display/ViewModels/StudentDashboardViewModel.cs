@@ -128,20 +128,27 @@ namespace Jahoot.Display.ViewModels
                 OverviewVisibility = Visibility.Collapsed;
                 OtherContentVisibility = Visibility.Visible;
 
-                switch (TabItems[SelectedTabIndex])
-        {
-                    case "Available Tests":
-                        CurrentView = new ItemsControl { ItemsSource = UpcomingTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("AvailableTestTemplate") };
-                        break;
-                    case "Completed Tests":
-                        CurrentView = new ItemsControl { ItemsSource = CompletedTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("CompletedTestTemplate") };
-                        break;
-                    case "Leaderboard":
-                        CurrentView = new TextBlock { Text = "Leaderboard coming soon...", Margin = new Thickness(20) };
-                        break;
-                    case "Statistics":
-                        CurrentView = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };
-                        break;
+                if (SelectedTabIndex >= 0 && SelectedTabIndex < TabItems.Count)
+                {
+                    switch (TabItems[SelectedTabIndex])
+                    {
+                        case "Available Tests":
+                            CurrentView = new ItemsControl { ItemsSource = UpcomingTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("AvailableTestTemplate") };
+                            break;
+                        case "Completed Tests":
+                            CurrentView = new ItemsControl { ItemsSource = CompletedTests, ItemTemplate = (DataTemplate)Application.Current.MainWindow.FindResource("CompletedTestTemplate") };
+                            break;
+                        case "Leaderboard":
+                            CurrentView = new TextBlock { Text = "Leaderboard coming soon...", Margin = new Thickness(20) };
+                            break;
+                        case "Statistics":
+                            CurrentView = new TextBlock { Text = "Statistics coming soon...", Margin = new Thickness(20) };
+                            break;
+                    }
+                }
+                else
+                {
+                    CurrentView = null;
                 }
             }
         }
