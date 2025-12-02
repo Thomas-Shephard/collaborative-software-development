@@ -79,7 +79,10 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <controls:HeaderControl Grid.Row="0" Margin="40,20,40,10" Header="Jahoot" Subheader="University Centre Weston - Student testing platform" />
+        <StackPanel Grid.Row="0" Margin="40,20,40,10">
+            <TextBlock Text="Jahoot" FontSize="32" FontWeight="Bold" Foreground="Black"/>
+            <TextBlock Text="University Centre Weston - Student testing platform" FontSize="18" Foreground="Gray"/>
+        </StackPanel>
 
         <Border Grid.Row="1" x:Name="LoginErrorBanner" Background="#F8D7DA" BorderBrush="#F5C6CB" BorderThickness="1" CornerRadius="5" Margin="40,0,40,10" Padding="15" Visibility="Collapsed">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

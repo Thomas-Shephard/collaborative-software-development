@@ -29,7 +29,10 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <controls:HeaderControl Grid.Column="0" Header="Lecturer Dashboard" Subheader="Manage students, tests, and monitor progress" />
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Lecturer Dashboard" FontSize="32" FontWeight="Bold" Foreground="Black"/>
+                    <TextBlock Text="Manage students, tests, and monitor progress" FontSize="18" Foreground="Gray"/>
+                </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
                     <TextBlock Text="Lecturer" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,5,0"/>
