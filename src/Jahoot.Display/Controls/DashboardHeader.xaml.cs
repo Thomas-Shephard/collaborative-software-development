@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display.Controls
 {
@@ -16,7 +17,7 @@ namespace Jahoot.Display.Controls
         }
 
         public static readonly DependencyProperty SelectedRoleProperty =
-            DependencyProperty.Register(nameof(SelectedRole), typeof(string), typeof(DashboardHeader), new FrameworkPropertyMetadata("Lecturer", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            DependencyProperty.Register(nameof(SelectedRole), typeof(string), typeof(DashboardHeader), new FrameworkPropertyMetadata("Lecturer", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedRoleChanged));
 
         public string SelectedRole
         {
@@ -40,6 +41,47 @@ namespace Jahoot.Display.Controls
         {
             get { return (string)GetValue(SubHeaderTextProperty); }
             set { SetValue(SubHeaderTextProperty, value); }
+        }
+
+        private static void OnSelectedRoleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is DashboardHeader header && e.NewValue is string newRole && e.OldValue is string oldRole && newRole != oldRole)
+            {
+                header.HandleRoleChange(newRole);
+            }
+        }
+
+        private void HandleRoleChange(string newRole)
+        {
+            try
+            {
+                var currentWindow = Window.GetWindow(this);
+                if (currentWindow == null || !currentWindow.IsLoaded) return;
+
+                var app = Application.Current as App;
+                if (app?.ServiceProvider == null) return;
+                
+                // Determine which dashboard to navigate to
+                Window? newDashboard = newRole switch
+                {
+                    "Student" when currentWindow is not StudentViews.StudentDashboard 
+                        => app.ServiceProvider.GetRequiredService<StudentViews.StudentDashboard>(),
+                    "Lecturer" when currentWindow is not LecturerViews.LecturerDashboard 
+                        => app.ServiceProvider.GetRequiredService<LecturerViews.LecturerDashboard>(),
+                    _ => null
+                };
+
+                if (newDashboard != null)
+                {
+                    newDashboard.Show();
+                    currentWindow.Close();
+                }
+            }
+            catch
+            {
+                // Silently fail if role switching doesn't work
+                // This prevents crashes during initialization
+            }
         }
 
         public DashboardHeader()

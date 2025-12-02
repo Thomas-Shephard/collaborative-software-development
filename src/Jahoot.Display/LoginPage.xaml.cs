@@ -1,5 +1,6 @@
 ﻿using Jahoot.Core.Models;
 using Jahoot.Display.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
@@ -8,13 +9,11 @@ namespace Jahoot.Display;
 public partial class LoginPage : Window
 {
     private readonly IAuthService _authService;
-    private readonly LecturerViews.LecturerDashboard _lecturerDashboard;
 
-    public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard)
+    public LoginPage(IAuthService authService)
     {
         InitializeComponent(); 
-        _authService = authService; 
-        _lecturerDashboard = lecturerDashboard;
+        _authService = authService;
     }
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -40,7 +39,10 @@ public partial class LoginPage : Window
 
             if (result.Success)
             {
-                _lecturerDashboard.Show();
+                // Get the app and create the dashboard when needed
+                var app = (App)Application.Current;
+                var lecturerDashboard = app.ServiceProvider.GetRequiredService<LecturerViews.LecturerDashboard>();
+                lecturerDashboard.Show();
                 this.Close();
             }
             else

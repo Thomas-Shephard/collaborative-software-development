@@ -1,0 +1,77 @@
+<Window x:Class="Jahoot.Display.StudentViews.StudentDashboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Jahoot.Display.Controls"
+        Title="Student Dashboard"
+        Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="800">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource LightBackgroundColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <controls:DashboardHeader Grid.Row="0"
+                                  AvailableRoles="{Binding AvailableRoles}"
+                                  SelectedRole="{Binding SelectedRole}"
+                                  UserInitials="{Binding StudentInitials}"
+                                  SubHeaderText="View your available tests, completed assignments, and performance statistics"/>
+
+        <Grid Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <controls:StatCard Grid.Column="0" Title="Tests Available" Value="{Binding UpcomingTests}" Icon="??" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="1" Title="Tests Completed" Value="{Binding CompletedTests}" Icon="?" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="2" Title="Average Score" Value="{Binding AverageScore}" Icon="??" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="3" Title="Current Grade" Value="{Binding CurrentGrade}" Icon="??"/>
+        </Grid>
+
+        <controls:NavigationalTabs Grid.Row="2"
+                                   x:Name="MainTabs"
+                                   ItemsSource="{Binding TabItems}"
+                                   SelectedIndex="{Binding SelectedTabIndex}"
+                                   SelectionChanged="MainTabs_SelectionChanged"/>
+
+        <Grid Grid.Row="3" Margin="20,10,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <controls:TestListView Grid.Column="0" 
+                                       Title="Upcoming Tests" 
+                                       Subtitle="Tests you need to complete"
+                                       ItemsSource="{Binding UpcomingTestItems}"/>
+                
+                <controls:TestListView Grid.Column="1" 
+                                       Title="Completed Tests" 
+                                       Subtitle="Your test history and scores"
+                                       ItemsSource="{Binding CompletedTestItems}"/>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,20,0,0">
+                <controls:GradesChartView/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
