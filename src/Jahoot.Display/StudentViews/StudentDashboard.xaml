@@ -101,7 +101,7 @@
                     </Grid.ColumnDefinitions>
                     
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Course}" FontSize="14" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
                         <TextBlock Text="{Binding Date, StringFormat='Completed: {0:MMM d, yyyy}'}" 
                                    FontSize="13" 
@@ -122,10 +122,8 @@
                     </StackPanel>
                     
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
-                    <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
-                    <TextBlock Text="{Binding Date, StringFormat='Completed: {0:MMM d, yyyy}'}" FontSize="14" Foreground="#4A5565"/>
-                    <TextBlock Text="{Binding Score, StringFormat='Score: {0:0}%'}" FontSize="16" FontWeight="Bold" Foreground="#016630" Margin="0,10,0,0"/>
-                </StackPanel>
+                        <TextBlock Text="{Binding TestInfo}" FontSize="14" Foreground="#4A5565"/>
+                    </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
