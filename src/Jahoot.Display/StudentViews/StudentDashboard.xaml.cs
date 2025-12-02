@@ -13,7 +13,6 @@ namespace Jahoot.Display.StudentViews
             _viewModel = new StudentDashboardViewModel();
             DataContext = _viewModel;
             InitializeComponent();
-            DataContext = new StudentDashboardViewModel();
         }
 
         {
