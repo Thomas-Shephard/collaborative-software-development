@@ -59,6 +59,7 @@ public static class Program
 
         builder.Services.AddSingleton<ITokenDenyService>(_ => new TokenDenyService(tokenDenySettings, TimeProvider.System));
         builder.Services.AddSingleton<ILoginAttemptService>(_ => new LoginAttemptService(loginAttemptSettings, TimeProvider.System));
+        builder.Services.AddSingleton<ITokenService, TokenService>();
         builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
 
         builder.Services.AddAuthorizationBuilder()
