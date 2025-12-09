@@ -139,6 +139,28 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task GetStudentsByStatusAsync_ReturnsMatchingStudents()
+    {
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Pending', 'pending@test.com', 'hash')");
+        int pendingId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'pending_approval')", new { UserId = pendingId });
+
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Active', 'active@test.com', 'hash')");
+        int activeId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'active')", new { UserId = activeId });
+
+        Student[] result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval))
+                                             .ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result[0].UserId, Is.EqualTo(pendingId));
+            Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
+        }
+    }
+
+    [Test]
     public async Task GetStudentByUserIdAsync_UnknownStatus_ThrowsException()
     {
         await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
