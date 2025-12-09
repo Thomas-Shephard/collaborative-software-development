@@ -9,6 +9,7 @@ namespace Jahoot.WebApi.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/login")]
+[Tags("Auth")]
 public class LoginController(IUserRepository userRepository, ILoginAttemptService loginAttemptService, ITokenService tokenService) : ControllerBase
 {
     [HttpPost]
