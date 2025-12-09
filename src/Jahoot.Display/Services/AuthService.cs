@@ -7,16 +7,10 @@ using Jahoot.Core.Models.Requests;
 using System.Net;
 
 namespace Jahoot.Display.Services;
-public class AuthService : IAuthService
+public class AuthService(HttpClient httpClient, ISecureStorageService secureStorageService) : IAuthService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ISecureStorageService _secureStorageService;
-
-    public AuthService(HttpClient httpClient, ISecureStorageService secureStorageService)
-    {
-        _httpClient = httpClient;
-        _secureStorageService = secureStorageService;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ISecureStorageService _secureStorageService = secureStorageService;
 
     public async Task<Result> Login(LoginRequestModel loginRequest)
     {
@@ -75,18 +69,16 @@ public class AuthService : IAuthService
         }
     }
 
-    private async Task<Result> ParseErrorResponse(HttpResponseMessage response, string defaultMessage)
+    private static async Task<Result> ParseErrorResponse(HttpResponseMessage response, string defaultMessage)
     {
         var errorContent = await response.Content.ReadAsStringAsync();
 
         try
         {
-            using (var jsonDoc = JsonDocument.Parse(errorContent))
+            using var jsonDoc = JsonDocument.Parse(errorContent);
+            if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
             {
-                if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
-                {
-                    return new Result { Success = false, ErrorMessage = messageElement.GetString() ?? defaultMessage };
-                }
+                return new Result { Success = false, ErrorMessage = messageElement.GetString() ?? defaultMessage };
             }
         }
         catch (JsonException)

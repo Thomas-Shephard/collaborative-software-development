@@ -43,7 +43,7 @@ public partial class LoginPage : Window
             if (result.Success)
             {
                 _lecturerDashboard.Show();
-                this.Close();
+                Close();
             }
             else
             {
@@ -51,7 +51,7 @@ public partial class LoginPage : Window
                 LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
-        catch (Exception ex)
+        catch 
         {
             LoginErrorText.Text = $"An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
@@ -125,7 +125,7 @@ public partial class LoginPage : Window
                 LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
-        catch (Exception ex)
+        catch
         {
             LoginErrorText.Text = $"An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
