@@ -37,6 +37,7 @@ This document provides context and guidelines for AI assistants (such as Gemini)
 
 ## 6. General Best Practices
 
+-   **Database Connection Management**: When using `IDbConnection` (especially with Dapper), always ensure the connection is in an `Open` state before calling `BeginTransaction()`. While Dapper's `ExecuteAsync`/`QueryAsync` methods can often implicitly open a closed connection, `BeginTransaction()` requires an already open connection and will throw an `InvalidOperationException` if the connection is not open.
 -   **Clean Code**: Adhere to SOLID principles and DRY (Don't Repeat Yourself).
 -   **Error Handling**: Implement robust error handling, especially for network requests between the WPF client and backend containers.
 -   **Git Best Practices**: Do not commit code, just edit it.
