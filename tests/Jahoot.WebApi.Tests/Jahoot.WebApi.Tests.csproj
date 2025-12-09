@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="$(SolutionDir)database-init.sql">
+        <Content Include="$(MSBuildThisFileDirectory)../../database-init.sql">
             <Link>database-init.sql</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
