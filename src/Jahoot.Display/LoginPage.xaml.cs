@@ -53,7 +53,7 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            LoginErrorText.Text = $"An error occurred: {ex.Message}";
+            LoginErrorText.Text = $"An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
         }
     }
@@ -127,7 +127,7 @@ public partial class LoginPage : Window
         }
         catch (Exception ex)
         {
-            LoginErrorText.Text = $"An error occurred: {ex.Message}";
+            LoginErrorText.Text = $"An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
         }
     }
