@@ -42,6 +42,8 @@ namespace Jahoot.Display.Controls
             set { SetValue(TabWidthConverterParameterProperty, value); }
         }
 
+        public TabControl MainTabsControl => MainTabs;
+
         public NavigationalTabs()
         {
             InitializeComponent();

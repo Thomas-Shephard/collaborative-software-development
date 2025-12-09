@@ -48,14 +48,6 @@
                                    SelectionChanged="MainTabs_SelectionChanged"
                                    TabWidthConverterParameter="5"/>
 
-        <Grid Grid.Row="3" Margin="20,10,20,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <controls:RecentActivityView Grid.Column="0" ItemsSource="{Binding RecentActivityItems}"/>
-            <controls:SubjectPerformanceView Grid.Column="1" ItemsSource="{Binding PerformanceSubjects}"/>
-        </Grid>
+        <ContentControl Grid.Row="3" Content="{Binding CurrentView}" Margin="20,10,20,20" />
     </Grid>
 </Window>
