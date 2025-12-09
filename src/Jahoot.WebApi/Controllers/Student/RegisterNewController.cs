@@ -8,6 +8,7 @@ namespace Jahoot.WebApi.Controllers.Student;
 
 [Route("api/student/register/new")]
 [ApiController]
+[Tags("Student")]
 public class RegisterNewController(IStudentRepository studentRepository, IUserRepository userRepository) : ControllerBase
 {
     [HttpPost]
