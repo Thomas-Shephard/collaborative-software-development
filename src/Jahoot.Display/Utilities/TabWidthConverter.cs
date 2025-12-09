@@ -3,11 +3,11 @@ using System.Windows.Data;
 
 namespace Jahoot.Display.Utilities
 {
-    public class TabWidthConverter : IValueConverter
+    public class TabWidthConverter : IMultiValueConverter
     {
-        public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double totalWidth && parameter != null && int.TryParse(parameter.ToString(), out int tabCount) && tabCount > 0)
+            if (values.Length == 2 && values[0] is double totalWidth && values[1] != null && int.TryParse(values[1].ToString(), out int tabCount) && tabCount > 0)
             {
                 double adjustedWidth = totalWidth - 10; // Subtract small margin to prevent wrapping
                 return adjustedWidth / tabCount;
@@ -15,7 +15,7 @@ namespace Jahoot.Display.Utilities
             return 100;
         }
 
-        public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[]? ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
