@@ -4,6 +4,7 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 using Jahoot.Core.Models.Requests;
+using System.Net;
 
 namespace Jahoot.Display.Services;
 public class AuthService : IAuthService
@@ -17,7 +18,7 @@ public class AuthService : IAuthService
         _secureStorageService = secureStorageService;
     }
 
-    public async Task<LoginResult> Login(LoginRequestModel loginRequest)
+    public async Task<Result> Login(LoginRequestModel loginRequest)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
@@ -32,37 +33,20 @@ public class AuthService : IAuthService
                     if (token != null)
                     {
                         _secureStorageService.SaveToken(token);
-                        return new LoginResult { Success = true, ErrorMessage = string.Empty };
+                        return new Result { Success = true, ErrorMessage = string.Empty };
                     }
                 }
             }
-            return new LoginResult { Success = false, ErrorMessage = "Token not found in response." };
+            return new Result { Success = false, ErrorMessage = "Token not found in response." };
         }
         else
         {
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
             {
-                return new LoginResult { Success = false, ErrorMessage = "Your credentials were incorrect." };
+                return new Result { Success = false, ErrorMessage = "Your credentials were incorrect." };
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-
-            try
-            {
-                using (var jsonDoc = JsonDocument.Parse(errorContent))
-                {
-                    if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
-                    {
-                        return new LoginResult { Success = false, ErrorMessage = messageElement.GetString() ?? "An unknown error occurred." };
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                return new LoginResult { Success = false, ErrorMessage = errorContent };
-            }
-
-            return new LoginResult { Success = false, ErrorMessage = "An unknown error occurred." };
+            return await ParseErrorResponse(response, "An unknown error occurred.");
         }
     }
 
@@ -72,34 +56,44 @@ public class AuthService : IAuthService
         await _httpClient.PostAsync("api/auth/logout", null);
     }
 
-    public async Task<RegisterResult> Register(StudentRegistrationRequestModel registerRequest)
+    public async Task<Result> Register(StudentRegistrationRequestModel registerRequest)
     {
         var response = await _httpClient.PostAsJsonAsync("api/student/register/new", registerRequest);
 
         if (response.IsSuccessStatusCode)
         {
-            return new RegisterResult { Success = true, ErrorMessage = string.Empty };
+            return new Result { Success = true, ErrorMessage = string.Empty };
         }
         else
         {
-            var errorContent = await response.Content.ReadAsStringAsync();
-
-            try
+            if (response.StatusCode == HttpStatusCode.BadRequest)
             {
-                using (var jsonDoc = JsonDocument.Parse(errorContent))
+                return new Result { Success = false, ErrorMessage = "The registration details provided are invalid." };
+            }
+
+            return await ParseErrorResponse(response, "Registration failed.");
+        }
+    }
+
+    private async Task<Result> ParseErrorResponse(HttpResponseMessage response, string defaultMessage)
+    {
+        var errorContent = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            using (var jsonDoc = JsonDocument.Parse(errorContent))
+            {
+                if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
                 {
-                    if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
-                    {
-                        return new RegisterResult { Success = false, ErrorMessage = messageElement.GetString() ?? "Registration failed." };
-                    }
+                    return new Result { Success = false, ErrorMessage = messageElement.GetString() ?? defaultMessage };
                 }
             }
-            catch (JsonException)
-            {
-                return new RegisterResult { Success = false, ErrorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Registration failed." };
-            }
-
-            return new RegisterResult { Success = false, ErrorMessage = "Registration failed." };
         }
+        catch (JsonException)
+        {
+            return new Result { Success = false, ErrorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : defaultMessage };
+        }
+
+        return new Result { Success = false, ErrorMessage = defaultMessage };
     }
 }
