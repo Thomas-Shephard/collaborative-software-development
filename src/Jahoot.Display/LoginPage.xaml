@@ -101,7 +101,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" BorderBrush="#DDDDDD" BorderThickness="0,0,2,0" Padding="40">
+                <Border Grid.Column="0" BorderBrush="#DDDDDD" BorderThickness="0,0,2,0" Padding="20">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="Sign In" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,5"/>
@@ -126,7 +126,7 @@
                     </ScrollViewer>
                 </Border>
 
-                <Border Grid.Column="1" Padding="40">
+                <Border Grid.Column="1" Padding="20">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="Create Account" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,5"/>
