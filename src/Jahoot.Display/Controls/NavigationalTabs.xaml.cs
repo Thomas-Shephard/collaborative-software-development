@@ -33,6 +33,15 @@ namespace Jahoot.Display.Controls
             remove { RemoveHandler(SelectionChangedEvent, value); }
         }
 
+        public static readonly DependencyProperty TabWidthConverterParameterProperty =
+            DependencyProperty.Register("TabWidthConverterParameter", typeof(object), typeof(NavigationalTabs), new PropertyMetadata(null));
+
+        public object TabWidthConverterParameter
+        {
+            get { return GetValue(TabWidthConverterParameterProperty); }
+            set { SetValue(TabWidthConverterParameterProperty, value); }
+        }
+
         public NavigationalTabs()
         {
             InitializeComponent();

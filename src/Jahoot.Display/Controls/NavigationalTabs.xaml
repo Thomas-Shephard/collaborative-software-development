@@ -20,7 +20,14 @@
                     SelectionChanged="MainTabs_SelectionChanged">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
-                    <Setter Property="Width" Value="{Binding ActualWidth, ElementName=MainTabs, Converter={StaticResource TabWidthConverter}, ConverterParameter=5}"/>
+                    <Setter Property="Width">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource TabWidthConverter}">
+                                <Binding ElementName="MainTabs" Path="ActualWidth" />
+                                <Binding Path="TabWidthConverterParameter" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
                     <Setter Property="Padding" Value="10,5"/>
                     <Setter Property="BorderThickness" Value="0,0,0,2"/>
                     <Setter Property="BorderBrush" Value="Transparent"/>
