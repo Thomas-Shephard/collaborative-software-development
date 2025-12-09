@@ -7,6 +7,7 @@ namespace Jahoot.WebApi.Controllers.Student;
 
 [Route("api/student/{userId:int}/approve")]
 [ApiController]
+[Tags("Student")]
 public class ApproveStudentController(IStudentRepository studentRepository) : ControllerBase
 {
     [HttpPost]
