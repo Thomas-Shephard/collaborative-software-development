@@ -150,9 +150,11 @@
 
                             <TextBlock Text="Password" Margin="0,20,0,5" FontWeight="Medium"/>
                             <PasswordBox x:Name="RegisterPasswordBox" Padding="10"/>
-                            <ProgressBar x:Name="PasswordStrengthBar" Height="5" Margin="0,5,0,0"/>
                             <TextBlock Text="Password must be at least 8 characters long, contain a number, an uppercase and a lowercase letter." 
-                                       FontSize="12" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                        FontSize="12" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
+
+                            <TextBlock Text="Confirm Password" Margin="0,20,0,5" FontWeight="Medium"/>
+                            <PasswordBox x:Name="RegisterConfirmPasswordBox" Padding="10"/>
                         </StackPanel>
                         
                         <Button Grid.Row="2" Content="Register" Style="{StaticResource PrimaryButton}" Click="RegisterButton_Click"/>

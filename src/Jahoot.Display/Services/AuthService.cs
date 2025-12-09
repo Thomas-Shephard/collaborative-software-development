@@ -71,4 +71,46 @@ public class AuthService : IAuthService
         _secureStorageService.DeleteToken();
         await _httpClient.PostAsync("api/auth/logout", null);
     }
+
+    public async Task<RegisterResult> Register(StudentRegistrationRequestModel registerRequest)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/student/register/new", registerRequest);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new RegisterResult { Success = true, ErrorMessage = string.Empty };
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                // Try to parse as JSON if the server returns a JSON error model
+                using (var jsonDoc = JsonDocument.Parse(errorContent))
+                {
+                    // Check for standard error message format
+                    if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
+                    {
+                        return new RegisterResult { Success = false, ErrorMessage = messageElement.GetString() ?? "An unknown error occurred." };
+                    }
+                    
+                    // Check for validation errors (ModelState) which is usually a dictionary of arrays
+                    // Example: { "Email": ["Invalid email"] }
+                    // Simple approach: just return the raw content if it's not a simple message, 
+                    // or try to extract the first error. For now, let's keep it simple.
+                }
+            }
+            catch (JsonException)
+            {
+                // Not JSON, return raw string (e.g. plain text "User already exists")
+                return new RegisterResult { Success = false, ErrorMessage = errorContent };
+            }
+
+            // If we parsed JSON but didn't find "message", it might be a complex validation error object.
+            // In a real app we'd parse this better, but for now fallback to the raw content or a generic message.
+            // If errorContent is short enough, use it.
+            return new RegisterResult { Success = false, ErrorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Registration failed." };
+        }
+    }
 }
