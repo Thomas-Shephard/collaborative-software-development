@@ -55,47 +55,74 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
 
         IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(
             query,
-            (studentData, isAdmin) =>
-            {
-                List<Role> roles = [Role.Student];
-
-                if (isAdmin.HasValue)
-                {
-                    roles.Add(Role.Lecturer);
-                    if (isAdmin.Value)
-                    {
-                        roles.Add(Role.Admin);
-                    }
-                }
-
-                // Map database enum string to C# enum
-                // The database enum values are 'pending_approval', 'active', 'disabled'
-                // The C# enum values are PendingApproval, Active, Disabled
-                StudentAccountStatus status = studentData.AccountStatus switch
-                {
-                    "pending_approval" => StudentAccountStatus.PendingApproval,
-                    "active" => StudentAccountStatus.Active,
-                    "disabled" => StudentAccountStatus.Disabled,
-                    _ => throw new InvalidOperationException($"Unknown account status: {studentData.AccountStatus}")
-                };
-
-                return new Student
-                {
-                    UserId = studentData.UserId,
-                    Email = studentData.Email,
-                    Name = studentData.Name,
-                    PasswordHash = studentData.PasswordHash,
-                    Roles = roles,
-                    LastLogin = studentData.LastLogin,
-                    CreatedAt = studentData.CreatedAt,
-                    UpdatedAt = studentData.UpdatedAt,
-                    StudentId = studentData.StudentId,
-                    AccountStatus = status
-                };
-            },
+            MapStudent,
             new { UserId = userId },
             splitOn: "is_admin");
 
         return students.SingleOrDefault();
+    }
+
+    public async Task<IEnumerable<Student>> GetStudentsByStatusAsync(StudentAccountStatus status)
+    {
+        string statusString = status switch
+        {
+            StudentAccountStatus.PendingApproval => "pending_approval",
+            StudentAccountStatus.Active => "active",
+            StudentAccountStatus.Disabled => "disabled",
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+        };
+
+        const string query = """
+                             SELECT user.*, student.*, lecturer.is_admin
+                             FROM Student student
+                                      JOIN User user ON student.user_id = user.user_id
+                                      LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
+                             WHERE student.account_status = @Status
+                             """;
+
+        return await connection.QueryAsync<StudentData, bool?, Student>(
+            query,
+            MapStudent,
+            new { Status = statusString },
+            splitOn: "is_admin");
+    }
+
+    private static Student MapStudent(StudentData studentData, bool? isAdmin)
+    {
+        List<Role> roles = [Role.Student];
+
+        if (isAdmin.HasValue)
+        {
+            roles.Add(Role.Lecturer);
+            if (isAdmin.Value)
+            {
+                roles.Add(Role.Admin);
+            }
+        }
+
+        // Map database enum string to C# enum
+        // The database enum values are 'pending_approval', 'active', 'disabled'
+        // The C# enum values are PendingApproval, Active, Disabled
+        StudentAccountStatus status = studentData.AccountStatus switch
+        {
+            "pending_approval" => StudentAccountStatus.PendingApproval,
+            "active" => StudentAccountStatus.Active,
+            "disabled" => StudentAccountStatus.Disabled,
+            _ => throw new InvalidOperationException($"Unknown account status: {studentData.AccountStatus}")
+        };
+
+        return new Student
+        {
+            UserId = studentData.UserId,
+            Email = studentData.Email,
+            Name = studentData.Name,
+            PasswordHash = studentData.PasswordHash,
+            Roles = roles,
+            LastLogin = studentData.LastLogin,
+            CreatedAt = studentData.CreatedAt,
+            UpdatedAt = studentData.UpdatedAt,
+            StudentId = studentData.StudentId,
+            AccountStatus = status
+        };
     }
 }
