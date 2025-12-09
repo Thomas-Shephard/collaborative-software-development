@@ -11,7 +11,7 @@ public class ExistingUserRegistrationRequestModelTests
         ExistingUserRegistrationRequestModel model = new()
         {
             Email = "test@example.com",
-            Password = "password"
+            Password = "StrongPassword1!"
         };
 
         ValidationContext context = new(model);
