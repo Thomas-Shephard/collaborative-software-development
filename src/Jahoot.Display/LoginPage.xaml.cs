@@ -66,9 +66,9 @@ public partial class LoginPage : Window
         var password = RegisterPasswordBox.Password;
         var confirmPassword = RegisterConfirmPasswordBox.Password;
 
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 70)
         {
-            LoginErrorText.Text = "Full Name is required.";
+            LoginErrorText.Text = name.Length > 70 ? "Full Name cannot exceed 70 characters." : "Full Name is required.";
             LoginErrorBanner.Visibility = Visibility.Visible;
             return;
         }
@@ -87,6 +87,12 @@ public partial class LoginPage : Window
             return;
         }
 
+        if (password.Length < 8)
+        {
+            LoginErrorText.Text = "Password must be at least 8 characters long.";
+            LoginErrorBanner.Visibility = Visibility.Visible;
+            return;
+        }
         if (password != confirmPassword)
         {
             LoginErrorText.Text = "Passwords do not match.";
