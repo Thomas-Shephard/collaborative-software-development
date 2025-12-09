@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Jahoot.Core.Attributes;
 
 namespace Jahoot.Core.Models.Requests;
 
@@ -9,6 +10,6 @@ public class LoginRequestModel
     public required string Email { get; init; }
 
     [Required]
-    [MinLength(8)]
+    [StrongPassword]
     public required string Password { get; init; }
 }
