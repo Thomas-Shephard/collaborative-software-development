@@ -9,7 +9,7 @@
         Title="Jahoot - Authentication" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         MinWidth="900"
-        MinHeight="750"
+        MinHeight="800"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
     <Window.Resources>

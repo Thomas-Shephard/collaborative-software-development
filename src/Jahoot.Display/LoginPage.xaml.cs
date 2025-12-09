@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
 using Jahoot.Core.Models.Requests;
+using Jahoot.Core.Attributes;
 
 namespace Jahoot.Display;
 public partial class LoginPage : Window
@@ -87,9 +88,10 @@ public partial class LoginPage : Window
             return;
         }
 
-        if (password.Length < 8)
+        var strongPasswordAttribute = new StrongPasswordAttribute();
+        if (!strongPasswordAttribute.IsValid(password))
         {
-            LoginErrorText.Text = "Password must be at least 8 characters long.";
+            LoginErrorText.Text = strongPasswordAttribute.ErrorMessage;
             LoginErrorBanner.Visibility = Visibility.Visible;
             return;
         }
