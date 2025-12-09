@@ -87,6 +87,25 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
             splitOn: "is_admin");
     }
 
+    public async Task UpdateStudentAsync(Student student)
+    {
+        string statusString = student.AccountStatus switch
+        {
+            StudentAccountStatus.PendingApproval => "pending_approval",
+            StudentAccountStatus.Active => "active",
+            StudentAccountStatus.Disabled => "disabled",
+            _ => throw new ArgumentOutOfRangeException(nameof(student), student.AccountStatus, null)
+        };
+
+        const string query = """
+                             UPDATE Student
+                             SET account_status = @AccountStatus
+                             WHERE student_id = @StudentId;
+                             """;
+
+        await connection.ExecuteAsync(query, new { AccountStatus = statusString, student.StudentId });
+    }
+
     private static Student MapStudent(StudentData studentData, bool? isAdmin)
     {
         List<Role> roles = [Role.Student];
