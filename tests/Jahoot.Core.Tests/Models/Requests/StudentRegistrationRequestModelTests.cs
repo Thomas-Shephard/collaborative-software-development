@@ -3,114 +3,125 @@ using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Core.Tests.Models.Requests;
 
+[TestFixture]
 public class StudentRegistrationRequestModelTests
 {
-    [Test]
-    public void StudentRegistrationRequest_WithValidData_IsValid()
+    private static IList<ValidationResult> ValidateModel(object model)
     {
-        StudentRegistrationRequestModel model = new()
-        {
-            Email = "test@example.com",
-            Password = "password123",
-            Name = "Test Student"
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        Assert.That(isValid, Is.True);
+        var validationResults = new List<ValidationResult>();
+        var ctx = new ValidationContext(model, null, null);
+        Validator.TryValidateObject(model, ctx, validationResults, true);
+        return validationResults;
     }
 
     [Test]
-    [TestCase("")]
-    [TestCase("invalid-email")]
-    [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidEmail_IsInvalid(string?email)
+    public void Validate_ValidModel_ReturnsNoErrors()
     {
-        StudentRegistrationRequestModel model = new()
-        {
-            Email = email!,
-            Password = "password123",
-            Name = "Test Student"
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Email")));
-        }
-    }
-
-    [Test]
-    [TestCase("")]
-    [TestCase("short")]
-    [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidPassword_IsInvalid(string?password)
-    {
-        StudentRegistrationRequestModel model = new()
-        {
-            Email = "test@example.com",
-            Password = password!,
-            Name = "Test Student"
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Password")));
-        }
-    }
-
-    [Test]
-    [TestCase("")]
-    [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidName_IsInvalid(string?name)
-    {
-        StudentRegistrationRequestModel model = new()
+        var model = new StudentRegistrationRequestModel
         {
             Email = "test@example.com",
             Password = "password123",
-            Name = name!
+            Name = "John Doe"
         };
 
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
+        var results = ValidateModel(model);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
-        }
+        Assert.That(results, Is.Empty);
     }
 
     [Test]
-    public void StudentRegistrationRequest_LongName_IsInvalid()
+    public void Validate_MissingEmail_ReturnsError()
     {
-        StudentRegistrationRequestModel model = new()
+        var model = new StudentRegistrationRequestModel
+        {
+            Email = null!,
+            Password = "password123",
+            Name = "John Doe"
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Email)));
+    }
+
+    [Test]
+    public void Validate_InvalidEmail_ReturnsError()
+    {
+        var model = new StudentRegistrationRequestModel
+        {
+            Email = "invalid-email",
+            Password = "password123",
+            Name = "John Doe"
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Email)));
+    }
+
+    [Test]
+    public void Validate_MissingPassword_ReturnsError()
+    {
+        var model = new StudentRegistrationRequestModel
+        {
+            Email = "test@example.com",
+            Password = null!,
+            Name = "John Doe"
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Password)));
+    }
+
+    [Test]
+    public void Validate_ShortPassword_ReturnsError()
+    {
+        var model = new StudentRegistrationRequestModel
+        {
+            Email = "test@example.com",
+            Password = "short",
+            Name = "John Doe"
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Password)));
+    }
+
+    [Test]
+    public void Validate_MissingName_ReturnsError()
+    {
+        var model = new StudentRegistrationRequestModel
         {
             Email = "test@example.com",
             Password = "password123",
-            Name = new string('a', 71) // MaxLength is 70
+            Name = null!
         };
 
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
+        var results = ValidateModel(model);
 
-        using (Assert.EnterMultipleScope())
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Name)));
+    }
+
+    [Test]
+    public void Validate_LongName_ReturnsError()
+    {
+        var model = new StudentRegistrationRequestModel
         {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
-        }
+            Email = "test@example.com",
+            Password = "password123",
+            Name = new string('A', 71)
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(StudentRegistrationRequestModel.Name)));
     }
 }

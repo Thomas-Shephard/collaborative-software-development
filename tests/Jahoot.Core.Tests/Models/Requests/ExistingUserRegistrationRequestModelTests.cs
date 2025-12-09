@@ -3,66 +3,73 @@ using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Core.Tests.Models.Requests;
 
+[TestFixture]
 public class ExistingUserRegistrationRequestModelTests
 {
-    [Test]
-    public void ExistingUserRegistrationRequest_WithValidData_IsValid()
+    private static IList<ValidationResult> ValidateModel(object model)
     {
-        ExistingUserRegistrationRequestModel model = new()
-        {
-            Email = "test@example.com",
-            Password = "password"
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        Assert.That(isValid, Is.True);
+        var validationResults = new List<ValidationResult>();
+        var ctx = new ValidationContext(model, null, null);
+        Validator.TryValidateObject(model, ctx, validationResults, true);
+        return validationResults;
     }
 
     [Test]
-    [TestCase("")]
-    [TestCase("invalid-email")]
-    [TestCase(null)]
-    public void ExistingUserRegistrationRequest_InvalidEmail_IsInvalid(string? email)
+    public void Validate_ValidModel_ReturnsNoErrors()
     {
-        ExistingUserRegistrationRequestModel model = new()
+        var model = new ExistingUserRegistrationRequestModel
         {
-            Email = email!,
-            Password = "password"
+            Email = "test@example.com",
+            Password = "password123"
         };
 
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
+        var results = ValidateModel(model);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Email")));
-        }
+        Assert.That(results, Is.Empty);
     }
 
     [Test]
-    [TestCase("")]
-    [TestCase(null)]
-    public void ExistingUserRegistrationRequest_InvalidPassword_IsInvalid(string? password)
+    public void Validate_MissingEmail_ReturnsError()
     {
-        ExistingUserRegistrationRequestModel model = new()
+        var model = new ExistingUserRegistrationRequestModel
         {
-            Email = "test@example.com",
-            Password = password!
+            Email = null!,
+            Password = "password123"
         };
 
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
+        var results = ValidateModel(model);
 
-        using (Assert.EnterMultipleScope())
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(ExistingUserRegistrationRequestModel.Email)));
+    }
+
+    [Test]
+    public void Validate_InvalidEmail_ReturnsError()
+    {
+        var model = new ExistingUserRegistrationRequestModel
         {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Password")));
-        }
+            Email = "invalid-email",
+            Password = "password123"
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(ExistingUserRegistrationRequestModel.Email)));
+    }
+
+    [Test]
+    public void Validate_MissingPassword_ReturnsError()
+    {
+        var model = new ExistingUserRegistrationRequestModel
+        {
+            Email = "test@example.com",
+            Password = null!
+        };
+
+        var results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].MemberNames, Contains.Item(nameof(ExistingUserRegistrationRequestModel.Password)));
     }
 }

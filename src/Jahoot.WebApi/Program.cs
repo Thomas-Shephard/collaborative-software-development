@@ -45,6 +45,7 @@ public static class Program
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+        builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 
         JwtSettings jwtSettings = new()
         {
