@@ -8,4 +8,5 @@ public interface IStudentRepository
     Task CreateStudentAsync(int userId);
     Task<Student?> GetStudentByUserIdAsync(int userId);
     Task<IEnumerable<Student>> GetStudentsByStatusAsync(StudentAccountStatus status);
+    Task UpdateStudentAsync(Student student);
 }

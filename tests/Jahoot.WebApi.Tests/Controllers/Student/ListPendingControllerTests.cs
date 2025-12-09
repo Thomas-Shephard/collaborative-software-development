@@ -86,7 +86,7 @@ public class ListPendingControllerTests
     }
 
     [Test]
-    public void GetPendingStudents_WithoutLecturerRole_ReturnsForbidden()
+    public void GetPendingStudents_RequiresLecturerAuthorization()
     {
         MethodInfo? methodInfo = typeof(ListPendingController).GetMethod(nameof(ListPendingController.GetPendingStudents));
         object[]? attributes = methodInfo?.GetCustomAttributes(typeof(AuthorizeAttribute), false);
@@ -95,16 +95,5 @@ public class ListPendingControllerTests
 
         AuthorizeAttribute? authorizeAttribute = attributes.OfType<AuthorizeAttribute>().FirstOrDefault(a => a.Policy == nameof(Role.Lecturer));
         Assert.That(authorizeAttribute, Is.Not.Null, "Method should have [Authorize(Policy = \"Lecturer\")]");
-    }
-
-    [Test]
-    public void GetPendingStudents_Unauthenticated_ReturnsUnauthorized()
-    {
-
-        MethodInfo? methodInfo = typeof(ListPendingController).GetMethod(nameof(ListPendingController.GetPendingStudents));
-        object[]? attributes = methodInfo?.GetCustomAttributes(typeof(AuthorizeAttribute), false);
-
-        Assert.That(attributes, Is.Not.Null);
-        Assert.That(attributes, Is.Not.Empty, "Method should be decorated with [Authorize]");
     }
 }
