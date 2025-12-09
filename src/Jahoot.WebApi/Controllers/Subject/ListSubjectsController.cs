@@ -1,4 +1,3 @@
-using Jahoot.Core.Models;
 using Jahoot.WebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
