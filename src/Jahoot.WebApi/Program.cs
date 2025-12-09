@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
+using Scalar.AspNetCore;
 
 namespace Jahoot.WebApi;
 
@@ -27,6 +28,7 @@ public static class Program
         builder.Configuration.AddEnvironmentVariables();
 
         builder.Services.AddControllers();
+        builder.Services.AddOpenApi();
 
         string? dbHost = builder.Configuration["DB_HOST"];
         string? dbPort = builder.Configuration["DB_PORT"];
@@ -98,6 +100,8 @@ public static class Program
 
         WebApplication app = builder.Build();
 
+        app.MapOpenApi();
+        app.MapScalarApiReference("/scalar");
         app.UseHttpsRedirection();
 
         app.UseAuthentication();

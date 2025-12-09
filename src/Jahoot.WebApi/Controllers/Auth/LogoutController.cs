@@ -7,6 +7,7 @@ namespace Jahoot.WebApi.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/logout")]
+[Tags("Auth")]
 public class LogoutController(ITokenDenyService tokenDenyService) : ControllerBase
 {
     [HttpPost]
