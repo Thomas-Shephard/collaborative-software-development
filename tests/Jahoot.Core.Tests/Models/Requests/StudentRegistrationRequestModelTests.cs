@@ -11,7 +11,7 @@ public class StudentRegistrationRequestModelTests
         StudentRegistrationRequestModel model = new()
         {
             Email = "test@example.com",
-            Password = "password123",
+            Password = "StrongPassword1!",
             Name = "Test Student"
         };
 
