@@ -182,4 +182,20 @@ public class StudentRepositoryTests : RepositoryTestBase
             await Connection.ExecuteAsync("ALTER TABLE Student MODIFY COLUMN account_status ENUM('pending_approval', 'active', 'disabled') NOT NULL DEFAULT 'pending_approval'");
         }
     }
+
+    [Test]
+    public async Task UpdateStudentAsync_UpdatesAccountStatus()
+    {
+        await _repository.CreateStudentAsync(UserName, UserEmail, UserPasswordHash);
+        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = @Email", new { Email = UserEmail });
+        Student? student = await _repository.GetStudentByUserIdAsync(user.UserId);
+        Assert.That(student, Is.Not.Null);
+
+        student.AccountStatus = StudentAccountStatus.Active;
+
+        await _repository.UpdateStudentAsync(student);
+
+        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { user.UserId });
+        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+    }
 }

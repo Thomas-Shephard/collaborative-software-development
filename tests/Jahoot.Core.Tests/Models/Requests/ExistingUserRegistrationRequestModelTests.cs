@@ -20,7 +20,7 @@ public class ExistingUserRegistrationRequestModelTests
         var model = new ExistingUserRegistrationRequestModel
         {
             Email = "test@example.com",
-            Password = "password123"
+            Password = "StrongPassword1!"
         };
 
         var results = ValidateModel(model);

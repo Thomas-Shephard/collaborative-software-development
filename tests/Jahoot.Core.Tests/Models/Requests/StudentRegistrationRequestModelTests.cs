@@ -20,8 +20,8 @@ public class StudentRegistrationRequestModelTests
         var model = new StudentRegistrationRequestModel
         {
             Email = "test@example.com",
-            Password = "password123",
-            Name = "John Doe"
+            Password = "StrongPassword1!",
+            Name = "Test Student"
         };
 
         var results = ValidateModel(model);
