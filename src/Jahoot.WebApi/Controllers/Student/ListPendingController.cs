@@ -8,6 +8,7 @@ namespace Jahoot.WebApi.Controllers.Student;
 
 [Route("api/student/pending")]
 [ApiController]
+[Tags("Student")]
 public class ListPendingController(IStudentRepository studentRepository) : ControllerBase
 {
     [HttpGet]
