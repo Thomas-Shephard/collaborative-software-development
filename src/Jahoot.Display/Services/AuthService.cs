@@ -1,14 +1,14 @@
-using Jahoot.Core.Models;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System;
 using System.Threading.Tasks;
+using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display.Services;
 public class AuthService : IAuthService
 {
-    private readonly HttpClient _httpClient; 
+    private readonly HttpClient _httpClient;
     private readonly ISecureStorageService _secureStorageService;
 
     public AuthService(HttpClient httpClient, ISecureStorageService secureStorageService)
@@ -17,7 +17,7 @@ public class AuthService : IAuthService
         _secureStorageService = secureStorageService;
     }
 
-    public async Task<LoginResult> Login(LoginRequest loginRequest)
+    public async Task<LoginResult> Login(LoginRequestModel loginRequest)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
@@ -46,7 +46,7 @@ public class AuthService : IAuthService
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
-            
+
             try
             {
                 using (var jsonDoc = JsonDocument.Parse(errorContent))

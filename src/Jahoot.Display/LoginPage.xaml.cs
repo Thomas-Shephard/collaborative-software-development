@@ -3,6 +3,7 @@ using Jahoot.Display.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
+using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display;
 public partial class LoginPage : Window
@@ -12,8 +13,8 @@ public partial class LoginPage : Window
 
     public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard)
     {
-        InitializeComponent(); 
-        _authService = authService; 
+        InitializeComponent();
+        _authService = authService;
         _lecturerDashboard = lecturerDashboard;
     }
 
@@ -28,10 +29,10 @@ public partial class LoginPage : Window
             return;
         }
 
-        var loginRequest = new LoginRequest
+        var loginRequest = new LoginRequestModel
         {
-            Email = SignInEmailTextBox.Text, 
-            Password = SignInPasswordBox.Password 
+            Email = SignInEmailTextBox.Text,
+            Password = SignInPasswordBox.Password
         };
 
         try

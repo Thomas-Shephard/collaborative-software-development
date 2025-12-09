@@ -2,7 +2,6 @@ using Jahoot.Core.Models;
 
 namespace Jahoot.Core.Tests.Models;
 
-[TestFixture]
 public class UserTests
 {
     private const int UserId = 1;
