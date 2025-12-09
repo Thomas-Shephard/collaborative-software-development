@@ -101,14 +101,9 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" BorderBrush="#DDDDDD" BorderThickness="0,0,2,0" Padding="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0">
+                <Border Grid.Column="0" BorderBrush="#DDDDDD" BorderThickness="0,0,2,0" Padding="40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
                             <TextBlock Text="Sign In" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,5"/>
                             <TextBlock Text="Access your account" FontSize="16" Foreground="Gray" Margin="0,0,0,25"/>
 
@@ -126,19 +121,14 @@
                                     </Hyperlink>
                                 </TextBlock>
                             </Grid>
+                            <Button Content="Sign In" Style="{StaticResource PrimaryButton}" Click="LoginButton_Click"/>
                         </StackPanel>
-                        <Button Grid.Row="2" Content="Sign In" Style="{StaticResource PrimaryButton}" Click="LoginButton_Click"/>
-                    </Grid>
+                    </ScrollViewer>
                 </Border>
 
-                <Border Grid.Column="1" Padding="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0">
+                <Border Grid.Column="1" Padding="40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
                             <TextBlock Text="Create Account" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,5"/>
                             <TextBlock Text="Register for access" FontSize="16" Foreground="Gray" Margin="0,0,0,25"/>
 
@@ -155,10 +145,11 @@
 
                             <TextBlock Text="Confirm Password" Margin="0,20,0,5" FontWeight="Medium"/>
                             <PasswordBox x:Name="RegisterConfirmPasswordBox" Padding="10"/>
+                                       FontSize="12" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                            
+                            <Button Content="Register" Style="{StaticResource PrimaryButton}" Click="RegisterButton_Click"/>
                         </StackPanel>
-                        
-                        <Button Grid.Row="2" Content="Register" Style="{StaticResource PrimaryButton}" Click="RegisterButton_Click"/>
-                    </Grid>
+                    </ScrollViewer>
                 </Border>
             </Grid>
         </Border>
