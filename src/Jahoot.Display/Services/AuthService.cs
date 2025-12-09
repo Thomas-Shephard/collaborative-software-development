@@ -86,31 +86,20 @@ public class AuthService : IAuthService
 
             try
             {
-                // Try to parse as JSON if the server returns a JSON error model
                 using (var jsonDoc = JsonDocument.Parse(errorContent))
                 {
-                    // Check for standard error message format
                     if (jsonDoc.RootElement.TryGetProperty("message", out var messageElement))
                     {
-                        return new RegisterResult { Success = false, ErrorMessage = messageElement.GetString() ?? "An unknown error occurred." };
+                        return new RegisterResult { Success = false, ErrorMessage = messageElement.GetString() ?? "Registration failed." };
                     }
-                    
-                    // Check for validation errors (ModelState) which is usually a dictionary of arrays
-                    // Example: { "Email": ["Invalid email"] }
-                    // Simple approach: just return the raw content if it's not a simple message, 
-                    // or try to extract the first error. For now, let's keep it simple.
                 }
             }
             catch (JsonException)
             {
-                // Not JSON, return raw string (e.g. plain text "User already exists")
-                return new RegisterResult { Success = false, ErrorMessage = errorContent };
+                return new RegisterResult { Success = false, ErrorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Registration failed." };
             }
 
-            // If we parsed JSON but didn't find "message", it might be a complex validation error object.
-            // In a real app we'd parse this better, but for now fallback to the raw content or a generic message.
-            // If errorContent is short enough, use it.
-            return new RegisterResult { Success = false, ErrorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Registration failed." };
+            return new RegisterResult { Success = false, ErrorMessage = "Registration failed." };
         }
     }
 }
