@@ -6,6 +6,7 @@ namespace Jahoot.WebApi.Controllers.Subject;
 
 [Route("api/subject/list")]
 [ApiController]
+[Tags("Subject")]
 public class ListSubjectsController(ISubjectRepository subjectRepository) : ControllerBase
 {
     [HttpGet]

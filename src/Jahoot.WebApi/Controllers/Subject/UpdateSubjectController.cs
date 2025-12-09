@@ -8,6 +8,7 @@ namespace Jahoot.WebApi.Controllers.Subject;
 
 [Route("api/subject/{id:int}")]
 [ApiController]
+[Tags("Subject")]
 public class UpdateSubjectController(ISubjectRepository subjectRepository) : ControllerBase
 {
     [HttpPut]
