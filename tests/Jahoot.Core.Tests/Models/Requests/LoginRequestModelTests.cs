@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Jahoot.Core.Models;
+using Jahoot.Core.Models.Requests;
 
-namespace Jahoot.Core.Tests.Models;
+namespace Jahoot.Core.Tests.Models.Requests;
 
-[TestFixture]
-public class LoginRequestTests
+public class LoginRequestModelTests
 {
     private const string LoginRequestEmail = "test@example.com";
     private const string LoginRequestPassword = "password123";
@@ -12,16 +11,16 @@ public class LoginRequestTests
     [Test]
     public void LoginRequest_WithValidData_IsValid()
     {
-        LoginRequest loginRequest = new()
+        LoginRequestModel loginRequestModel = new()
         {
             Email = LoginRequestEmail,
             Password = LoginRequestPassword
         };
 
-        ValidationContext validationContext = new(loginRequest);
+        ValidationContext validationContext = new(loginRequestModel);
         List<ValidationResult> validationResults = [];
 
-        bool isValid = Validator.TryValidateObject(loginRequest, validationContext, validationResults, true);
+        bool isValid = Validator.TryValidateObject(loginRequestModel, validationContext, validationResults, true);
 
         Assert.That(isValid, Is.True);
     }
@@ -32,16 +31,16 @@ public class LoginRequestTests
     [TestCase("invalid-email")]
     public void LoginRequest_WithInvalidEmail_IsInvalid(string email)
     {
-        LoginRequest loginRequest = new()
+        LoginRequestModel loginRequestModel = new()
         {
             Email = email,
             Password = LoginRequestPassword
         };
 
-        ValidationContext validationContext = new(loginRequest);
+        ValidationContext validationContext = new(loginRequestModel);
         List<ValidationResult> validationResults = [];
 
-        bool isValid = Validator.TryValidateObject(loginRequest, validationContext, validationResults, true);
+        bool isValid = Validator.TryValidateObject(loginRequestModel, validationContext, validationResults, true);
 
         using (Assert.EnterMultipleScope())
         {
@@ -56,16 +55,16 @@ public class LoginRequestTests
     [TestCase("1234567")]
     public void LoginRequest_WithInvalidPassword_IsInvalid(string password)
     {
-        LoginRequest loginRequest = new()
+        LoginRequestModel loginRequestModel = new()
         {
             Email = LoginRequestEmail,
             Password = password
         };
 
-        ValidationContext validationContext = new(loginRequest);
+        ValidationContext validationContext = new(loginRequestModel);
         List<ValidationResult> validationResults = [];
 
-        bool isValid = Validator.TryValidateObject(loginRequest, validationContext, validationResults, true);
+        bool isValid = Validator.TryValidateObject(loginRequestModel, validationContext, validationResults, true);
 
         using (Assert.EnterMultipleScope())
         {
