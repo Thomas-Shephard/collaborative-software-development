@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Settings;
@@ -51,7 +52,7 @@ public class TokenServiceTests
             Assert.That(jsonToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Name).Value, Is.EqualTo(user.Name));
             Assert.That(jsonToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Jti).Value, Is.Not.Null.And.Not.Empty);
 
-            List<string> roles = jsonToken.Claims.Where(c => c.Type == "role").Select(c => c.Value).ToList();
+            List<string> roles = jsonToken.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
             Assert.That(roles, Contains.Item(nameof(Role.Student)));
             Assert.That(roles, Contains.Item(nameof(Role.Lecturer)));
         }
