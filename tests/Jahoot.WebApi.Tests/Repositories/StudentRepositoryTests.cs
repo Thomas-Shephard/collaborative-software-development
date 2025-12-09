@@ -38,6 +38,17 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task CreateStudentAsync_ClosedConnection_OpensConnectionAndCreatesStudent()
+    {
+        await Connection.CloseAsync();
+
+        await _repository.CreateStudentAsync(UserName, UserEmail, UserPasswordHash);
+
+        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = @Email", new { Email = UserEmail });
+        Assert.That(user, Is.Not.Null);
+    }
+
+    [Test]
     public async Task CreateStudentAsync_ExistingUserId_CreatesStudent()
     {
         await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
