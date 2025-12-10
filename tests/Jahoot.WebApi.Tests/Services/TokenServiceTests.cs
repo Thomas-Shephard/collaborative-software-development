@@ -70,16 +70,15 @@ public class TokenServiceTests
             Roles = [Role.Student]
         };
 
-        DateTime before = DateTime.UtcNow;
+        DateTime tokenCreationTime = DateTime.UtcNow;
         string token = _tokenService.GenerateToken(user);
-        DateTime after = DateTime.UtcNow;
 
         JwtSecurityTokenHandler handler = new();
         JwtSecurityToken jsonToken = handler.ReadJwtToken(token);
 
-        DateTime expectedExpiry = before.AddDays(7);
+        DateTime expectedExpiry = tokenCreationTime.AddDays(7);
 
         // Check it is close to the expiration time (within 1 second either way)
-        Assert.That(jsonToken.ValidTo, Is.EqualTo(expectedExpiry.AddSeconds(-1)).And.LessThanOrEqualTo(after.AddDays(7).AddSeconds(1)));
+        Assert.That(jsonToken.ValidTo, Is.EqualTo(expectedExpiry).Within(TimeSpan.FromSeconds(1)));
     }
 }
