@@ -2,7 +2,7 @@ using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display.Services;
 
-public class LoginResult
+public class Result
 {
     public bool Success { get; set; }
     public string? ErrorMessage { get; set; }
@@ -10,7 +10,8 @@ public class LoginResult
 
 public interface IAuthService
 {
-    Task<LoginResult> Login(LoginRequestModel loginRequest);
+    Task<Result> Login(LoginRequestModel loginRequest);
+    Task<Result> Register(StudentRegistrationRequestModel registerRequest);
 
     Task Logout();
 }
