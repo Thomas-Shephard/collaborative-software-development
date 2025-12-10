@@ -33,8 +33,8 @@ public class SubjectRepositoryTests : RepositoryTestBase
     [Test]
     public async Task GetAllSubjectsAsync_ReturnsAllSubjects()
     {
-        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES ('Maths')");
-        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES ('Science')");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Maths', TRUE)");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Science', FALSE)");
 
         Subject[] subjects = (await _repository.GetAllSubjectsAsync()).ToArray();
 
@@ -42,6 +42,38 @@ public class SubjectRepositoryTests : RepositoryTestBase
         {
             Assert.That(subjects, Has.Length.EqualTo(2));
             Assert.That(subjects.Select(s => s.Name), Is.EquivalentTo(["Maths", "Science"]));
+        }
+    }
+
+    [Test]
+    public async Task GetAllSubjectsAsync_WithIsActiveTrue_ReturnsOnlyActiveSubjects()
+    {
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('ActiveSubject1', TRUE)");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('InactiveSubject1', FALSE)");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('ActiveSubject2', TRUE)");
+
+        Subject[] subjects = (await _repository.GetAllSubjectsAsync(true)).ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(subjects, Has.Length.EqualTo(2));
+            Assert.That(subjects.Select(s => s.Name), Is.EquivalentTo(["ActiveSubject1", "ActiveSubject2"]));
+        }
+    }
+
+    [Test]
+    public async Task GetAllSubjectsAsync_WithIsActiveFalse_ReturnsOnlyInactiveSubjects()
+    {
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('ActiveSubject1', TRUE)");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('InactiveSubject1', FALSE)");
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('InactiveSubject2', FALSE)");
+
+        Subject[] subjects = (await _repository.GetAllSubjectsAsync(false)).ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(subjects, Has.Length.EqualTo(2));
+            Assert.That(subjects.Select(s => s.Name), Is.EquivalentTo(["InactiveSubject1", "InactiveSubject2"]));
         }
     }
 

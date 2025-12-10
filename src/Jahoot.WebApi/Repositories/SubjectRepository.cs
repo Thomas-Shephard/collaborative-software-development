@@ -12,10 +12,12 @@ public class SubjectRepository(IDbConnection connection) : ISubjectRepository
         await connection.ExecuteAsync(query, new { Name = name });
     }
 
-    public async Task<IEnumerable<Subject>> GetAllSubjectsAsync()
+    public async Task<IEnumerable<Subject>> GetAllSubjectsAsync(bool? isActive = null)
     {
-        const string query = "SELECT * FROM Subject";
-        return await connection.QueryAsync<Subject>(query);
+        const string baseQuery = "SELECT * FROM Subject";
+        const string filteredQuery = "SELECT * FROM Subject WHERE is_active = @IsActive";
+        string query = isActive.HasValue ? filteredQuery : baseQuery;
+        return await connection.QueryAsync<Subject>(query, new { IsActive = isActive });
     }
 
     public async Task<Subject?> GetSubjectByIdAsync(int id)
