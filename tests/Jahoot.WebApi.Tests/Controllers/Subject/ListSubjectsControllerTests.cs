@@ -41,6 +41,36 @@ public class ListSubjectsControllerTests
     }
 
     [Test]
+    public async Task ListSubjects_WithoutIsActive_CallsRepositoryWithNull()
+    {
+        _subjectRepositoryMock.Setup(repo => repo.GetAllSubjectsAsync(null)).ReturnsAsync(new List<Core.Models.Subject>());
+
+        await _controller.ListSubjects();
+
+        _subjectRepositoryMock.Verify(repo => repo.GetAllSubjectsAsync(null), Times.Once);
+    }
+
+    [Test]
+    public async Task ListSubjects_WithIsActiveTrue_CallsRepositoryWithTrue()
+    {
+        _subjectRepositoryMock.Setup(repo => repo.GetAllSubjectsAsync(true)).ReturnsAsync(new List<Core.Models.Subject>());
+
+        await _controller.ListSubjects(true);
+
+        _subjectRepositoryMock.Verify(repo => repo.GetAllSubjectsAsync(true), Times.Once);
+    }
+
+    [Test]
+    public async Task ListSubjects_WithIsActiveFalse_CallsRepositoryWithFalse()
+    {
+        _subjectRepositoryMock.Setup(repo => repo.GetAllSubjectsAsync(false)).ReturnsAsync(new List<Core.Models.Subject>());
+
+        await _controller.ListSubjects(false);
+
+        _subjectRepositoryMock.Verify(repo => repo.GetAllSubjectsAsync(false), Times.Once);
+    }
+
+    [Test]
     public void ListSubjects_HasAuthorization()
     {
         MethodInfo? methodInfo = typeof(ListSubjectsController).GetMethod(nameof(ListSubjectsController.ListSubjects));
