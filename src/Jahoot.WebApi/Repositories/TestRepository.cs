@@ -1,0 +1,218 @@
+using System.Data;
+using Dapper;
+using Jahoot.Core.Models;
+
+namespace Jahoot.WebApi.Repositories;
+
+public class TestRepository(IDbConnection connection) : ITestRepository
+{
+    public async Task CreateTestAsync(Test test)
+    {
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+        }
+
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        try
+        {
+            const string createTestQuery = "INSERT INTO Test (subject_id, name) VALUES (@SubjectId, @Name); SELECT LAST_INSERT_ID();";
+            int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name }, transaction);
+
+            foreach (Question question in test.Questions)
+            {
+                const string createQuestionQuery = "INSERT INTO Question (text) VALUES (@Text); SELECT LAST_INSERT_ID();";
+                int questionId = await connection.ExecuteScalarAsync<int>(createQuestionQuery, new { question.Text }, transaction);
+
+                const string linkQuery = "INSERT INTO TestQuestion (test_id, question_id) VALUES (@TestId, @QuestionId);";
+                await connection.ExecuteAsync(linkQuery, new { TestId = testId, QuestionId = questionId }, transaction);
+
+                const string createOptionQuery = "INSERT INTO QuestionOption (question_id, option_text, is_correct) VALUES (@QuestionId, @OptionText, @IsCorrect);";
+                await connection.ExecuteAsync(createOptionQuery, question.Options.Select(option => new { QuestionId = questionId, option.OptionText, option.IsCorrect }), transaction);
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Test>> GetAllTestsAsync(int? subjectId = null)
+    {
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+        }
+
+        const string baseQuery = "SELECT test_id FROM Test";
+        const string filteredQuery = $"{baseQuery} WHERE subject_id = @SubjectId";
+
+        string query = subjectId.HasValue ? filteredQuery : baseQuery;
+
+        IEnumerable<int> testIds = await connection.QueryAsync<int>(query, new { SubjectId = subjectId });
+
+        List<Test> tests = [];
+        foreach (int testId in testIds)
+        {
+            Test? test = await GetTestInternalAsync(testId);
+
+            if (test is not null)
+            {
+                tests.Add(test);
+            }
+        }
+
+        return tests;
+    }
+
+    public async Task<Test?> GetTestByIdAsync(int testId)
+    {
+        return await GetTestInternalAsync(testId);
+    }
+
+    public async Task UpdateTestAsync(Test test)
+    {
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+        }
+
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        try
+        {
+            const string updateTestQuery = "UPDATE Test SET name = @Name, subject_id = @SubjectId WHERE test_id = @TestId";
+            await connection.ExecuteAsync(updateTestQuery, new { test.Name, test.SubjectId, test.TestId }, transaction);
+
+            Question[] currentQuestions = (await GetQuestionsInternalAsync(test.TestId, transaction)).ToArray();
+            int[] currentQuestionIds = currentQuestions.Select(question => question.QuestionId).ToArray();
+
+            List<int> newQuestionIds = [];
+            HashSet<int> reusedQuestionIds = [];
+
+            foreach (Question question in test.Questions)
+            {
+                IEnumerable<Question> potentialMatches = currentQuestions.Where(currentQuestion => currentQuestion.Text == question.Text && !reusedQuestionIds.Contains(currentQuestion.QuestionId));
+
+                Question? exactMatch = (from match in potentialMatches
+                                        let matchOptions = match.Options.OrderBy(option => option.OptionText).ToList()
+                                        let modelOptions = question.Options.OrderBy(option => option.OptionText).ToList()
+                                        where matchOptions.Count == modelOptions.Count
+                                            let optionsMatch = !matchOptions.Where((option, i) => option.OptionText != modelOptions[i].OptionText || option.IsCorrect != modelOptions[i].IsCorrect).Any()
+                                            where optionsMatch
+                                                select match
+                                        ).FirstOrDefault();
+
+                if (exactMatch is not null)
+                {
+                    newQuestionIds.Add(exactMatch.QuestionId);
+                    reusedQuestionIds.Add(exactMatch.QuestionId);
+                }
+                else
+                {
+                    const string createQuestionQuery = "INSERT INTO Question (text) VALUES (@Text); SELECT LAST_INSERT_ID();";
+                    int questionId = await connection.ExecuteScalarAsync<int>(createQuestionQuery, new { question.Text }, transaction);
+
+                    const string createOptionQuery = "INSERT INTO QuestionOption (question_id, option_text, is_correct) VALUES (@QuestionId, @OptionText, @IsCorrect);";
+                    await connection.ExecuteAsync(createOptionQuery, question.Options.Select(option => new { QuestionId = questionId, option.OptionText, option.IsCorrect }), transaction);
+
+                    newQuestionIds.Add(questionId);
+                }
+            }
+
+            // Update links to questions in this test
+            const string deleteLinksQuery = "DELETE FROM TestQuestion WHERE test_id = @TestId";
+            await connection.ExecuteAsync(deleteLinksQuery, new { test.TestId }, transaction);
+
+            if (newQuestionIds.Count != 0)
+            {
+                const string linkQuery = "INSERT INTO TestQuestion (test_id, question_id) VALUES (@TestId, @QuestionId);";
+                await connection.ExecuteAsync(linkQuery, newQuestionIds.Select(questionId => new { test.TestId, QuestionId = questionId }), transaction);
+            }
+
+            // Remove questions which are not used by any tests
+            List<int> removedQuestionIds = currentQuestionIds.Except(newQuestionIds).ToList();
+            if (removedQuestionIds.Count > 0)
+            {
+                const string deleteOrphansQuery = "DELETE FROM Question WHERE question_id IN @Ids AND question_id NOT IN (SELECT question_id FROM TestQuestion)";
+                await connection.ExecuteAsync(deleteOrphansQuery, new { Ids = removedQuestionIds }, transaction);
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public async Task DeleteTestAsync(int testId)
+    {
+        const string query = "DELETE FROM Test WHERE test_id = @TestId";
+        await connection.ExecuteAsync(query, new { TestId = testId });
+    }
+
+    public async Task<bool> HasAttemptsAsync(int testId)
+    {
+        const string query = "SELECT COUNT(1) FROM TestResult WHERE test_id = @TestId";
+        int count = await connection.ExecuteScalarAsync<int>(query, new { TestId = testId });
+        return count > 0;
+    }
+
+    private async Task<Test?> GetTestInternalAsync(int testId)
+    {
+        const string query = "SELECT * FROM Test WHERE test_id = @TestId";
+        Test? test = await connection.QuerySingleOrDefaultAsync<Test>(query, new { TestId = testId });
+
+        if (test == null)
+        {
+            return null;
+        }
+
+        IEnumerable<Question> questions = await GetQuestionsInternalAsync(testId, null);
+
+        return new Test
+        {
+            TestId = test.TestId,
+            SubjectId = test.SubjectId,
+            Name = test.Name,
+            CreatedAt = test.CreatedAt,
+            UpdatedAt = test.UpdatedAt,
+            Questions = questions.ToList().AsReadOnly()
+        };
+    }
+
+    private async Task<IEnumerable<Question>> GetQuestionsInternalAsync(int testId, IDbTransaction? transaction)
+    {
+        const string questionsQuery = "SELECT question.* FROM Question question JOIN TestQuestion test_question ON question.question_id = test_question.question_id WHERE test_question.test_id = @TestId";
+        List<Question> questions = (await connection.QueryAsync<Question>(questionsQuery, new { TestId = testId }, transaction)).ToList();
+
+        if (questions.Count == 0)
+        {
+            return [];
+        }
+
+        IEnumerable<int> questionIds = questions.Select(question => question.QuestionId);
+        const string questionOptionsQuery = "SELECT * FROM QuestionOption WHERE question_id IN @Ids";
+        IEnumerable<QuestionOption> questionOptions = await connection.QueryAsync<QuestionOption>(questionOptionsQuery, new { Ids = questionIds }, transaction);
+
+        ILookup<int, QuestionOption> optionsLookup = questionOptions.ToLookup(option => option.QuestionId);
+
+        return questions.Select(question => new Question
+        {
+            QuestionId = question.QuestionId,
+            Text = question.Text,
+            CreatedAt = question.CreatedAt,
+            UpdatedAt = question.UpdatedAt,
+            Options = optionsLookup[question.QuestionId]
+                                     .OrderBy(questionOption => questionOption.OptionText)
+                                     .ToList()
+                                     .AsReadOnly()
+        });
+    }
+}
