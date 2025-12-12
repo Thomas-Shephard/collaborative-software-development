@@ -71,17 +71,30 @@ public class SmtpEmailServiceTests
         }
 
         // Act & Assert
-        Assert.Throws<FileNotFoundException>(() => new SmtpEmailService(_settings, _clientFactoryMock.Object));
+        Assert.Throws<FileNotFoundException>(() => _ = new SmtpEmailService(_settings, _clientFactoryMock.Object));
     }
 
     [Test]
     public async Task SendEmailAsync_SendsEmailCorrectly()
     {
         // Arrange
-        string to = "recipient@example.com";
-        string subject = "Test Subject";
-        string heading = "Test Heading";
-        string body = "Test Body";
+        const string to = "recipient@example.com";
+        const string subject = "Test Subject";
+        const string heading = "Test Heading";
+        const string body = "Test Body";
+
+        string? capturedTo = null;
+        string? capturedSubject = null;
+        string? capturedHtmlBody = null;
+
+        _clientMock.Setup(c => c.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()))
+            .Callback<MimeMessage, CancellationToken, ITransferProgress>((m, _, _) =>
+            {
+                capturedTo = ((MailboxAddress)m.To[0]).Address;
+                capturedSubject = m.Subject;
+                capturedHtmlBody = m.HtmlBody;
+            })
+            .Returns(Task.FromResult(string.Empty));
 
         // Act
         await _service.SendEmailAsync(to, subject, heading, body);
@@ -90,13 +103,15 @@ public class SmtpEmailServiceTests
         _clientMock.Verify(c => c.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls, It.IsAny<CancellationToken>()), Times.Once);
         _clientMock.Verify(c => c.AuthenticateAsync(_settings.User, _settings.Password, It.IsAny<CancellationToken>()), Times.Once);
 
-        _clientMock.Verify(c => c.SendAsync(It.Is<MimeMessage>(m =>
-            m.To.Count == 1 &&
-            ((MailboxAddress)m.To[0]).Address == to &&
-            m.Subject == subject &&
-            m.HtmlBody.Contains(body) &&
-            m.HtmlBody.Contains(heading)
-        ), It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()), Times.Once);
+        _clientMock.Verify(c => c.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()), Times.Once);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedTo, Is.EqualTo(to));
+            Assert.That(capturedSubject, Is.EqualTo(subject));
+            Assert.That(capturedHtmlBody, Does.Contain(body));
+            Assert.That(capturedHtmlBody, Does.Contain(heading));
+        }
 
         _clientMock.Verify(c => c.DisconnectAsync(true, It.IsAny<CancellationToken>()), Times.Once);
         _clientMock.Verify(c => c.Dispose(), Times.Once);
