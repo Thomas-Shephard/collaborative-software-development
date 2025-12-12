@@ -93,3 +93,10 @@ CREATE TABLE StudentAnswer
     FOREIGN KEY (test_result_id) REFERENCES TestResult (test_result_id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES Question (question_id) ON DELETE CASCADE
 );
+
+CREATE TABLE DeniedToken
+(
+    jti    VARCHAR(36) PRIMARY KEY,
+    expires_at TIMESTAMP NOT NULL,
+    INDEX idx_expires_at (expires_at)
+);
