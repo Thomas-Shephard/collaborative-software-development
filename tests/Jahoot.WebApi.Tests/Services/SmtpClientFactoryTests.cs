@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace Jahoot.WebApi.Tests.Services;
 
-[TestFixture]
 public class SmtpClientFactoryTests
 {
     [Test]
