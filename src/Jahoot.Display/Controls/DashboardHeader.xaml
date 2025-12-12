@@ -114,7 +114,7 @@
                 <Button Content="Log Out" 
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Click="LogoutButton_Click"
-                        Margin="10,0,0,0"
+                        Margin="0,0,10,0"
                         FontSize="14"
                         Foreground="{StaticResource SecondaryTextColor}"
                         Background="Transparent"
