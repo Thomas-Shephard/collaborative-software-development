@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -32,12 +31,13 @@ public static partial class ServiceCollectionExtensions
 
                 try
                 {
-                    object convertedValue = Convert.ChangeType(value, prop.PropertyType);
+                    Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                    object convertedValue = Convert.ChangeType(value, targetType);
                     prop.SetValue(settings, convertedValue);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new InvalidOperationException($"Failed to convert configuration value '{envKey}' to type {prop.PropertyType.Name}.");
+                    throw new InvalidOperationException($"Failed to convert configuration value '{envKey}' to type {prop.PropertyType.Name}.", ex);
                 }
             }
 

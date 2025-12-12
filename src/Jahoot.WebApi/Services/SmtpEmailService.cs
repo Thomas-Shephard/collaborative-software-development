@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using MailKit.Net.Smtp;
 using MimeKit;
@@ -31,6 +32,11 @@ public class SmtpEmailService : IEmailService
 
     public async Task SendEmailAsync(string to, string subject, string title, string body)
     {
+        if (!new EmailAddressAttribute().IsValid(to))
+        {
+            throw new ArgumentException("Email address is not valid", nameof(to));
+        }
+
         using MimeMessage message = new();
         message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
         message.To.Add(new MailboxAddress("", to));
