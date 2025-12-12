@@ -5,11 +5,9 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Moq;
-using NUnit.Framework;
 
 namespace Jahoot.WebApi.Tests.Services;
 
-[TestFixture]
 public class SmtpEmailServiceTests
 {
     private Mock<ISmtpClientFactory> _clientFactoryMock;

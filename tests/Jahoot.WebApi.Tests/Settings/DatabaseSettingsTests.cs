@@ -1,52 +1,47 @@
 using Jahoot.WebApi.Settings;
-using NUnit.Framework;
 
 namespace Jahoot.WebApi.Tests.Settings;
 
-[TestFixture]
 public class DatabaseSettingsTests
 {
+    private const string Host = "127.0.0.1";
+    private const string Name = "test_db";
+    private const string User = "test_user";
+    private const string Password = "test_password";
+
     [Test]
     public void DatabaseSettings_ConnectionString_ReturnsCorrectFormat()
     {
-        // Arrange
         DatabaseSettings settings = new()
         {
-            Host = "localhost",
-            Name = "jahoot_db",
-            User = "admin",
-            Password = "secure_password"
+            Host = Host,
+            Name = Name,
+            User = User,
+            Password = Password
         };
 
-        // Act
         string connectionString = settings.ConnectionString;
 
-        // Assert
-        Assert.That(connectionString, Is.EqualTo("Server=localhost;Port=3306;Database=jahoot_db;User=admin;Password=secure_password"));
+        Assert.That(connectionString, Is.EqualTo($"Server={Host};Port=3306;Database={Name};User={User};Password={Password}"));
     }
 
     [Test]
     public void DatabaseSettings_Properties_AreSetCorrectly()
     {
-        // Arrange
-        string host = "127.0.0.1";
-        string name = "test_db";
-        string user = "test_user";
-        string password = "test_password";
-
-        // Act
         DatabaseSettings settings = new()
         {
-            Host = host,
-            Name = name,
-            User = user,
-            Password = password
+            Host = Host,
+            Name = Name,
+            User = User,
+            Password = Password
         };
 
-        // Assert
-        Assert.That(settings.Host, Is.EqualTo(host));
-        Assert.That(settings.Name, Is.EqualTo(name));
-        Assert.That(settings.User, Is.EqualTo(user));
-        Assert.That(settings.Password, Is.EqualTo(password));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(settings.Host, Is.EqualTo(Host));
+            Assert.That(settings.Name, Is.EqualTo(Name));
+            Assert.That(settings.User, Is.EqualTo(User));
+            Assert.That(settings.Password, Is.EqualTo(Password));
+        }
     }
 }

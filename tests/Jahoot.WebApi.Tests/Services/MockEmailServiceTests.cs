@@ -1,9 +1,7 @@
 using Jahoot.WebApi.Services;
-using NUnit.Framework;
 
 namespace Jahoot.WebApi.Tests.Services;
 
-[TestFixture]
 public class MockEmailServiceTests
 {
     [Test]
