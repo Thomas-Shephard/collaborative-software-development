@@ -19,10 +19,8 @@ public static partial class ServiceCollectionExtensions
         {
             T settings = Activator.CreateInstance<T>() ?? throw new InvalidOperationException($"Could not instantiate {typeof(T).Name}");
 
-            foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite))
             {
-                if (!prop.CanWrite) continue;
-
                 string snakeCaseName = CamelToSnakeCase(prop.Name).ToUpper();
                 string envKey = $"{prefix}_{snakeCaseName}";
                 string? value = configuration[envKey];

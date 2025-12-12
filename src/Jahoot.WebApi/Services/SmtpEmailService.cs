@@ -8,6 +8,9 @@ namespace Jahoot.WebApi.Services;
 
 public class SmtpEmailService : IEmailService
 {
+    private const string TemplateDirectory = "Templates";
+    private const string TemplateFileName = "EmailTemplate.html";
+
     private readonly EmailSettings _settings;
     private readonly ISmtpClientFactory _clientFactory;
     private readonly string _template;
@@ -17,7 +20,7 @@ public class SmtpEmailService : IEmailService
         _settings = settings;
         _clientFactory = clientFactory;
 
-        string templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "EmailTemplate.html");
+        string templatePath = Path.Combine(AppContext.BaseDirectory, TemplateDirectory, TemplateFileName);
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException($"Email template not found at {templatePath}");
