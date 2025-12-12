@@ -16,11 +16,11 @@ public static partial class ServiceCollectionExtensions
 
         public T AddAndConfigureFromEnv<T>(IConfiguration configuration, string prefix) where T : class
         {
-            T settings = Activator.CreateInstance<T>() ?? throw new InvalidOperationException($"Could not instantiate {typeof(T).Name}");
+            T settings = Activator.CreateInstance<T>();
 
             foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite))
             {
-                string snakeCaseName = CamelToSnakeCase(prop.Name).ToUpper();
+                string snakeCaseName = CamelToSnakeCaseRegex().Replace(prop.Name, "$1_$2").ToUpper();
                 string envKey = $"{prefix}_{snakeCaseName}";
                 string? value = configuration[envKey];
 
@@ -44,13 +44,6 @@ public static partial class ServiceCollectionExtensions
             services.AddSingleton(settings);
             return settings;
         }
-    }
-
-    private static string CamelToSnakeCase(string input)
-    {
-        return string.IsNullOrEmpty(input)
-            ? input
-            : CamelToSnakeCaseRegex().Replace(input, "$1_$2");
     }
 
     [GeneratedRegex("([a-z0-9])([A-Z])")]
