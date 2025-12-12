@@ -51,7 +51,6 @@ public class SmtpEmailServiceTests
             File.Delete(_templatePath);
         }
 
-        // Clean up directory if empty
         string? directory = Path.GetDirectoryName(_templatePath);
         if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
         {
@@ -62,20 +61,17 @@ public class SmtpEmailServiceTests
     [Test]
     public void Constructor_ThrowsFileNotFoundException_WhenTemplateIsMissing()
     {
-        // Arrange
         if (File.Exists(_templatePath))
         {
             File.Delete(_templatePath);
         }
 
-        // Act & Assert
         Assert.Throws<FileNotFoundException>(() => _ = new SmtpEmailService(_settings, _clientFactoryMock.Object));
     }
 
     [Test]
     public async Task SendEmailAsync_SendsEmailCorrectly()
     {
-        // Arrange
         const string to = "recipient@example.com";
         const string subject = "Test Subject";
         const string heading = "Test Heading";
@@ -94,13 +90,10 @@ public class SmtpEmailServiceTests
             })
             .Returns(Task.FromResult(string.Empty));
 
-        // Act
         await _service.SendEmailAsync(to, subject, heading, body);
 
-        // Assert
         _clientMock.Verify(c => c.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls, It.IsAny<CancellationToken>()), Times.Once);
         _clientMock.Verify(c => c.AuthenticateAsync(_settings.User, _settings.Password, It.IsAny<CancellationToken>()), Times.Once);
-
         _clientMock.Verify(c => c.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>(), It.IsAny<ITransferProgress>()), Times.Once);
 
         using (Assert.EnterMultipleScope())
