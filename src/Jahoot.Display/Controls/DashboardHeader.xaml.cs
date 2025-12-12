@@ -71,9 +71,9 @@ namespace Jahoot.Display.Controls
                     currentWindow.Close();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Logout failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Logout failed", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
