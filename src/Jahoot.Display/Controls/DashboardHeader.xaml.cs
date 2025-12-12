@@ -1,4 +1,8 @@
+using Jahoot.Display.Services;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.ObjectModel;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -45,6 +49,28 @@ namespace Jahoot.Display.Controls
         public DashboardHeader()
         {
             InitializeComponent();
+        }
+
+        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (App)Application.Current;
+                var authService = app.ServiceProvider.GetRequiredService<IAuthService>();
+
+                await authService.Logout();
+
+                MessageBox.Show("You have been successfully signed out", "Signed Out", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                var loginPage = app.ServiceProvider.GetRequiredService<LoginPage>();
+                loginPage.Show();
+
+                Window.GetWindow(this)?.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Logout failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
