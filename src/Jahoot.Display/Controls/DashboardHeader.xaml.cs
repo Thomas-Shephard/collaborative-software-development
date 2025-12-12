@@ -1,8 +1,6 @@
 using Jahoot.Display.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.ObjectModel;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 
