@@ -1,5 +1,4 @@
 using Jahoot.Core.Models;
-using Jahoot.WebApi.Models.Responses;
 using Jahoot.WebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +19,7 @@ public class ListStudentsController(IStudentRepository studentRepository) : Cont
             return BadRequest($"Invalid student account status. Valid values are: {string.Join(", ", Enum.GetNames<StudentAccountStatus>())}");
         }
 
-        IEnumerable<StudentResponseDto> studentDtos = (await studentRepository.GetStudentsByStatusAsync(status))
-                                                                              .Select(StudentResponseDto.FromStudent);
-        return Ok(studentDtos);
+        IEnumerable<Core.Models.Student> students = await studentRepository.GetStudentsByStatusAsync(status);
+        return Ok(students);
     }
 }
