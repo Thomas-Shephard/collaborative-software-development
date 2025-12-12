@@ -21,7 +21,6 @@
     <ItemGroup>
       <Content Include="Templates\EmailTemplate.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <SonarQubeExclude>true</SonarQubeExclude>
       </Content>
     </ItemGroup>
 

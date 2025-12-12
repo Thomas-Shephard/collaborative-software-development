@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Jahoot.WebApi.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,8 @@ namespace Jahoot.WebApi.Tests.Extensions;
 
 public class ServiceCollectionExtensionsTests
 {
+    private const string Prefix = "TEST_APP";
+
     private Mock<IServiceCollection> _servicesMock;
 
     [SetUp]
@@ -15,32 +18,35 @@ public class ServiceCollectionExtensionsTests
         _servicesMock = new Mock<IServiceCollection>();
     }
 
-    // --- Helper Classes for Testing ---
-    public class TestSettings
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
+    private class TestSettings
     {
-        public string SomeString { get; set; } = string.Empty;
+        public required string SomeString { get; set; }
         public int SomeInt { get; set; }
         public bool SomeBool { get; set; }
     }
 
-    public class TestSnakeCaseSettings
+    // ReSharper disable once ClassNeverInstantiated.Local
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
+    private class TestSnakeCaseSettings
     {
-        public string ThisIsCamelCase { get; set; } = string.Empty;
+        public required string ThisIsCamelCase { get; set; }
     }
 
-    public class TestSettingsWithReadOnly
+    // ReSharper disable once ClassNeverInstantiated.Local
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
+    private class TestSettingsWithReadOnly
     {
-        public string Writeable { get; set; } = string.Empty;
-        public string ReadOnly => "Can't touch this";
+        public required string Writeable { get; set; }
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        public string ReadOnly => "Read only property";
     }
-
-    // --- Tests for AddAndConfigure ---
 
     [Test]
     public void AddAndConfigure_ValidConfiguration_RegistersSettings()
     {
-        // Arrange
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
             {"MySettings:SomeString", "TestValue"},
             {"MySettings:SomeInt", "123"},
@@ -51,10 +57,8 @@ public class ServiceCollectionExtensionsTests
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act
-        var result = _servicesMock.Object.AddAndConfigure<TestSettings>(configuration, "MySettings");
+        TestSettings result = _servicesMock.Object.AddAndConfigure<TestSettings>(configuration, "MySettings");
 
-        // Assert
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
@@ -63,50 +67,39 @@ public class ServiceCollectionExtensionsTests
             Assert.That(result.SomeBool, Is.True);
         }
 
-        // Verify that AddSingleton was called with the settings object
-        _servicesMock.Verify(s => s.Add(It.Is<ServiceDescriptor>(d => 
-            d.ServiceType == typeof(TestSettings) && 
-            d.Lifetime == ServiceLifetime.Singleton && 
+        _servicesMock.Verify(s => s.Add(It.Is<ServiceDescriptor>(d =>
+            d.ServiceType == typeof(TestSettings) &&
+            d.Lifetime == ServiceLifetime.Singleton &&
             d.ImplementationInstance == result)), Times.Once);
     }
 
     [Test]
     public void AddAndConfigure_MissingSection_ThrowsInvalidOperationException()
     {
-        // Arrange
         IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>()) // Empty config
+            .AddInMemoryCollection(new Dictionary<string, string?>())
             .Build();
 
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => 
-            _servicesMock.Object.AddAndConfigure<TestSettings>(configuration, "NonExistentSection"));
-        
+        InvalidOperationException? ex = Assert.Throws<InvalidOperationException>(() => _servicesMock.Object.AddAndConfigure<TestSettings>(configuration, "NonExistentSection"));
         Assert.That(ex.Message, Is.EqualTo("NonExistentSection is not configured."));
     }
-
-    // --- Tests for AddAndConfigureFromEnv ---
 
     [Test]
     public void AddAndConfigureFromEnv_ValidEnvVars_RegistersSettings()
     {
-        // Arrange
-        var prefix = "TESTAPP";
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
-            {$"{prefix}_SOME_STRING", "EnvValue"},
-            {$"{prefix}_SOME_INT", "456"},
-            {$"{prefix}_SOME_BOOL", "false"}
+            {$"{Prefix}_SOME_STRING", "EnvValue"},
+            {$"{Prefix}_SOME_INT", "456"},
+            {$"{Prefix}_SOME_BOOL", "false"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act
-        var result = _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, prefix);
+        TestSettings result = _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, Prefix);
 
-        // Assert
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
@@ -115,33 +108,25 @@ public class ServiceCollectionExtensionsTests
             Assert.That(result.SomeBool, Is.False);
         }
 
-        _servicesMock.Verify(s => s.Add(It.Is<ServiceDescriptor>(d => 
-            d.ServiceType == typeof(TestSettings) && 
-            d.Lifetime == ServiceLifetime.Singleton && 
+        _servicesMock.Verify(s => s.Add(It.Is<ServiceDescriptor>(d =>
+            d.ServiceType == typeof(TestSettings) &&
+            d.Lifetime == ServiceLifetime.Singleton &&
             d.ImplementationInstance == result)), Times.Once);
     }
 
     [Test]
     public void AddAndConfigureFromEnv_MissingEnvVar_ThrowsInvalidOperationException()
     {
-        // Arrange
-        var prefix = "TESTAPP";
-        // Only provide one value, missing others
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
-            {$"{prefix}_SOME_STRING", "EnvValue"}
+            {$"{Prefix}_SOME_STRING", "EnvValue"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act & Assert
-        // It iterates properties. SomeInt is the next one likely to fail or implicit failure depending on iteration order.
-        // Actually, logic iterates all properties.
-        var ex = Assert.Throws<InvalidOperationException>(() => 
-            _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, prefix));
-
+        InvalidOperationException? ex = Assert.Throws<InvalidOperationException>(() => _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, Prefix));
         Assert.That(ex.Message, Does.Contain("Configuration value"));
         Assert.That(ex.Message, Does.Contain("is required"));
     }
@@ -149,69 +134,57 @@ public class ServiceCollectionExtensionsTests
     [Test]
     public void AddAndConfigureFromEnv_TypeConversionFailure_ThrowsInvalidOperationException()
     {
-        // Arrange
-        var prefix = "TESTAPP";
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
-            {$"{prefix}_SOME_STRING", "EnvValue"},
-            {$"{prefix}_SOME_INT", "NotAnInteger"}, // Invalid int
-            {$"{prefix}_SOME_BOOL", "true"}
+            {$"{Prefix}_SOME_STRING", "EnvValue"},
+            {$"{Prefix}_SOME_INT", "NotAnInteger"},
+            {$"{Prefix}_SOME_BOOL", "true"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => 
-            _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, prefix));
-
+        InvalidOperationException? ex = Assert.Throws<InvalidOperationException>(() => _servicesMock.Object.AddAndConfigureFromEnv<TestSettings>(configuration, Prefix));
         Assert.That(ex.Message, Does.Contain("Failed to convert configuration value"));
     }
 
     [Test]
     public void AddAndConfigureFromEnv_IgnoresReadOnlyProperties()
     {
-        // Arrange
-        var prefix = "TESTAPP";
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
-            {$"{prefix}_WRITEABLE", "WriteMe"}
-            // No env var provided for ReadOnly property
+            {$"{Prefix}_WRITEABLE", "WriteMe"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act
-        var result = _servicesMock.Object.AddAndConfigureFromEnv<TestSettingsWithReadOnly>(configuration, prefix);
+        TestSettingsWithReadOnly result = _servicesMock.Object.AddAndConfigureFromEnv<TestSettingsWithReadOnly>(configuration, Prefix);
 
-        // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Writeable, Is.EqualTo("WriteMe"));
-        Assert.That(result.ReadOnly, Is.EqualTo("Can't touch this"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Writeable, Is.EqualTo("WriteMe"));
+            Assert.That(result.ReadOnly, Is.EqualTo("Read only property"));
+        }
     }
 
     [Test]
     public void AddAndConfigureFromEnv_SnakeCaseMapping()
     {
-        // Arrange
-        var prefix = "TESTAPP";
-        // Property is ThisIsCamelCase -> maps to THIS_IS_CAMEL_CASE
-        var inMemorySettings = new Dictionary<string, string?>
+        Dictionary<string, string?> inMemorySettings = new()
         {
-            {$"{prefix}_THIS_IS_CAMEL_CASE", "MappedCorrectly"}
+            {$"{Prefix}_THIS_IS_CAMEL_CASE", "MappedCorrectly"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        // Act
-        var result = _servicesMock.Object.AddAndConfigureFromEnv<TestSnakeCaseSettings>(configuration, prefix);
+        TestSnakeCaseSettings result = _servicesMock.Object.AddAndConfigureFromEnv<TestSnakeCaseSettings>(configuration, Prefix);
 
-        // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.ThisIsCamelCase, Is.EqualTo("MappedCorrectly"));
     }
