@@ -44,6 +44,6 @@ public class CreateTestController(ITestRepository testRepository, ISubjectReposi
         };
 
         await testRepository.CreateTestAsync(test);
-        return Ok();
+        return Created();
     }
 }

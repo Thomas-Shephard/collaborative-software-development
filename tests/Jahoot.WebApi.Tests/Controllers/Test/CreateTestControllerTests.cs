@@ -51,7 +51,7 @@ public class CreateTestControllerTests
     }
 
     [Test]
-    public async Task CreateTest_ValidRequest_ReturnsOkAndCreatesTest()
+    public async Task CreateTest_ValidRequest_ReturnsCreatedAndCreatesTest()
     {
         TestRequestModel request = new()
         {
@@ -76,7 +76,7 @@ public class CreateTestControllerTests
 
         IActionResult result = await _controller.CreateTest(request);
 
-        Assert.That(result, Is.TypeOf<OkResult>());
+        Assert.That(result, Is.TypeOf<CreatedResult>());
         _testRepositoryMock.Verify(repo => repo.CreateTestAsync(It.Is<Core.Models.Test>(t =>
             t.Name == request.Name &&
             t.SubjectId == request.SubjectId &&
