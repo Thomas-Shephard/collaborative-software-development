@@ -1,0 +1,25 @@
+meta {
+  name: SubjectId
+  type: http
+  seq: 7
+}
+
+put {
+  url: http://localhost/api/subject/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1IiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIm5hbWUiOiJBZG1pbiIsImp0aSI6ImRlZmZiM2ViLTM1Y2UtNGExNS05Nzk1LTVkYjcyMzI5YmQ1OCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6WyJMZWN0dXJlciIsIkFkbWluIiwiU3R1ZGVudCJdLCJuYmYiOjE3NjUzMDQ5NTMsImV4cCI6MTc2NTkwOTc1MywiaXNzIjoieW91cl9pc3N1ZXJfaGVyZSIsImF1ZCI6InlvdXJfYXVkaWVuY2VfaGVyZSJ9.TP958YeHKCmi9zXUCEwc3f6j4mOtsr5V3oNTdYbXv3E
+}
+
+body:json {
+  {
+    "name":"geog2"
+  }
+}
+
+vars:post-response {
+  auth_token: res.body.token
+}

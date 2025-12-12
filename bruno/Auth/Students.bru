@@ -1,0 +1,15 @@
+meta {
+  name: Students
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost/api/student/pending
+  body: json
+  auth: none
+}
+
+vars:post-response {
+  auth_token: res.body.token
+}
