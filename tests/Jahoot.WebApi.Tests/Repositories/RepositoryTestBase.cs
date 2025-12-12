@@ -16,10 +16,11 @@ public abstract class RepositoryTestBase
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         _mariaDbContainer = new MariaDbBuilder()
             .WithImage("mariadb:latest")
+            .WithUsername("root")
+            .WithPassword("root")
             .Build();
         await _mariaDbContainer.StartAsync();
-        string script = await File.ReadAllTextAsync(Path.Combine(TestContext.CurrentContext.TestDirectory, "database-init.sql"));
-        await _mariaDbContainer.ExecScriptAsync(script);
+        DatabaseMigrator.ApplyMigrations(_mariaDbContainer.GetConnectionString());
     }
 
     [OneTimeTearDown]
