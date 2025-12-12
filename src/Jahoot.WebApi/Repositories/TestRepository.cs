@@ -20,16 +20,15 @@ public class TestRepository(IDbConnection connection) : ITestRepository
             const string createTestQuery = "INSERT INTO Test (subject_id, name) VALUES (@SubjectId, @Name); SELECT LAST_INSERT_ID();";
             int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name }, transaction);
 
+            HashSet<int> usedQuestionIds = [];
+
             foreach (Question question in test.Questions)
             {
-                const string createQuestionQuery = "INSERT INTO Question (text) VALUES (@Text); SELECT LAST_INSERT_ID();";
-                int questionId = await connection.ExecuteScalarAsync<int>(createQuestionQuery, new { question.Text }, transaction);
+                int questionId = await GetOrCreateQuestionAsync(question, transaction, usedQuestionIds);
+                usedQuestionIds.Add(questionId);
 
                 const string linkQuery = "INSERT INTO TestQuestion (test_id, question_id) VALUES (@TestId, @QuestionId);";
                 await connection.ExecuteAsync(linkQuery, new { TestId = testId, QuestionId = questionId }, transaction);
-
-                const string createOptionQuery = "INSERT INTO QuestionOption (question_id, option_text, is_correct) VALUES (@QuestionId, @OptionText, @IsCorrect);";
-                await connection.ExecuteAsync(createOptionQuery, question.Options.Select(option => new { QuestionId = questionId, option.OptionText, option.IsCorrect }), transaction);
             }
 
             transaction.Commit();
@@ -91,37 +90,12 @@ public class TestRepository(IDbConnection connection) : ITestRepository
             Question[] currentQuestions = (await GetQuestionsInternalAsync(test.TestId, transaction)).ToArray();
             int[] currentQuestionIds = currentQuestions.Select(question => question.QuestionId).ToArray();
 
-            List<int> newQuestionIds = [];
-            HashSet<int> reusedQuestionIds = [];
+            HashSet<int> newQuestionIds = [];
 
             foreach (Question question in test.Questions)
             {
-                IEnumerable<Question> potentialMatches = currentQuestions.Where(currentQuestion => currentQuestion.Text == question.Text && !reusedQuestionIds.Contains(currentQuestion.QuestionId));
-
-                Question? exactMatch = (from match in potentialMatches
-                                        let matchOptions = match.Options.OrderBy(option => option.OptionText).ToList()
-                                        let modelOptions = question.Options.OrderBy(option => option.OptionText).ToList()
-                                        where matchOptions.Count == modelOptions.Count
-                                            let optionsMatch = !matchOptions.Where((option, i) => option.OptionText != modelOptions[i].OptionText || option.IsCorrect != modelOptions[i].IsCorrect).Any()
-                                            where optionsMatch
-                                                select match
-                                        ).FirstOrDefault();
-
-                if (exactMatch is not null)
-                {
-                    newQuestionIds.Add(exactMatch.QuestionId);
-                    reusedQuestionIds.Add(exactMatch.QuestionId);
-                }
-                else
-                {
-                    const string createQuestionQuery = "INSERT INTO Question (text) VALUES (@Text); SELECT LAST_INSERT_ID();";
-                    int questionId = await connection.ExecuteScalarAsync<int>(createQuestionQuery, new { question.Text }, transaction);
-
-                    const string createOptionQuery = "INSERT INTO QuestionOption (question_id, option_text, is_correct) VALUES (@QuestionId, @OptionText, @IsCorrect);";
-                    await connection.ExecuteAsync(createOptionQuery, question.Options.Select(option => new { QuestionId = questionId, option.OptionText, option.IsCorrect }), transaction);
-
-                    newQuestionIds.Add(questionId);
-                }
+                int questionId = await GetOrCreateQuestionAsync(question, transaction, newQuestionIds);
+                newQuestionIds.Add(questionId);
             }
 
             // Update links to questions in this test
@@ -214,5 +188,39 @@ public class TestRepository(IDbConnection connection) : ITestRepository
                                      .ToList()
                                      .AsReadOnly()
         });
+    }
+
+    private async Task<int> GetOrCreateQuestionAsync(Question question, IDbTransaction transaction, HashSet<int>? excludedQuestionIds = null)
+    {
+        const string findCandidatesQuery = @"
+            SELECT q.question_id AS QuestionId, qo.option_text AS OptionText, qo.is_correct AS IsCorrect
+            FROM Question q
+            JOIN QuestionOption qo ON q.question_id = qo.question_id
+            WHERE q.text = @Text";
+
+        IEnumerable<QuestionOption> candidates = await connection.QueryAsync<QuestionOption>(findCandidatesQuery, new { question.Text }, transaction);
+
+        int? questionId = (from @group in candidates.GroupBy(c => c.QuestionId)
+                           where excludedQuestionIds is null || !excludedQuestionIds.Contains(@group.Key)
+                               let dbOptions = @group.OrderBy(o => o.OptionText).ThenBy(o => o.IsCorrect).ToList()
+                               let newOptions = question.Options.OrderBy(o => o.OptionText).ThenBy(o => o.IsCorrect).ToList()
+                               where dbOptions.Count == newOptions.Count
+                                   let match = !dbOptions.Where((t, i) => t.OptionText != newOptions[i].OptionText || t.IsCorrect != newOptions[i].IsCorrect).Any()
+                                   where match
+                                    select (int?)@group.Key
+                          ).FirstOrDefault();
+
+        if (questionId.HasValue)
+        {
+            return questionId.Value;
+        }
+
+        const string createQuestionQuery = "INSERT INTO Question (text) VALUES (@Text); SELECT LAST_INSERT_ID();";
+        int newQuestionId = await connection.ExecuteScalarAsync<int>(createQuestionQuery, new { question.Text }, transaction);
+
+        const string createOptionQuery = "INSERT INTO QuestionOption (question_id, option_text, is_correct) VALUES (@QuestionId, @OptionText, @IsCorrect);";
+        await connection.ExecuteAsync(createOptionQuery, question.Options.Select(option => new { QuestionId = newQuestionId, option.OptionText, option.IsCorrect }), transaction);
+
+        return newQuestionId;
     }
 }

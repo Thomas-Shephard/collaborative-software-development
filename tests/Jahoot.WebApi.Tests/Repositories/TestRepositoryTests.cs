@@ -385,4 +385,70 @@ public class TestRepositoryTests : RepositoryTestBase
         }
         Assert.That(dbTestAfterRollback.Questions[0].Text, Is.EqualTo("Valid Question"));
     }
+
+    [Test]
+    public async Task CreateTestAsync_DuplicateQuestion_ReusesExistingQuestion()
+    {
+        int subjectId = await CreateSubject("ReuseSubject");
+
+        List<QuestionOption> options = [new() { OptionText = "O1", IsCorrect = true }];
+
+        Test test1 = new()
+        {
+            SubjectId = subjectId,
+            Name = "Test 1",
+            Questions = [new Question { Text = "Shared Q", Options = options.AsReadOnly() }]
+        };
+
+        await _repository.CreateTestAsync(test1);
+
+        Test createdTest1 = (await _repository.GetAllTestsAsync(subjectId)).First(t => t.Name == "Test 1");
+        int questionId1 = createdTest1.Questions[0].QuestionId;
+
+        // Create duplicate question in Test 2
+        Test test2 = new()
+        {
+            SubjectId = subjectId,
+            Name = "Test 2",
+            Questions = [new Question { Text = "Shared Q", Options = options.AsReadOnly() }]
+        };
+
+        await _repository.CreateTestAsync(test2);
+
+        Test createdTest2 = (await _repository.GetAllTestsAsync(subjectId)).First(t => t.Name == "Test 2");
+        int questionId2 = createdTest2.Questions[0].QuestionId;
+
+        Assert.That(questionId2, Is.EqualTo(questionId1));
+
+        int questionCount = await Connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Question WHERE text = 'Shared Q'");
+        Assert.That(questionCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task CreateTestAsync_DifferentOptions_CreatesNewQuestion()
+    {
+        int subjectId = await CreateSubject("DiffOptionsSubject");
+
+        Test test1 = new()
+        {
+            SubjectId = subjectId,
+            Name = "Test 1",
+            Questions = [new Question { Text = "Similar Q", Options = [new QuestionOption { OptionText = "A", IsCorrect = true }] }]
+        };
+
+        await _repository.CreateTestAsync(test1);
+
+        // Same text, different options
+        Test test2 = new()
+        {
+            SubjectId = subjectId,
+            Name = "Test 2",
+            Questions = [new Question { Text = "Similar Q", Options = [new QuestionOption { OptionText = "B", IsCorrect = true }] }]
+        };
+
+        await _repository.CreateTestAsync(test2);
+
+        int questionCount = await Connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Question WHERE text = 'Similar Q'");
+        Assert.That(questionCount, Is.EqualTo(2));
+    }
 }
