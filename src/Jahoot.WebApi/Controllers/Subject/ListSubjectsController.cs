@@ -11,9 +11,9 @@ public class ListSubjectsController(ISubjectRepository subjectRepository) : Cont
 {
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ListSubjects()
+    public async Task<IActionResult> ListSubjects([FromQuery] bool? isActive = null)
     {
-        IEnumerable<Core.Models.Subject> subjects = await subjectRepository.GetAllSubjectsAsync();
+        IEnumerable<Core.Models.Subject> subjects = await subjectRepository.GetAllSubjectsAsync(isActive);
         return Ok(subjects);
     }
 }

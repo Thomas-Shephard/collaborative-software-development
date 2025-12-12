@@ -12,16 +12,16 @@ using StudentModel = Jahoot.Core.Models.Student;
 
 namespace Jahoot.WebApi.Tests.Controllers.Student;
 
-public class ListPendingControllerTests
+public class ListStudentsControllerTests
 {
     private Mock<IStudentRepository> _studentRepositoryMock;
-    private ListPendingController _controller;
+    private ListStudentsController _controller;
 
     [SetUp]
     public void Setup()
     {
         _studentRepositoryMock = new Mock<IStudentRepository>();
-        _controller = new ListPendingController(_studentRepositoryMock.Object);
+        _controller = new ListStudentsController(_studentRepositoryMock.Object);
     }
 
     private void SetupUserClaims(params Role[] roles)
@@ -35,11 +35,12 @@ public class ListPendingControllerTests
     }
 
     [Test]
-    public async Task GetPendingStudents_WithLecturerRole_ReturnsOkWithPendingStudents()
+    public async Task GetStudents_WithLecturerRole_ReturnsOkWithStudents()
     {
         SetupUserClaims(Role.Lecturer);
+        const StudentAccountStatus status = StudentAccountStatus.PendingApproval;
 
-        List<StudentModel> pendingStudents =
+        List<StudentModel> students =
         [
             new()
             {
@@ -64,10 +65,10 @@ public class ListPendingControllerTests
             }
         ];
 
-        _studentRepositoryMock.Setup(repo => repo.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval))
-                              .ReturnsAsync(pendingStudents);
+        _studentRepositoryMock.Setup(repo => repo.GetStudentsByStatusAsync(status))
+                              .ReturnsAsync(students);
 
-        IActionResult result = await _controller.GetPendingStudents();
+        IActionResult result = await _controller.GetStudents(status);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult? okResult = result as OkObjectResult;
@@ -82,13 +83,27 @@ public class ListPendingControllerTests
             Assert.That(studentDtos.All(dto => string.IsNullOrEmpty(dto.GetType().GetProperty("PasswordHash")?.GetValue(dto)?.ToString())), Is.True, "PasswordHash should not be present in DTOs");
         }
 
-        _studentRepositoryMock.Verify(repo => repo.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval), Times.Once);
+        _studentRepositoryMock.Verify(repo => repo.GetStudentsByStatusAsync(status), Times.Once);
     }
 
     [Test]
-    public void GetPendingStudents_RequiresLecturerAuthorization()
+    public async Task GetStudents_InvalidStatusEnumValue_ReturnsBadRequest()
     {
-        MethodInfo? methodInfo = typeof(ListPendingController).GetMethod(nameof(ListPendingController.GetPendingStudents));
+        SetupUserClaims(Role.Lecturer);
+        const StudentAccountStatus invalidStatus = (StudentAccountStatus)999; // Cast an invalid integer to the enum
+
+        IActionResult result = await _controller.GetStudents(invalidStatus);
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        BadRequestObjectResult? badRequestResult = result as BadRequestObjectResult;
+        Assert.That(badRequestResult, Is.Not.Null);
+        Assert.That(badRequestResult?.Value?.ToString(), Does.Contain("Invalid student account status"));
+    }
+
+    [Test]
+    public void GetStudents_RequiresLecturerAuthorization()
+    {
+        MethodInfo? methodInfo = typeof(ListStudentsController).GetMethod(nameof(ListStudentsController.GetStudents));
         object[]? attributes = methodInfo?.GetCustomAttributes(typeof(AuthorizeAttribute), false);
 
         Assert.That(attributes, Is.Not.Null);
