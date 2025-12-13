@@ -12,11 +12,11 @@
         public App()
         {
             var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
+        ConfigureServices(serviceCollection);
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        private void ConfigureServices(IServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
             services.AddSingleton<HttpClient>(new HttpClient
@@ -24,6 +24,7 @@
                 BaseAddress = new Uri("http://localhost")
             });
             services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<ISubjectService, SubjectService>();
             services.AddTransient<LoginPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
         }
