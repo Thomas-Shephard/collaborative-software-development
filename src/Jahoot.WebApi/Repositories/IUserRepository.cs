@@ -6,4 +6,5 @@ public interface IUserRepository
 {
     Task<User?> GetUserByEmailAsync(string email);
     Task UpdateUserAsync(User user);
+    Task DeleteUserAsync(int userId);
 }

@@ -69,4 +69,9 @@ public class UserRepository(IDbConnection connection) : IUserRepository
     {
         await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @UserId", user);
     }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        await connection.ExecuteAsync("DELETE FROM User WHERE user_id = @UserId", new { UserId = userId });
+    }
 }

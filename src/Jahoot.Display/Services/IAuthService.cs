@@ -11,7 +11,7 @@ public class Result
 public interface IAuthService
 {
     Task<Result> Login(LoginRequestModel loginRequest);
-    Task<Result> Register(StudentRegistrationRequestModel registerRequest);
+    Task<Result> Register(CreateStudentRequestModel registerRequest);
 
     Task Logout();
 }

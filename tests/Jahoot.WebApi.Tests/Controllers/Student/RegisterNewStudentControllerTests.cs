@@ -7,7 +7,7 @@ using Moq;
 
 namespace Jahoot.WebApi.Tests.Controllers.Student;
 
-public class RegisterNewControllerTests
+public class RegisterNewStudentControllerTests
 {
     private const string UserEmail = "test@example.com";
     private const string UserName = "Test User";
@@ -15,20 +15,20 @@ public class RegisterNewControllerTests
 
     private Mock<IStudentRepository> _studentRepositoryMock;
     private Mock<IUserRepository> _userRepositoryMock;
-    private RegisterNewController _controller;
+    private RegisterNewStudentController _studentController;
 
     [SetUp]
     public void Setup()
     {
         _studentRepositoryMock = new Mock<IStudentRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
-        _controller = new RegisterNewController(_studentRepositoryMock.Object, _userRepositoryMock.Object);
+        _studentController = new RegisterNewStudentController(_studentRepositoryMock.Object, _userRepositoryMock.Object);
     }
 
     [Test]
     public async Task RegisterStudent_EmailExists_ReturnsConflict()
     {
-        StudentRegistrationRequestModel request = new()
+        CreateStudentRequestModel request = new()
         {
             Email = UserEmail,
             Name = UserName,
@@ -43,7 +43,7 @@ public class RegisterNewControllerTests
                 Roles = new List<Role>()
             });
 
-        IActionResult result = await _controller.RegisterNewStudent(request);
+        IActionResult result = await _studentController.RegisterNewStudent(request);
 
         Assert.That(result, Is.TypeOf<ConflictObjectResult>());
         ConflictObjectResult conflictResult = (ConflictObjectResult)result;
@@ -54,7 +54,7 @@ public class RegisterNewControllerTests
     [Test]
     public async Task RegisterStudent_EmailDoesNotExist_ReturnsCreated()
     {
-        StudentRegistrationRequestModel request = new()
+        CreateStudentRequestModel request = new()
         {
             Email = UserEmail,
             Name = UserName,
@@ -63,22 +63,19 @@ public class RegisterNewControllerTests
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(UserEmail))
             .ReturnsAsync((User?)null);
 
-        IActionResult result = await _controller.RegisterNewStudent(request);
+        IActionResult result = await _studentController.RegisterNewStudent(request);
 
-        Assert.That(result, Is.TypeOf<StatusCodeResult>());
-        StatusCodeResult statusCodeResult = (StatusCodeResult)result;
-        Assert.That(statusCodeResult.StatusCode, Is.EqualTo(201));
-
+        Assert.That(result, Is.TypeOf<CreatedResult>());
         _studentRepositoryMock.Verify(repo => repo.CreateStudentAsync(UserName, UserEmail, It.IsAny<string>()), Times.Once);
     }
 
     [Test]
     public async Task RegisterStudent_InvalidModel_ReturnsBadRequest()
     {
-         _controller.ModelState.AddModelError("Email", "Invalid email");
-         StudentRegistrationRequestModel request = new() { Email = "bad", Name = "Name", Password = "pass" };
+         _studentController.ModelState.AddModelError("Email", "Invalid email");
+         CreateStudentRequestModel request = new() { Email = "bad", Name = "Name", Password = "pass" };
 
-         IActionResult result = await _controller.RegisterNewStudent(request);
+         IActionResult result = await _studentController.RegisterNewStudent(request);
 
          Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
          _studentRepositoryMock.Verify(repo => repo.CreateStudentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);

@@ -3,12 +3,12 @@ using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Core.Tests.Models.Requests;
 
-public class ExistingUserRegistrationRequestModelTests
+public class AssignStudentRoleRequestModelTests
 {
     [Test]
     public void ExistingUserRegistrationRequest_WithValidData_IsValid()
     {
-        ExistingUserRegistrationRequestModel model = new()
+        AssignStudentRoleRequestModel model = new()
         {
             Email = "test@example.com",
             Password = "StrongPassword1!"
@@ -27,7 +27,7 @@ public class ExistingUserRegistrationRequestModelTests
     [TestCase(null)]
     public void ExistingUserRegistrationRequest_InvalidEmail_IsInvalid(string? email)
     {
-        ExistingUserRegistrationRequestModel model = new()
+        AssignStudentRoleRequestModel model = new()
         {
             Email = email!,
             Password = "password"
@@ -49,7 +49,7 @@ public class ExistingUserRegistrationRequestModelTests
     [TestCase(null)]
     public void ExistingUserRegistrationRequest_InvalidPassword_IsInvalid(string? password)
     {
-        ExistingUserRegistrationRequestModel model = new()
+        AssignStudentRoleRequestModel model = new()
         {
             Email = "test@example.com",
             Password = password!

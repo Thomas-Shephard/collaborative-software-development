@@ -53,11 +53,7 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
                              WHERE student.user_id = @UserId
                              """;
 
-        IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(
-            query,
-            MapStudent,
-            new { UserId = userId },
-            splitOn: "is_admin");
+        IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(query, MapStudent, new { UserId = userId }, splitOn: "is_admin");
 
         return students.SingleOrDefault();
     }
@@ -80,11 +76,7 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
                              WHERE student.account_status = @Status
                              """;
 
-        return await connection.QueryAsync<StudentData, bool?, Student>(
-            query,
-            MapStudent,
-            new { Status = statusString },
-            splitOn: "is_admin");
+        return await connection.QueryAsync<StudentData, bool?, Student>(query, MapStudent, new { Status = statusString }, splitOn: "is_admin");
     }
 
     public async Task UpdateStudentAsync(Student student)
@@ -97,11 +89,7 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
             _ => throw new ArgumentOutOfRangeException(nameof(student), student.AccountStatus, null)
         };
 
-        const string query = """
-                             UPDATE Student
-                             SET account_status = @AccountStatus
-                             WHERE student_id = @StudentId;
-                             """;
+        const string query = "UPDATE Student SET account_status = @AccountStatus WHERE student_id = @StudentId";
 
         await connection.ExecuteAsync(query, new { AccountStatus = statusString, student.StudentId });
     }
