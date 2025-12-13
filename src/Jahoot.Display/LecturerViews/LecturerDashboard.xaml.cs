@@ -8,15 +8,82 @@ namespace Jahoot.Display.LecturerViews
 {
     public partial class LecturerDashboard : Window
     {
-        public LecturerDashboard()
+        private readonly Services.ISubjectService _subjectService;
+
+        public LecturerDashboard(Services.ISubjectService subjectService)
         {
             InitializeComponent();
-            this.DataContext = new LecturerDashboardViewModel();
+            _subjectService = subjectService;
+            var viewModel = new LecturerDashboardViewModel(subjectService);
+            this.DataContext = viewModel;
+            SubjectsView.Initialize(subjectService);
+
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LecturerDashboardViewModel.SelectedRole))
+            {
+                if (DataContext is LecturerDashboardViewModel viewModel)
+                {
+                    UpdateViewForRole(viewModel.SelectedRole);
+                }
+            }
+        }
+
+        private void UpdateViewForRole(string role)
+        {
+            if (DataContext is LecturerDashboardViewModel viewModel)
+            {
+                if (role == "Subjects")
+                {
+                    viewModel.HeaderDescription = "View and manage subjects";
+                    StatsGrid.Visibility = Visibility.Collapsed;
+                    MainTabs.Visibility = Visibility.Collapsed;
+                    OverviewContent.Visibility = Visibility.Collapsed;
+                    SubjectsView.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    viewModel.HeaderDescription = "Manage students, tests, and monitor progress";
+                    StatsGrid.Visibility = Visibility.Visible;
+                    MainTabs.Visibility = Visibility.Visible;
+                    SubjectsView.Visibility = Visibility.Collapsed;
+                    
+                    // Restore logic for tabs
+                    MainTabs_SelectionChanged(MainTabs, new RoutedEventArgs());
+                }
+            }
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            // Future functionality
+            if (DataContext is LecturerDashboardViewModel viewModel)
+            {
+                viewModel.SelectedTabIndex = MainTabs.SelectedIndex;
+
+                if (viewModel.TabItems.Count > MainTabs.SelectedIndex && MainTabs.SelectedIndex >= 0)
+                {
+                    var selectedTabHeader = viewModel.TabItems[MainTabs.SelectedIndex].Header.ToString();
+
+                    if (selectedTabHeader == "Subjects")
+                    {
+                        OverviewContent.Visibility = Visibility.Collapsed;
+                        SubjectsView.Visibility = Visibility.Visible;
+                    }
+                    else if (selectedTabHeader == "Overview")
+                    {
+                        OverviewContent.Visibility = Visibility.Visible;
+                        SubjectsView.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        OverviewContent.Visibility = Visibility.Collapsed;
+                        SubjectsView.Visibility = Visibility.Collapsed;
+                    }
+                }
+            }
         }
     }
 
@@ -32,6 +99,18 @@ namespace Jahoot.Display.LecturerViews
 
     public class LecturerDashboardViewModel : BaseViewModel
     {
+        private readonly Services.ISubjectService _subjectService;
+
+        public string HeaderDescription
+        {
+            get => field;
+            set
+            {
+                field = value;
+                OnPropertyChanged();
+            }
+        } = "Manage students, tests, and monitor progress";
+
         public string LecturerInitials
         {
             get => field;
@@ -95,7 +174,7 @@ namespace Jahoot.Display.LecturerViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin", "Subjects" };
 
         public string SelectedRole
         {
@@ -117,8 +196,10 @@ namespace Jahoot.Display.LecturerViews
             }
         } = 0;
 
-        public LecturerDashboardViewModel()
+        public LecturerDashboardViewModel(Services.ISubjectService subjectService)
         {
+            _subjectService = subjectService;
+
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
             {
                 new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
