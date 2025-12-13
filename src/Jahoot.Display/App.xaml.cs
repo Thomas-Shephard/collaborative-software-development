@@ -12,7 +12,7 @@
         public App()
         {
             var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
+            ConfigureServices(serviceCollection);
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
 
