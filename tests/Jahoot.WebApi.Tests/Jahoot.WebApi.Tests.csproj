@@ -13,11 +13,4 @@
         <PackageReference Include="Testcontainers.MariaDb" Version="4.9.0" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="$(MSBuildThisFileDirectory)../../database-init.sql">
-            <Link>database-init.sql</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
 </Project>

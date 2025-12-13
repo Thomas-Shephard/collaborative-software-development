@@ -43,6 +43,8 @@ public static class Program
 
         string connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User={dbUser};Password={dbPassword}";
 
+        DatabaseMigrator.ApplyMigrations(connectionString);
+
         builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
