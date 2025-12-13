@@ -107,9 +107,20 @@
                            Foreground="{StaticResource SecondaryTextColor}" FontSize="14" />
             </StackPanel>
 
-            <Border Grid.Column="2" Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <TextBlock Text="{Binding UserInitials, RelativeSource={RelativeSource AncestorType=UserControl}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-            </Border>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Border Width="36" Height="36" Background="#DDD" CornerRadius="18" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding UserInitials, RelativeSource={RelativeSource AncestorType=UserControl}}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                </Border>
+                <Button Content="Log Out" 
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                        Click="LogoutButton_Click"
+                        Margin="10,0,0,0"
+                        FontSize="14"
+                        Foreground="{StaticResource SecondaryTextColor}"
+                        Background="Transparent"
+                        BorderThickness="0"/>
+                
+            </StackPanel>
         </Grid>
     </Border>
 </UserControl>

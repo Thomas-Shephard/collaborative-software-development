@@ -36,6 +36,7 @@ public static class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IStudentRepository, StudentRepository>();
         builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+        builder.Services.AddScoped<ITestRepository, TestRepository>();
 
         bool useMockEmailService = bool.TryParse(builder.Configuration["USE_MOCK_EMAIL_SERVICE"], out bool useMock) && useMock;
 
