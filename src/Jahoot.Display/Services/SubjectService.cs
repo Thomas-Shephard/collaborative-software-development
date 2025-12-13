@@ -7,56 +7,63 @@ using System.Text.Json;
 
 namespace Jahoot.Display.Services;
 
-public class SubjectService(HttpClient httpClient, ISecureStorageService secureStorageService) : ISubjectService
+public class SubjectService(IHttpClientFactory httpClientFactory, ISecureStorageService secureStorageService) : ISubjectService
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
-    private void AddAuthorizationHeader()
+    private HttpClient CreateClient()
     {
+        var client = httpClientFactory.CreateClient("JahootApi");
         var token = secureStorageService.GetToken();
         if (!string.IsNullOrEmpty(token))
         {
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+        return client;
     }
 
     public async Task<IEnumerable<Subject>> GetAllSubjectsAsync()
     {
-        AddAuthorizationHeader();
-        var response = await httpClient.GetAsync("api/subject/list");
+        var client = CreateClient();
+        var response = await client.GetAsync("api/subject/list");
+        
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<IEnumerable<Subject>>(_jsonOptions) ?? [];
         }
-        return [];
+
+        // Throw exception to be handled by the caller
+        throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
     }
 
     public async Task<Result> CreateSubjectAsync(CreateSubjectRequestModel request)
     {
-        AddAuthorizationHeader();
-        var response = await httpClient.PostAsJsonAsync("api/subject", request);
+        var client = CreateClient();
+        var response = await client.PostAsJsonAsync("api/subject", request);
+        
         if (response.IsSuccessStatusCode)
         {
             return new Result { Success = true };
         }
         
         var error = await response.Content.ReadAsStringAsync();
-        return new Result { Success = false, ErrorMessage = error };
+        return new Result { Success = false, ErrorMessage = $"Error {(int)response.StatusCode}: {error}" };
     }
 
     public async Task<Result> UpdateSubjectAsync(int id, UpdateSubjectRequestModel request)
     {
-        AddAuthorizationHeader();
-        var response = await httpClient.PutAsJsonAsync($"api/subject/{id}", request);
+        var client = CreateClient();
+        var response = await client.PutAsJsonAsync($"api/subject/{id}", request);
+        
         if (response.IsSuccessStatusCode)
         {
             return new Result { Success = true };
         }
 
         var error = await response.Content.ReadAsStringAsync();
-        return new Result { Success = false, ErrorMessage = error };
+        return new Result { Success = false, ErrorMessage = $"Error {(int)response.StatusCode}: {error}" };
     }
 }

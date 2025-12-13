@@ -47,15 +47,9 @@ public partial class SubjectFormWindow : Window
             return;
         }
 
-        Result result;
-        if (_subject == null)
-        {
-            result = await _subjectService.CreateSubjectAsync(new CreateSubjectRequestModel { Name = name });
-        }
-        else
-        {
-            result = await _subjectService.UpdateSubjectAsync(_subject.SubjectId, new UpdateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked == true });
-        }
+        Result result = _subject == null
+            ? await _subjectService.CreateSubjectAsync(new CreateSubjectRequestModel { Name = name })
+            : await _subjectService.UpdateSubjectAsync(_subject.SubjectId, new UpdateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked == true });
 
         if (result.Success)
         {
