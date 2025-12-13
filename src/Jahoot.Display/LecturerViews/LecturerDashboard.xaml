@@ -7,9 +7,7 @@
         Title="Lecturer Dashboard"
         Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
-        MinWidth="800"
-        TextOptions.TextFormattingMode="Display"
-        UseLayoutRounding="True">
+        MinWidth="800">
 
     <Window.Resources>
         <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
