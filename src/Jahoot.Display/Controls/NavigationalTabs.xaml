@@ -19,6 +19,9 @@
                     DisplayMemberPath="Header"
                     SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     SelectionChanged="MainTabs_SelectionChanged">
+            <TabControl.ContentTemplate>
+                <DataTemplate />
+            </TabControl.ContentTemplate>
             <TabControl.Resources>
                 <Style TargetType="TabItem">
                     <Setter Property="Width">
