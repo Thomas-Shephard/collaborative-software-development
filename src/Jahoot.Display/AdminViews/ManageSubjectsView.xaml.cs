@@ -58,7 +58,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
     {
         if ((bool)e.NewValue)
         {
-            LoadSubjects();
+            _ = LoadSubjects();
         }
     }
 
@@ -67,7 +67,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         _subjectService = subjectService;
     }
 
-    private async void LoadSubjects()
+    private async Task LoadSubjects()
     {
         if (_subjectService == null) return;
 
@@ -98,13 +98,13 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         SubjectFormWindow form = new SubjectFormWindow(_subjectService);
         if (form.ShowDialog() == true)
         {
-            LoadSubjects();
+            _ = LoadSubjects();
         }
     }
 
     private void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        LoadSubjects();
+        _ = LoadSubjects();
     }
 
     private void EditSubject_Click(object sender, RoutedEventArgs e)
@@ -116,7 +116,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
             SubjectFormWindow form = new(_subjectService, subject);
             if (form.ShowDialog() == true)
             {
-                LoadSubjects();
+                _ = LoadSubjects();
             }
         }
     }

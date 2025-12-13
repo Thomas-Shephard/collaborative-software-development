@@ -19,9 +19,9 @@
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
-            services.AddSingleton<HttpClient>(new HttpClient
+            services.AddHttpClient("JahootApi", client =>
             {
-                BaseAddress = new Uri("http://localhost")
+                client.BaseAddress = new Uri("http://localhost");
             });
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<ISubjectService, SubjectService>();
