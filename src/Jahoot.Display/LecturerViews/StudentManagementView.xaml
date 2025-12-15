@@ -69,6 +69,26 @@
             </Setter>
         </Style>
 
+        <Style x:Key="ApproveButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#059669"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RejectButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#DC2626"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
     <Border Background="White" CornerRadius="8" Padding="25" Margin="20,20,20,0">
@@ -110,7 +130,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Email" Width="200">
+                        <GridViewColumn Header="Email" Width="250">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Email}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
@@ -160,18 +180,68 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Actions" Width="200">
+                        <GridViewColumn Header="Actions" Width="150">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
-                                        <Button Content="Edit" Command="{Binding DataContext.EditStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource ActionButtonStyle}"
-                                                Margin="0,0,5,0" />
-                                        <Button Content="Delete" Command="{Binding DataContext.DeleteStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource ActionButtonStyle}" />
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Active}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Button Content="Edit" Command="{Binding DataContext.EditStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                            <Button Content="Disable" Command="{Binding DataContext.DisableStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource RejectButtonStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Disabled}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Button Content="Edit" Command="{Binding DataContext.EditStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                            <Button Content="Enable" Command="{Binding DataContext.EnableStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource ApproveButtonStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.PendingApproval}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Button Content="Approve" Command="{Binding DataContext.ApproveStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource ApproveButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                            <Button Content="Reject" Command="{Binding DataContext.RejectStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource RejectButtonStyle}" />
+                                        </StackPanel>
+                                    </Grid>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
