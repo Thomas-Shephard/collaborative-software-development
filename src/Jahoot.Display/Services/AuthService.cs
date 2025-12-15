@@ -50,9 +50,9 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
         await _httpClient.PostAsync("api/auth/logout", null);
     }
 
-    public async Task<Result> Register(StudentRegistrationRequestModel registerRequest)
+    public async Task<Result> Register(CreateStudentRequestModel registerRequest)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/student/register/new", registerRequest);
+        var response = await _httpClient.PostAsJsonAsync("api/student", registerRequest);
 
         if (response.IsSuccessStatusCode)
         {

@@ -3,7 +3,7 @@ using Jahoot.Core.Attributes;
 
 namespace Jahoot.Core.Models.Requests;
 
-public class StudentRegistrationRequestModel
+public class AssignStudentRoleRequestModel
 {
     [Required]
     [EmailAddress]
@@ -12,8 +12,4 @@ public class StudentRegistrationRequestModel
     [Required]
     [StrongPassword]
     public required string Password { get; init; }
-
-    [Required]
-    [MaxLength(70)]
-    public required string Name { get; init; }
 }

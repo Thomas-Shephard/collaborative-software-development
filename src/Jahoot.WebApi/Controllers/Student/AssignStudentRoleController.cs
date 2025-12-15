@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jahoot.WebApi.Controllers.Student;
 
-[Route("api/student/register/existing")]
+[Route("api/student/assign-role")]
 [ApiController]
 [Tags("Student")]
-public class RegisterExistingController(IStudentRepository studentRepository, IUserRepository userRepository) : ControllerBase
+public class AssignStudentRoleController(IStudentRepository studentRepository, IUserRepository userRepository) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> RegisterExistingStudent([FromBody] ExistingUserRegistrationRequestModel requestModel)
+    public async Task<IActionResult> RegisterExistingStudent([FromBody] AssignStudentRoleRequestModel requestModel)
     {
         if (!ModelState.IsValid)
         {
@@ -32,6 +32,6 @@ public class RegisterExistingController(IStudentRepository studentRepository, IU
 
         await studentRepository.CreateStudentAsync(user.UserId);
 
-        return StatusCode(201);
+        return Ok();
     }
 }
