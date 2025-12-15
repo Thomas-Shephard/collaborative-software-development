@@ -27,6 +27,7 @@
             services.AddTransient<ISubjectService, SubjectService>();
             services.AddTransient<LoginPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<Pages.AdminDashboard>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
