@@ -1,6 +1,7 @@
 using Dapper;
 using Testcontainers.MariaDb;
 using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Jahoot.WebApi.Tests;
 
@@ -24,6 +25,7 @@ internal static class TestDatabaseFactory
                                 .WithImage("mariadb:latest")
                                 .WithUsername("root")
                                 .WithPassword("root")
+                                .WithLogger(NullLogger.Instance)
                                 .Build();
 
             await _mariaDbContainer.StartAsync();
