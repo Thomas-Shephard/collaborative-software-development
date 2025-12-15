@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Settings;
 
 namespace Jahoot.WebApi.Services;
@@ -6,30 +7,67 @@ namespace Jahoot.WebApi.Services;
 public class TokenDenyService : TimedBackgroundService, ITokenDenyService
 {
     private readonly ConcurrentDictionary<string, DateTime> _denylist = new();
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly Task _initializationTask;
 
-    public TokenDenyService(TokenDenySettings settings, TimeProvider timeProvider) : base(timeProvider)
+    public TokenDenyService(TokenDenySettings settings, TimeProvider timeProvider, IServiceScopeFactory scopeFactory) : base(timeProvider)
     {
+        _scopeFactory = scopeFactory;
+
+        _initializationTask = LoadDeniedTokensFromDbAsync();
+
         InitializeTimer(CleanupExpiredTokens, settings.CleanupInterval);
     }
 
-    public Task DenyAsync(string jti, DateTime expiry)
+    public async Task DenyAsync(string jti, DateTime expiresAt)
     {
-        _denylist.TryAdd(jti, expiry);
-        return Task.CompletedTask;
+        await _initializationTask;
+
+        using IServiceScope scope = _scopeFactory.CreateScope();
+        ITokenDenyRepository tokenDenyRepository = scope.ServiceProvider.GetRequiredService<ITokenDenyRepository>();
+        await tokenDenyRepository.DenyTokenAsync(jti, expiresAt);
+
+        _denylist.TryAdd(jti, expiresAt);
     }
 
-    public Task<bool> IsDeniedAsync(string jti)
+    public async Task<bool> IsDeniedAsync(string jti)
     {
-        return Task.FromResult(_denylist.ContainsKey(jti));
+        await _initializationTask;
+        return _denylist.ContainsKey(jti);
     }
 
-    private void CleanupExpiredTokens(object? state)
+    private async void CleanupExpiredTokens(object? state)
     {
-        DateTime now = TimeProvider.GetUtcNow().UtcDateTime;
-
-        foreach ((string expiredToken, _) in _denylist.Where(pair => pair.Value < now).ToList())
+        try
         {
-            _denylist.TryRemove(expiredToken, out _);
+            DateTime now = TimeProvider.GetUtcNow().UtcDateTime;
+
+            List<string> expiredTokensInMemory = _denylist.Where(pair => pair.Value < now).Select(pair => pair.Key).ToList();
+            foreach (string expiredToken in expiredTokensInMemory)
+            {
+                _denylist.TryRemove(expiredToken, out _);
+            }
+
+            using IServiceScope scope = _scopeFactory.CreateScope();
+            ITokenDenyRepository tokenDenyRepository = scope.ServiceProvider.GetRequiredService<ITokenDenyRepository>();
+            await tokenDenyRepository.DeleteExpiredTokensAsync(now);
+        }
+        catch (Exception)
+        {
+            // Suppress the exception to prevent crashing the application, as this is an async void called by a TimerCallback
+        }
+    }
+
+    private async Task LoadDeniedTokensFromDbAsync()
+    {
+        using IServiceScope scope = _scopeFactory.CreateScope();
+        ITokenDenyRepository tokenDenyRepository = scope.ServiceProvider.GetRequiredService<ITokenDenyRepository>();
+
+        DateTime now = TimeProvider.GetUtcNow().UtcDateTime;
+        IEnumerable<(string Jti, DateTime ExpiresAt)> deniedTokens = await tokenDenyRepository.GetActiveDeniedTokensAsync(now);
+        foreach ((string jti, DateTime expiresAt) in deniedTokens)
+        {
+            _denylist.TryAdd(jti, expiresAt);
         }
     }
 }

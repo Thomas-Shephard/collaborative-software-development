@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Jahoot.Core.Models;
 
 public class User
@@ -5,6 +7,7 @@ public class User
     public int UserId { get; init; }
     public required string Email { get; set; }
     public required string Name { get; set; }
+    [JsonIgnore]
     public required string PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
     public DateTime? LastLogin { get; set; }
