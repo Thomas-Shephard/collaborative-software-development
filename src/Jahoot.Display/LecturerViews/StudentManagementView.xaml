@@ -130,7 +130,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Email" Width="250">
+                        <GridViewColumn Header="Email" Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Email}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
@@ -180,7 +180,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Actions" Width="150">
+                        <GridViewColumn Header="Actions" Width="225">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
