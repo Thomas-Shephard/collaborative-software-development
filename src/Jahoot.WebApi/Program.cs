@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Jahoot.WebApi;
 
@@ -30,6 +31,13 @@ public static class Program
 
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
+
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
         DatabaseSettings dbSettings = builder.Services.AddAndConfigureFromEnv<DatabaseSettings>(builder.Configuration, "DB");
 
@@ -109,6 +117,9 @@ public static class Program
         app.MapOpenApi();
         app.MapScalarApiReference("/scalar");
         app.UseHttpsRedirection();
+        app.UseForwardedHeaders();
+
+        app.UseStaticFiles();
 
         app.UseAuthentication();
         app.UseAuthorization();

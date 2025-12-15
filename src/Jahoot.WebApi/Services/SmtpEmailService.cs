@@ -35,7 +35,7 @@ public class SmtpEmailService : IEmailService
     {
         if (!new EmailAddressAttribute().IsValid(message.To))
         {
-            throw new ArgumentException("Email address is not valid", nameof(message.To));
+            throw new ArgumentException("Email address is not valid", nameof(message));
         }
 
         using MimeMessage mimeMessage = new();
