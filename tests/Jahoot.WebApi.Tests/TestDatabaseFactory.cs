@@ -20,26 +20,18 @@ internal static class TestDatabaseFactory
         {
             if (_mariaDbContainer is not null) return;
 
-            MariaDbContainer container = new MariaDbBuilder().WithImage("mariadb:latest").Build();
+            _mariaDbContainer = new MariaDbBuilder()
+                                .WithImage("mariadb:latest")
+                                .WithUsername("root")
+                                .WithPassword("root")
+                                .Build();
 
-            await container.StartAsync();
+            await _mariaDbContainer.StartAsync();
 
-            ConnectionString = container.GetConnectionString();
-
-            string scriptPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "database-init.sql");
-            if (File.Exists(scriptPath))
-            {
-                string script = await File.ReadAllTextAsync(scriptPath);
-                await container.ExecScriptAsync(script);
-            }
-            else
-            {
-                throw new FileNotFoundException($"database-init.sql not found at {scriptPath}");
-            }
+            ConnectionString = _mariaDbContainer.GetConnectionString();
+            DatabaseMigrator.ApplyMigrations(ConnectionString);
 
             DefaultTypeMap.MatchNamesWithUnderscores = true;
-
-            _mariaDbContainer = container;
         }
         finally
         {
