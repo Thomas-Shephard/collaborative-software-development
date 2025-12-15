@@ -23,6 +23,7 @@
             {
                 BaseAddress = new Uri("http://localhost")
             });
+            services.AddSingleton<IHttpService, HttpService>();
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<ISubjectService, SubjectService>();
             services.AddTransient<LoginPage>();

@@ -1,7 +1,5 @@
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Jahoot.Display.Services;
 

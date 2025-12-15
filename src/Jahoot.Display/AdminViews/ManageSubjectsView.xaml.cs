@@ -91,23 +91,23 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void CreateSubject_Click(object sender, RoutedEventArgs e)
+    private async void CreateSubject_Click(object sender, RoutedEventArgs e)
     {
         if (_subjectService == null) return;
 
         SubjectFormWindow form = new SubjectFormWindow(_subjectService);
         if (form.ShowDialog() == true)
         {
-            _ = LoadSubjects();
+            await LoadSubjects();
         }
     }
 
-    private void Refresh_Click(object sender, RoutedEventArgs e)
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        _ = LoadSubjects();
+        await LoadSubjects();
     }
 
-    private void EditSubject_Click(object sender, RoutedEventArgs e)
+    private async void EditSubject_Click(object sender, RoutedEventArgs e)
     {
         if (_subjectService == null) return;
 
@@ -116,7 +116,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
             SubjectFormWindow form = new(_subjectService, subject);
             if (form.ShowDialog() == true)
             {
-                _ = LoadSubjects();
+                await LoadSubjects();
             }
         }
     }
