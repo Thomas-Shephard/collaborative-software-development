@@ -5,7 +5,6 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/Solution Items/">
-    <File Path="database-init.sql" />
     <File Path="docker-compose.yml" />
   </Folder>
   <Folder Name="/src/">
