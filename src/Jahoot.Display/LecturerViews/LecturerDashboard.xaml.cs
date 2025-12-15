@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Diagnostics;
+using System.Windows.Data;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -161,17 +163,49 @@ namespace Jahoot.Display.LecturerViews
 
         private void RejectStudent(object? obj)
         {
-            if (obj is Student student)
+            if (obj is Student studentToReject)
             {
-                Students.Remove(student);
+                Debug.WriteLine($"Attempting to reject student: {studentToReject.Name} (ID: {studentToReject.UserId})");
+                var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToReject.UserId);
+                if (studentInCollection != null)
+                {
+                    bool removed = Students.Remove(studentInCollection);
+                    Debug.WriteLine($"Student removed: {removed}. Current student count: {Students.Count}");
+                    if (removed)
+                    {
+                        // Explicitly refresh the CollectionView to force UI update
+                        ICollectionView view = CollectionViewSource.GetDefaultView(Students);
+                        view.Refresh();
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Student with ID {studentToReject.UserId} not found in collection.");
+                }
             }
         }
 
         private void DeleteStudent(object? obj)
         {
-            if (obj is Student student)
+            if (obj is Student studentToDelete)
             {
-                Students.Remove(student);
+                Debug.WriteLine($"Attempting to delete student: {studentToDelete.Name} (ID: {studentToDelete.UserId})");
+                var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToDelete.UserId);
+                if (studentInCollection != null)
+                {
+                    bool removed = Students.Remove(studentInCollection);
+                    Debug.WriteLine($"Student removed: {removed}. Current student count: {Students.Count}");
+                    if (removed)
+                    {
+                        // Explicitly refresh the CollectionView to force UI update
+                        ICollectionView view = CollectionViewSource.GetDefaultView(Students);
+                        view.Refresh();
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Student with ID {studentToDelete.UserId} not found in collection.");
+                }
             }
         }
 

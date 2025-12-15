@@ -184,6 +184,7 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
+                                        <!-- Active Student Actions: Edit, Disable, Delete -->
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
                                             <StackPanel.Style>
                                                 <Style TargetType="StackPanel">
@@ -201,8 +202,13 @@
                                                     Margin="0,0,5,0" />
                                             <Button Content="Disable" Command="{Binding DataContext.DisableStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
                                                     CommandParameter="{Binding}"
+                                                    Style="{StaticResource RejectButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                            <Button Content="Delete" Command="{Binding DataContext.DeleteStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
                                                     Style="{StaticResource RejectButtonStyle}" />
                                         </StackPanel>
+                                        <!-- Disabled Student Actions: Edit, Enable, Delete -->
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
                                             <StackPanel.Style>
                                                 <Style TargetType="StackPanel">
@@ -220,8 +226,13 @@
                                                     Margin="0,0,5,0" />
                                             <Button Content="Enable" Command="{Binding DataContext.EnableStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
                                                     CommandParameter="{Binding}"
-                                                    Style="{StaticResource ApproveButtonStyle}" />
+                                                    Style="{StaticResource ApproveButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                            <Button Content="Delete" Command="{Binding DataContext.DeleteStudentCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource RejectButtonStyle}" />
                                         </StackPanel>
+                                        <!-- Pending Approval Student Actions: Approve, Reject -->
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
                                             <StackPanel.Style>
                                                 <Style TargetType="StackPanel">
