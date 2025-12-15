@@ -104,7 +104,7 @@ public partial class LoginPage : Window
 
         try
         {
-            var result = await _authService.Register(new StudentRegistrationRequestModel
+            var result = await _authService.Register(new CreateStudentRequestModel
             {
                 Name = name,
                 Email = email,

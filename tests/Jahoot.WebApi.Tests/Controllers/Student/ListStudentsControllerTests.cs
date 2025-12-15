@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
-using Jahoot.WebApi.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json.Serialization;
 using StudentModel = Jahoot.Core.Models.Student;
 
 namespace Jahoot.WebApi.Tests.Controllers.Student;
@@ -74,15 +74,15 @@ public class ListStudentsControllerTests
         OkObjectResult? okResult = result as OkObjectResult;
         Assert.That(okResult, Is.Not.Null);
 
-        // Ensure that PasswordHash is not present in the returned DTOs
-        StudentResponseDto[]? studentDtos = (okResult.Value as IEnumerable<StudentResponseDto>)?.ToArray();
-        Assert.That(studentDtos, Is.Not.Null);
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(studentDtos, Has.Length.EqualTo(2));
-            Assert.That(studentDtos.All(dto => string.IsNullOrEmpty(dto.GetType().GetProperty("PasswordHash")?.GetValue(dto)?.ToString())), Is.True, "PasswordHash should not be present in DTOs");
-        }
+        // Ensure that PasswordHash is ignored in JSON serialization
+        PropertyInfo? passwordHashProperty = typeof(User).GetProperty(nameof(User.PasswordHash));
+        Assert.That(passwordHashProperty, Is.Not.Null);
+        Assert.That(passwordHashProperty!.GetCustomAttribute<JsonIgnoreAttribute>(), Is.Not.Null, "PasswordHash should be decorated with [JsonIgnore]");
 
+        IEnumerable<StudentModel>? returnedStudents = okResult.Value as IEnumerable<StudentModel>;
+        Assert.That(returnedStudents, Is.Not.Null);
+        Assert.That(returnedStudents!.Count(), Is.EqualTo(2));
+        
         _studentRepositoryMock.Verify(repo => repo.GetStudentsByStatusAsync(status), Times.Once);
     }
 

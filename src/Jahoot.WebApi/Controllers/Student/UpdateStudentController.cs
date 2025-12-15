@@ -21,20 +21,15 @@ public class UpdateStudentController(IStudentRepository studentRepository, IUser
         }
 
         Core.Models.Student? student = await studentRepository.GetStudentByUserIdAsync(userId);
-
         if (student is null)
         {
             return NotFound($"Student with user ID {userId} not found.");
         }
 
-        // Check for email conflict if email is changed
-        if (!string.Equals(student.Email, requestModel.Email, StringComparison.OrdinalIgnoreCase))
+        User? existingUser = await userRepository.GetUserByEmailAsync(requestModel.Email);
+        if (existingUser is not null && existingUser.UserId != userId)
         {
-            User? existingUser = await userRepository.GetUserByEmailAsync(requestModel.Email);
-            if (existingUser is not null && existingUser.UserId != userId)
-            {
-                return Conflict("A user with this email address already exists.");
-            }
+            return Conflict("A user with this email address already exists.");
         }
 
         student.AccountStatus = requestModel.AccountStatus;

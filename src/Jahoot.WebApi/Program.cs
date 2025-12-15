@@ -49,6 +49,7 @@ public static class Program
         builder.Services.AddScoped<IStudentRepository, StudentRepository>();
         builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
         builder.Services.AddScoped<ITokenDenyRepository, TokenDenyRepository>();
+        builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
         builder.Services.AddScoped<ITestRepository, TestRepository>();
 
         JwtSettings jwtSettings = new()

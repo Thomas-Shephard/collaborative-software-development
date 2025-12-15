@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Jahoot.Core.Models.Requests;
 
-public class UpdateStudentRequestModel
+public class UpdateLecturerRequestModel
 {
     [Required]
     [StringLength(70, MinimumLength = 2)]
@@ -12,6 +12,5 @@ public class UpdateStudentRequestModel
     [EmailAddress]
     public required string Email { get; init; }
 
-    [Required]
-    public required StudentAccountStatus AccountStatus { get; init; }
+    public bool IsAdmin { get; init; }
 }

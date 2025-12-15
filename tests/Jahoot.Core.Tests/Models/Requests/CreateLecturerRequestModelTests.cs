@@ -3,16 +3,17 @@ using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Core.Tests.Models.Requests;
 
-public class StudentRegistrationRequestModelTests
+public class CreateLecturerRequestModelTests
 {
     [Test]
-    public void StudentRegistrationRequest_WithValidData_IsValid()
+    public void CreateLecturerRequest_WithValidData_IsValid()
     {
-        StudentRegistrationRequestModel model = new()
+        CreateLecturerRequestModel model = new()
         {
-            Email = "test@example.com",
+            Email = "lecturer@example.com",
+            Name = "Dr. Lecturer",
             Password = "StrongPassword1!",
-            Name = "Test Student"
+            IsAdmin = true
         };
 
         ValidationContext context = new(model);
@@ -26,13 +27,14 @@ public class StudentRegistrationRequestModelTests
     [TestCase("")]
     [TestCase("invalid-email")]
     [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidEmail_IsInvalid(string?email)
+    public void CreateLecturerRequest_InvalidEmail_IsInvalid(string? email)
     {
-        StudentRegistrationRequestModel model = new()
+        CreateLecturerRequestModel model = new()
         {
             Email = email!,
-            Password = "password123",
-            Name = "Test Student"
+            Name = "Dr. Lecturer",
+            Password = "StrongPassword1!",
+            IsAdmin = false
         };
 
         ValidationContext context = new(model);
@@ -48,15 +50,63 @@ public class StudentRegistrationRequestModelTests
 
     [Test]
     [TestCase("")]
-    [TestCase("short")]
+    [TestCase("A")]
     [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidPassword_IsInvalid(string?password)
+    public void CreateLecturerRequest_InvalidName_IsInvalid(string? name)
     {
-        StudentRegistrationRequestModel model = new()
+        CreateLecturerRequestModel model = new()
         {
-            Email = "test@example.com",
+            Email = "lecturer@example.com",
+            Name = name!,
+            Password = "StrongPassword1!",
+            IsAdmin = false
+        };
+
+        ValidationContext context = new(model);
+        List<ValidationResult> results = [];
+        bool isValid = Validator.TryValidateObject(model, context, results, true);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(isValid, Is.False);
+            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
+        }
+    }
+
+    [Test]
+    public void CreateLecturerRequest_LongName_IsInvalid()
+    {
+        CreateLecturerRequestModel model = new()
+        {
+            Email = "lecturer@example.com",
+            Name = new string('A', 71),
+            Password = "StrongPassword1!",
+            IsAdmin = false
+        };
+
+        ValidationContext context = new(model);
+        List<ValidationResult> results = [];
+        bool isValid = Validator.TryValidateObject(model, context, results, true);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(isValid, Is.False);
+            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
+        }
+    }
+
+    [Test]
+    [TestCase("")]
+    [TestCase("weak")]
+    [TestCase(null)]
+    public void CreateLecturerRequest_InvalidPassword_IsInvalid(string? password)
+    {
+        CreateLecturerRequestModel model = new()
+        {
+            Email = "lecturer@example.com",
+            Name = "Dr. Lecturer",
             Password = password!,
-            Name = "Test Student"
+            IsAdmin = false
         };
 
         ValidationContext context = new(model);
@@ -67,50 +117,6 @@ public class StudentRegistrationRequestModelTests
         {
             Assert.That(isValid, Is.False);
             Assert.That(results.Any(r => r.MemberNames.Contains("Password")));
-        }
-    }
-
-    [Test]
-    [TestCase("")]
-    [TestCase(null)]
-    public void StudentRegistrationRequest_InvalidName_IsInvalid(string?name)
-    {
-        StudentRegistrationRequestModel model = new()
-        {
-            Email = "test@example.com",
-            Password = "password123",
-            Name = name!
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
-        }
-    }
-
-    [Test]
-    public void StudentRegistrationRequest_LongName_IsInvalid()
-    {
-        StudentRegistrationRequestModel model = new()
-        {
-            Email = "test@example.com",
-            Password = "password123",
-            Name = new string('a', 71) // MaxLength is 70
-        };
-
-        ValidationContext context = new(model);
-        List<ValidationResult> results = [];
-        bool isValid = Validator.TryValidateObject(model, context, results, true);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(isValid, Is.False);
-            Assert.That(results.Any(r => r.MemberNames.Contains("Name")));
         }
     }
 }
