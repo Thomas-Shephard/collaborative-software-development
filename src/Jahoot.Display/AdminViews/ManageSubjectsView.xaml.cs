@@ -54,11 +54,11 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         IsVisibleChanged += ManageSubjectsView_IsVisibleChanged;
     }
 
-    private void ManageSubjectsView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    private async void ManageSubjectsView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if ((bool)e.NewValue)
         {
-            _ = LoadSubjects();
+            await LoadSubjects();
         }
     }
 

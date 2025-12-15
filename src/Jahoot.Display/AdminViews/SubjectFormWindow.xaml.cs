@@ -48,8 +48,8 @@ public partial class SubjectFormWindow : Window
         }
 
         Result result = _subject == null
-            ? await _subjectService.CreateSubjectAsync(new CreateSubjectRequestModel { Name = name })
-            : await _subjectService.UpdateSubjectAsync(_subject.SubjectId, new UpdateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked == true });
+            ? await _subjectService.CreateSubjectAsync(new CreateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked == true })
+            : await _subjectService.UpdateSubjectAsync(_subject.SubjectId, new UpdateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked.GetValueOrDefault() });
 
         if (result.Success)
         {
