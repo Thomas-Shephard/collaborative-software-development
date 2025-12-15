@@ -7,9 +7,9 @@ using Jahoot.Core.Models.Requests;
 using System.Net;
 
 namespace Jahoot.Display.Services;
-public class AuthService(IHttpClientFactory httpClientFactory, ISecureStorageService secureStorageService) : IAuthService
+public class AuthService(HttpClient httpClient, ISecureStorageService secureStorageService) : IAuthService
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("JahootApi");
+    private readonly HttpClient _httpClient = httpClient;
     private readonly ISecureStorageService _secureStorageService = secureStorageService;
 
     public async Task<Result> Login(LoginRequestModel loginRequest)

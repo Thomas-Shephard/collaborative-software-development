@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Jahoot.Display.Services;
 
-public class SubjectService(IHttpClientFactory httpClientFactory, ISecureStorageService secureStorageService) : ISubjectService
+public class SubjectService(HttpClient httpClient, ISecureStorageService secureStorageService) : ISubjectService
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -16,13 +16,12 @@ public class SubjectService(IHttpClientFactory httpClientFactory, ISecureStorage
 
     private HttpClient CreateClient()
     {
-        var client = httpClientFactory.CreateClient("JahootApi");
         var token = secureStorageService.GetToken();
         if (!string.IsNullOrEmpty(token))
         {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        return client;
+        return httpClient;
     }
 
     public async Task<IEnumerable<Subject>> GetAllSubjectsAsync()
