@@ -8,27 +8,27 @@ using Moq;
 
 namespace Jahoot.WebApi.Tests.Controllers.Student;
 
-public class RegisterExistingControllerTests
+public class AssignStudentRoleControllerTests
 {
     private const string UserEmail = "test@example.com";
     private const string UserPassword = "password123";
 
     private Mock<IStudentRepository> _studentRepositoryMock;
     private Mock<IUserRepository> _userRepositoryMock;
-    private RegisterExistingController _controller;
+    private AssignStudentRoleController _controller;
 
     [SetUp]
     public void Setup()
     {
         _studentRepositoryMock = new Mock<IStudentRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
-        _controller = new RegisterExistingController(_studentRepositoryMock.Object, _userRepositoryMock.Object);
+        _controller = new AssignStudentRoleController(_studentRepositoryMock.Object, _userRepositoryMock.Object);
     }
 
     [Test]
-    public async Task RegisterExistingStudent_UserNotFound_ReturnsUnauthorized()
+    public async Task AssignRoleToExistingUser_UserNotFound_ReturnsUnauthorized()
     {
-        ExistingUserRegistrationRequestModel request = new() { Email = "nonexistent@example.com", Password = "password" };
+        AssignStudentRoleRequestModel request = new() { Email = "nonexistent@example.com", Password = "password" };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(request.Email)).ReturnsAsync((User?)null);
 
         IActionResult result = await _controller.RegisterExistingStudent(request);
@@ -41,9 +41,9 @@ public class RegisterExistingControllerTests
     }
 
     [Test]
-    public async Task RegisterExistingStudent_WrongPassword_ReturnsUnauthorized()
+    public async Task AssignRoleToExistingUser_WrongPassword_ReturnsUnauthorized()
     {
-        ExistingUserRegistrationRequestModel request = new() { Email = UserEmail, Password = $"Incorrect-{UserPassword}" };
+        AssignStudentRoleRequestModel request = new() { Email = UserEmail, Password = $"Incorrect-{UserPassword}" };
         User user = new()
         {
             UserId = 1,
@@ -64,9 +64,9 @@ public class RegisterExistingControllerTests
     }
 
     [Test]
-    public async Task RegisterExistingStudent_AlreadyStudent_ReturnsConflict()
+    public async Task AssignRoleToExistingUser_AlreadyStudent_ReturnsConflict()
     {
-        ExistingUserRegistrationRequestModel request = new() { Email = UserEmail, Password = UserPassword };
+        AssignStudentRoleRequestModel request = new() { Email = UserEmail, Password = UserPassword };
         User user = new()
         {
             UserId = 1,
@@ -87,9 +87,9 @@ public class RegisterExistingControllerTests
     }
 
     [Test]
-    public async Task RegisterExistingStudent_ValidRequest_ReturnsCreated()
+    public async Task AssignRoleToExistingUser_ValidRequest_ReturnsOk()
     {
-        ExistingUserRegistrationRequestModel request = new() { Email = UserEmail, Password = UserPassword };
+        AssignStudentRoleRequestModel request = new() { Email = UserEmail, Password = UserPassword };
         User user = new()
         {
             UserId = 1,
@@ -102,19 +102,15 @@ public class RegisterExistingControllerTests
 
         IActionResult result = await _controller.RegisterExistingStudent(request);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result, Is.TypeOf<StatusCodeResult>());
-            Assert.That(((StatusCodeResult)result).StatusCode, Is.EqualTo(201));
-        }
+        Assert.That(result, Is.TypeOf<OkResult>());
         _studentRepositoryMock.Verify(repo => repo.CreateStudentAsync(user.UserId), Times.Once);
     }
 
     [Test]
-    public async Task RegisterExistingStudent_InvalidModel_ReturnsBadRequest()
+    public async Task AssignRoleToExistingUser_InvalidModel_ReturnsBadRequest()
     {
          _controller.ModelState.AddModelError("Email", "Invalid email");
-         ExistingUserRegistrationRequestModel request = new() { Email = "bad", Password = "pass" };
+         AssignStudentRoleRequestModel request = new() { Email = "bad", Password = "pass" };
 
          IActionResult result = await _controller.RegisterExistingStudent(request);
 
