@@ -48,6 +48,7 @@ public static class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IStudentRepository, StudentRepository>();
         builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+        builder.Services.AddScoped<ITokenDenyRepository, TokenDenyRepository>();
         builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
         builder.Services.AddScoped<ITestRepository, TestRepository>();
 
@@ -62,7 +63,7 @@ public static class Program
         LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
         TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
 
-        builder.Services.AddSingleton<ITokenDenyService>(_ => new TokenDenyService(tokenDenySettings, TimeProvider.System));
+        builder.Services.AddSingleton<ITokenDenyService>(sp => new TokenDenyService(tokenDenySettings, TimeProvider.System, sp.GetRequiredService<IServiceScopeFactory>()));
         builder.Services.AddSingleton<ILoginAttemptService>(_ => new LoginAttemptService(loginAttemptSettings, TimeProvider.System));
         builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
 

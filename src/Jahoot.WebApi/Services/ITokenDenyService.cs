@@ -2,6 +2,6 @@ namespace Jahoot.WebApi.Services;
 
 public interface ITokenDenyService
 {
-    Task DenyAsync(string jti, DateTime expiry);
+    Task DenyAsync(string jti, DateTime expiresAt);
     Task<bool> IsDeniedAsync(string jti);
 }
