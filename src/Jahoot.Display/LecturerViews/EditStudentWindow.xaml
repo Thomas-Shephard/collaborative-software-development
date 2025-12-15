@@ -22,12 +22,12 @@
 
         <StackPanel Grid.Row="1" Margin="0,0,0,10">
             <TextBlock Text="Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
-            <TextBox Text="{Binding Student.Name}" Padding="5"/>
+            <TextBox Text="{Binding StudentCopy.Name}" Padding="5"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Margin="0,0,0,10">
             <TextBlock Text="Email" FontWeight="SemiBold" Margin="0,0,0,5"/>
-            <TextBox Text="{Binding Student.Email}" Padding="5"/>
+            <TextBox Text="{Binding StudentCopy.Email}" Padding="5"/>
         </StackPanel>
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
