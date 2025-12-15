@@ -1,10 +1,6 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
-
 using Jahoot.Display.Services;
+using Jahoot.Display.ViewModels;
 
 namespace Jahoot.Display.Pages
 {
@@ -25,16 +21,7 @@ namespace Jahoot.Display.Pages
                 if (OverviewContent == null || SubjectsView == null || UsersView == null || SettingsView == null)
                     return;
 
-                // We get the index from the ViewModel, assuming binding has updated.
-                // If binding hasn't updated yet, we might need to rely on sender, 
-                // but let's assume TwoWay binding works fast enough or we check logic.
-                // Actually, SelectionChanged fires *after* selection changes.
-                
-                // For robustness, let's use the ViewModel's SelectedTabIndex.
                 int index = vm.SelectedTabIndex;
-                
-                // If the binding update is slightly delayed relative to the event, we might need to handle this carefully.
-                // But for now, let's try this simple approach.
                 
                 UpdateVisibility(index);
             }
@@ -47,144 +34,5 @@ namespace Jahoot.Display.Pages
              UsersView.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
              SettingsView.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
         }
-    }
-
-    public abstract class BaseViewModel : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    public class AdminDashboardViewModel : BaseViewModel
-    {
-        public string AdminInitials
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = "AD";
-
-        public int TotalUsers
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 350;
-
-        public int TotalSubjects
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 42;
-
-        public string SystemHealth
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = "99.9%";
-
-        public int ActiveSessions
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 12;
-
-        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
-        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
-        public ObservableCollection<TabItem> TabItems { get; set; }
-
-        public ObservableCollection<string> AvailableRoles
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
-
-        public string SelectedRole
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = "Admin";
-
-        private int _selectedTabIndex = 0;
-        public int SelectedTabIndex
-        {
-            get => _selectedTabIndex;
-            set
-            {
-                _selectedTabIndex = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public AdminDashboardViewModel()
-        {
-            RecentActivityItems = new ObservableCollection<RecentActivityItem>
-            {
-                new RecentActivityItem { StudentInitials = "Sy", DescriptionPrefix = "System ", TestName = "Backup Completed", TimeAgo = "10 mins ago", Result = "Success" },
-                new RecentActivityItem { StudentInitials = "Us", DescriptionPrefix = "User ", TestName = "New Registration", TimeAgo = "1 hour ago", Result = "Pending" },
-                 new RecentActivityItem { StudentInitials = "Al", DescriptionPrefix = "Alert ", TestName = "High CPU Usage", TimeAgo = "2 hours ago", Result = "Resolved" }
-            };
-
-            PerformanceSubjects = new ObservableCollection<PerformanceSubject>
-            {
-                new PerformanceSubject { SubjectName = "Server Load", ScoreText = "Low", ScoreValue = 20 },
-                new PerformanceSubject { SubjectName = "Memory Usage", ScoreText = "45%", ScoreValue = 45 },
-                 new PerformanceSubject { SubjectName = "Disk Space", ScoreText = "60%", ScoreValue = 60 }
-            };
-
-            TabItems = new ObservableCollection<TabItem>
-            {
-                new TabItem { Header = "Overview" },
-                new TabItem { Header = "Manage Subjects" },
-                new TabItem { Header = "Manage Users" },
-                new TabItem { Header = "Settings" }
-            };
-        }
-    }
-
-    public class RecentActivityItem
-    {
-        public required string StudentInitials { get; set; }
-        public required string DescriptionPrefix { get; set; }
-        public required string TestName { get; set; }
-        public required string TimeAgo { get; set; }
-        public required string Result { get; set; }
-    }
-
-    public class PerformanceSubject
-    {
-        public required string SubjectName { get; set; }
-        public required string ScoreText { get; set; }
-        public required double ScoreValue { get; set; }
     }
 }
