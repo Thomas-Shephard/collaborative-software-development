@@ -4,6 +4,7 @@ using MailKit.Net.Smtp;
 using MimeKit;
 using Jahoot.WebApi.Settings;
 using MailKit.Security;
+using Jahoot.Core.Models;
 
 namespace Jahoot.WebApi.Services;
 
@@ -30,23 +31,23 @@ public class SmtpEmailService : IEmailService
         _template = File.ReadAllText(templatePath);
     }
 
-    public async Task SendEmailAsync(string to, string subject, string title, string body)
+    public async Task SendEmailAsync(EmailMessage message)
     {
-        if (!new EmailAddressAttribute().IsValid(to))
+        if (!new EmailAddressAttribute().IsValid(message.To))
         {
-            throw new ArgumentException("Email address is not valid", nameof(to));
+            throw new ArgumentException("Email address is not valid", nameof(message.To));
         }
 
-        using MimeMessage message = new();
-        message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
-        message.To.Add(new MailboxAddress("", to));
-        message.Subject = subject;
+        using MimeMessage mimeMessage = new();
+        mimeMessage.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
+        mimeMessage.To.Add(new MailboxAddress("", message.To));
+        mimeMessage.Subject = message.Subject;
 
         string htmlBody = _template
-            .Replace("{{Title}}", WebUtility.HtmlEncode(title))
-            .Replace("{{Body}}", WebUtility.HtmlEncode(body));
+            .Replace("{{Title}}", WebUtility.HtmlEncode(message.Title))
+            .Replace("{{Body}}", WebUtility.HtmlEncode(message.Body));
 
-        message.Body = new TextPart("html")
+        mimeMessage.Body = new TextPart("html")
         {
             Text = htmlBody
         };
@@ -55,7 +56,7 @@ public class SmtpEmailService : IEmailService
 
         await client.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
         await client.AuthenticateAsync(_settings.User, _settings.Password);
-        await client.SendAsync(message);
+        await client.SendAsync(mimeMessage);
         await client.DisconnectAsync(true);
     }
 }

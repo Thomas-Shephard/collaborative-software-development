@@ -1,4 +1,5 @@
 using Jahoot.WebApi.Services;
+using Jahoot.Core.Models;
 
 namespace Jahoot.WebApi.Tests.Services;
 
@@ -18,7 +19,13 @@ public class MockEmailServiceTests
             await using StringWriter sw = new();
             Console.SetOut(sw);
 
-            await service.SendEmailAsync(to, subject, title, body);
+            await service.SendEmailAsync(new EmailMessage
+            {
+                To = to,
+                Subject = subject,
+                Title = title,
+                Body = body
+            });
 
             string output = sw.ToString();
             Assert.That(output, Does.Contain($"MockEmailService: Sending email to {to} with subject {subject}"));

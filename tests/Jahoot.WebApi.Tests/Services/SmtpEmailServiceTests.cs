@@ -5,6 +5,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Moq;
+using Jahoot.Core.Models;
 
 namespace Jahoot.WebApi.Tests.Services;
 
@@ -90,7 +91,13 @@ public class SmtpEmailServiceTests
             })
             .Returns(Task.FromResult(string.Empty));
 
-        await _service.SendEmailAsync(to, subject, heading, body);
+        await _service.SendEmailAsync(new EmailMessage
+        {
+            To = to,
+            Subject = subject,
+            Title = heading,
+            Body = body
+        });
 
         _clientMock.Verify(c => c.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls, It.IsAny<CancellationToken>()), Times.Once);
         _clientMock.Verify(c => c.AuthenticateAsync(_settings.User, _settings.Password, It.IsAny<CancellationToken>()), Times.Once);

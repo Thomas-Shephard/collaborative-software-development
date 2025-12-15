@@ -8,6 +8,7 @@ using Jahoot.Core.Models;
 using Jahoot.WebApi.Authorization;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
+using Jahoot.WebApi.Services.Background;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -56,8 +57,10 @@ public static class Program
             builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
         }
 
-        JwtSettings jwtSettings = builder.Services.AddAndConfigureFromEnv<JwtSettings>(builder.Configuration, "JWT");
+        builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+        builder.Services.AddHostedService<EmailBackgroundService>();
 
+        JwtSettings jwtSettings = builder.Services.AddAndConfigureFromEnv<JwtSettings>(builder.Configuration, "JWT");
         LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
         TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
 

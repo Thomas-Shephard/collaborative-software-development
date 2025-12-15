@@ -1,6 +1,8 @@
+using Jahoot.Core.Models;
+
 namespace Jahoot.WebApi.Services;
 
 public interface IEmailService
 {
-    Task SendEmailAsync(string to, string subject, string title, string body);
+    Task SendEmailAsync(EmailMessage message);
 }
