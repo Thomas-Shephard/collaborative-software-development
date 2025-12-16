@@ -35,7 +35,6 @@ namespace Jahoot.Display.LecturerViews
             _originalStudent.Name = StudentCopy.Name;
             _originalStudent.Email = StudentCopy.Email;
             // Note: AccountStatus is no longer editable in the popup, but keeping it for completeness
-            _originalStudent.AccountStatus = StudentCopy.AccountStatus; 
 
             DialogResult = true;
             Close();
