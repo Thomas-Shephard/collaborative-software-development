@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using System.ComponentModel;
 
 namespace Jahoot.Core.Tests.Models;
 
@@ -68,5 +69,35 @@ public class UserTests
             Assert.That(user.Roles, Is.EqualTo(UserInitRoles));
             Assert.That(user.LastLogin, Is.EqualTo(newLastLogin));
         }
+    }
+    
+    [Test]
+    public void SetProperty_WhenValueChanged_RaisesPropertyChangedEvent()
+    {
+        // Arrange
+        var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>() };
+        string? raisedPropertyName = null;
+        user.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        user.Name = "New Name";
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.EqualTo(nameof(User.Name)));
+    }
+
+    [Test]
+    public void SetProperty_WhenValueUnchanged_DoesNotRaisePropertyChangedEvent()
+    {
+        // Arrange
+        var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>() };
+        string? raisedPropertyName = null;
+        user.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        user.Name = "Initial Name";
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.Null);
     }
 }

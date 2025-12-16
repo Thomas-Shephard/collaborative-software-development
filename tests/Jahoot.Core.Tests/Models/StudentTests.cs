@@ -38,4 +38,98 @@ public class StudentTests
             Assert.That(student.Roles, Is.EquivalentTo(userRoles));
         }
     }
+
+    [TestCase("John Doe", "J")]
+    [TestCase("jane doe", "J")]
+    [TestCase(" single", "S")]
+    public void Initials_ReturnsFirstLetterOfName_WhenNameIsNotEmpty(string name, string expectedInitial)
+    {
+        // Arrange
+        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act
+        var initials = student.Initials;
+
+        // Assert
+        Assert.That(initials, Is.EqualTo(expectedInitial));
+    }
+
+    [TestCase("")]
+    [TestCase("   ")]
+    public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string name)
+    {
+        // Arrange
+        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act
+        var initials = student.Initials;
+
+        // Assert
+        Assert.That(initials, Is.Empty);
+    }
+
+    [Test]
+    public void Equals_ReturnsTrue_WhenComparingTwoStudentsWithTheSameId()
+    {
+        // Arrange
+        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act & Assert
+        Assert.That(student1.Equals(student2), Is.True);
+    }
+
+    [Test]
+    public void Equals_ReturnsFalse_WhenComparingTwoStudentsWithDifferentIds()
+    {
+        // Arrange
+        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act & Assert
+        Assert.That(student1.Equals(student2), Is.False);
+    }
+
+    [Test]
+    public void Equals_ReturnsFalse_WhenComparingWithNull()
+    {
+        // Arrange
+        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act & Assert
+        Assert.That(student.Equals(null), Is.False);
+    }
+
+    [Test]
+    public void Equals_ReturnsFalse_WhenComparingWithDifferentType()
+    {
+        // Arrange
+        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var other = new object();
+
+        // Act & Assert
+        Assert.That(student.Equals(other), Is.False);
+    }
+
+    [Test]
+    public void GetHashCode_ReturnsSameValue_ForTwoStudentsWithTheSameId()
+    {
+        // Arrange
+        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act & Assert
+        Assert.That(student1.GetHashCode(), Is.EqualTo(student2.GetHashCode()));
+    }
+
+    [Test]
+    public void GetHashCode_ReturnsDifferentValue_ForTwoStudentsWithDifferentIds()
+    {
+        // Arrange
+        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+
+        // Act & Assert
+        Assert.That(student1.GetHashCode(), Is.Not.EqualTo(student2.GetHashCode()));
+    }
 }
