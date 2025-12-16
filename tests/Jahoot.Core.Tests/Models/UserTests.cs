@@ -18,6 +18,11 @@ public class UserTests
         {
             return SetProperty(ref _testProperty, value, nameof(TestProperty));
         }
+        
+        public bool SetTestPropertyWithNullName(string value)
+        {
+            return SetProperty(ref _testProperty, value, null);
+        }
 
         public string TestProperty
         {
@@ -171,5 +176,20 @@ public class UserTests
 
         // Assert
         Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public void OnPropertyChanged_CanBeCalled_WithNullPropertyName()
+    {
+        // Arrange
+        var testUser = new TestUser { Email = "a@a.com", Name = "a", PasswordHash = "a", Roles = new List<Role>() };
+        string? raisedPropertyName = "not null";
+        testUser.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        testUser.SetTestPropertyWithNullName("some value");
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.Null);
     }
 }

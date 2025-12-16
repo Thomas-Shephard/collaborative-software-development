@@ -19,12 +19,7 @@ public class Student : User
             {
                 return string.Empty;
             }
-            string trimmedName = Name.Trim();
-            if (trimmedName.Length > 0)
-            {
-                return trimmedName[0].ToString().ToUpper();
-            }
-            return string.Empty;
+            return Name.Trim()[0].ToString().ToUpper();
         }
     }
 
