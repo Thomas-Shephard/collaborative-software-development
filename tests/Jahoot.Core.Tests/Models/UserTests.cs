@@ -11,6 +11,21 @@ public class UserTests
     private const string UserInitPasswordHash = "initial_hash";
     private static readonly List<Role> UserInitRoles = [Role.Admin, Role.Lecturer];
 
+    private class TestUser : User
+    {
+        private string _testProperty = null!;
+        public bool SetTestProperty(string value)
+        {
+            return SetProperty(ref _testProperty, value, nameof(TestProperty));
+        }
+
+        public string TestProperty
+        {
+            get => _testProperty;
+            set => SetProperty(ref _testProperty, value);
+        }
+    }
+
     [Test]
     public void User_CanBeCreated_WithValidProperties()
     {
@@ -130,5 +145,31 @@ public class UserTests
 
         // Assert
         Assert.That(raisedPropertyName, Is.Null);
+    }
+
+    [Test]
+    public void SetProperty_ReturnsTrue_WhenValueChanged()
+    {
+        // Arrange
+        var testUser = new TestUser { TestProperty = "Initial Value", Email = "a@a.com", Name = "a", PasswordHash = "a", Roles = new List<Role>() };
+
+        // Act
+        var result = testUser.SetTestProperty("New Value");
+
+        // Assert
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void SetProperty_ReturnsFalse_WhenValueUnchanged()
+    {
+        // Arrange
+        var testUser = new TestUser { TestProperty = "Initial Value", Email = "a@a.com", Name = "a", PasswordHash = "a", Roles = new List<Role>() };
+
+        // Act
+        var result = testUser.SetTestProperty("Initial Value");
+
+        // Assert
+        Assert.That(result, Is.False);
     }
 }
