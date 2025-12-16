@@ -43,6 +43,22 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         }
     }
 
+    public List<string> FilterOptions { get; } = ["Active", "Inactive", "All"];
+
+    public string SelectedFilter
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                OnPropertyChanged();
+                _ = LoadSubjects();
+            }
+        }
+    } = "All";
+
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -73,7 +89,14 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
 
         try
         {
-            List<Subject> subjects = [.. (await _subjectService.GetAllSubjectsAsync())];
+            bool? isActive = SelectedFilter switch
+            {
+                "Active" => true,
+                "Inactive" => false,
+                _ => null
+            };
+
+            List<Subject> subjects = [.. (await _subjectService.GetAllSubjectsAsync(isActive))];
 
             Subjects.Clear();
             foreach (Subject subject in subjects)
@@ -95,7 +118,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
     {
         if (_subjectService == null) return;
 
-        SubjectFormWindow form = new SubjectFormWindow(_subjectService);
+        SubjectFormWindow form = new(_subjectService);
         if (form.ShowDialog() == true)
         {
             await LoadSubjects();

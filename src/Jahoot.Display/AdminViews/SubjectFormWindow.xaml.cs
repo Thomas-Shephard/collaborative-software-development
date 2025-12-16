@@ -25,7 +25,8 @@ public partial class SubjectFormWindow : Window
         else
         {
             Title = "Create Subject";
-            ActiveCheckBox.IsChecked = true; // Default to active
+            ActiveCheckBox.IsChecked = true; // The user is unable to make a subject that is not active
+            ActiveCheckBox.IsEnabled = false;
         }
     }
 
