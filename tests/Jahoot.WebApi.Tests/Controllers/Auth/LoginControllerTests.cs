@@ -8,6 +8,7 @@ using Jahoot.WebApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Data;
 
 namespace Jahoot.WebApi.Tests.Controllers.Auth;
 
@@ -103,8 +104,8 @@ public class LoginControllerTests
             LastLogin = null
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequestModel.Email)).ReturnsAsync(user);
-        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<User>()))
-                           .Callback<User>(u => user.LastLogin = u.LastLogin)
+        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<User>(), It.IsAny<IDbTransaction?>()))
+                           .Callback<User, IDbTransaction?>((u, t) => user.LastLogin = u.LastLogin)
                            .Returns(Task.CompletedTask);
 
         const string expectedToken = "mocked_jwt_token";
