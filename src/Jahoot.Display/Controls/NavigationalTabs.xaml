@@ -20,6 +20,10 @@
                     SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     SelectionChanged="MainTabs_SelectionChanged">
             <TabControl.ContentTemplate>
+                <!--
+                    Suppress default TabControl content rendering by providing an empty DataTemplate.
+                    This prevents duplicate content rendering when using a separate ContentControl for CurrentView.
+                -->
                 <DataTemplate />
             </TabControl.ContentTemplate>
             <TabControl.Resources>
