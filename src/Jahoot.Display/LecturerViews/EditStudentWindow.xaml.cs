@@ -5,7 +5,7 @@ namespace Jahoot.Display.LecturerViews
 {
     public partial class EditStudentWindow : Window
     {
-        private Student _originalStudent;
+        private readonly Student _originalStudent;
         public Student StudentCopy { get; set; }
 
         public EditStudentWindow(Student student)
