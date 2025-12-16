@@ -3,6 +3,7 @@ using Jahoot.Core.Models;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Repositories;
 using Moq;
+using MySqlConnector;
 
 namespace Jahoot.WebApi.Tests.Repositories;
 
@@ -183,5 +184,23 @@ public class PasswordResetRepositoryTests : RepositoryTestBase
         // Assert that no new token was inserted for the non-existent user (rollback occurred)
         PasswordResetToken? newTokenInDb = await Connection.QuerySingleOrDefaultAsync<PasswordResetToken>("SELECT * FROM PasswordResetToken WHERE user_id = @UserId AND token_hash = @TokenHash", new { UserId = nonExistentUserId, TokenHash = newTokenHash });
         Assert.That(newTokenInDb, Is.Null);
+    }
+
+    [Test]
+    public async Task CreateTokenAsync_ConnectionClosed_OpensConnectionAndSucceeds()
+    {
+        await using MySqlConnection closedConnection = new(TestDatabaseFactory.ConnectionString);
+        PasswordResetRepository repositoryWithClosedConnection = new(closedConnection, _mockUserRepository.Object);
+
+        User user = new() { UserId = 1, Email = "test@example.com", Name = "Test User", PasswordHash = "hash", Roles = [], CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        int userId = await InsertUser(user);
+
+        string tokenHash = PasswordUtils.HashPasswordWithSalt("new_token");
+
+        await repositoryWithClosedConnection.CreateTokenAsync(userId, tokenHash);
+
+        // Verify the token was inserted
+        PasswordResetToken? insertedToken = await Connection.QuerySingleOrDefaultAsync<PasswordResetToken>("SELECT * FROM PasswordResetToken WHERE token_hash = @TokenHash", new { TokenHash = tokenHash });
+        Assert.That(insertedToken, Is.Not.Null);
     }
 }

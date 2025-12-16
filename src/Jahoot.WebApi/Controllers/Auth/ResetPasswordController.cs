@@ -22,6 +22,11 @@ public class ResetPasswordController(IDbConnection connection, IUserRepository u
             return BadRequest(ModelState);
         }
 
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+        }
+
         using IDbTransaction transaction = connection.BeginTransaction();
         try
         {
