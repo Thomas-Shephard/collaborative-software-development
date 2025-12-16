@@ -8,11 +8,6 @@ public class PasswordResetRepository(IDbConnection connection, IUserRepository u
 {
     public async Task CreateTokenAsync(int userId, string token)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         using IDbTransaction transaction = connection.BeginTransaction();
         try
         {
