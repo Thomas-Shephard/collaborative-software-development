@@ -17,7 +17,7 @@ public class UserRepository(IDbConnection connection) : IUserRepository
         public DateTime UpdatedAt { get; init; }
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
+    public async Task<User?> GetUserByEmailAsync(string email, IDbTransaction? transaction = null)
     {
         const string query = """
                              SELECT user.*, lecturer.is_admin,student.student_id
@@ -59,14 +59,19 @@ public class UserRepository(IDbConnection connection) : IUserRepository
                     UpdatedAt = userData.UpdatedAt
                 };
             },
-            new { Email = email },
+            new { Email = email }, transaction,
             splitOn: "is_admin,student_id");
 
         return users.SingleOrDefault();
     }
 
-    public async Task UpdateUserAsync(User user)
+    public async Task UpdateUserAsync(User user, IDbTransaction? transaction = null)
     {
-        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @UserId", user);
+        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @UserId", user, transaction);
+    }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        await connection.ExecuteAsync("DELETE FROM User WHERE user_id = @UserId", new { UserId = userId });
     }
 }

@@ -1,20 +1,16 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
-using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Jahoot.WebApi.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/login")]
-public class LoginController(IUserRepository userRepository, JwtSettings jwtSettings, ILoginAttemptService loginAttemptService) : ControllerBase
+[Tags("Auth")]
+public class LoginController(IUserRepository userRepository, ILoginAttemptService loginAttemptService, ITokenService tokenService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequestModel requestModel)
@@ -55,29 +51,7 @@ public class LoginController(IUserRepository userRepository, JwtSettings jwtSett
         user!.LastLogin = loginTime;
         await userRepository.UpdateUserAsync(user);
 
-        // Generate JWT
-        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(jwtSettings.Secret));
-        SigningCredentials credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-
-        Claim[] claims =
-        [
-            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new(JwtRegisteredClaimNames.Name, user.Name),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            ..user.Roles.Select(role => new Claim(ClaimTypes.Role, role.ToString()))
-        ];
-
-        DateTime expires = loginTime.AddDays(7);
-        JwtSecurityToken token = new(
-                                     jwtSettings.Issuer,
-                                     jwtSettings.Audience,
-                                     claims,
-                                     loginTime,
-                                     expires,
-                                     credentials);
-
-        string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        string tokenString = tokenService.GenerateToken(user);
 
         return Ok(new { Token = tokenString });
     }

@@ -139,6 +139,28 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task GetStudentsByStatusAsync_ReturnsMatchingStudents()
+    {
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Pending', 'pending@test.com', 'hash')");
+        int pendingId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'pending_approval')", new { UserId = pendingId });
+
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Active', 'active@test.com', 'hash')");
+        int activeId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'active')", new { UserId = activeId });
+
+        Student[] result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval))
+                                             .ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result[0].UserId, Is.EqualTo(pendingId));
+            Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
+        }
+    }
+
+    [Test]
     public async Task GetStudentByUserIdAsync_UnknownStatus_ThrowsException()
     {
         await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
@@ -159,5 +181,21 @@ public class StudentRepositoryTests : RepositoryTestBase
             await Connection.ExecuteAsync("DELETE FROM Student WHERE user_id = @UserId", new { UserId = userId });
             await Connection.ExecuteAsync("ALTER TABLE Student MODIFY COLUMN account_status ENUM('pending_approval', 'active', 'disabled') NOT NULL DEFAULT 'pending_approval'");
         }
+    }
+
+    [Test]
+    public async Task UpdateStudentAsync_UpdatesAccountStatus()
+    {
+        await _repository.CreateStudentAsync(UserName, UserEmail, UserPasswordHash);
+        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = @Email", new { Email = UserEmail });
+        Student? student = await _repository.GetStudentByUserIdAsync(user.UserId);
+        Assert.That(student, Is.Not.Null);
+
+        student.AccountStatus = StudentAccountStatus.Active;
+
+        await _repository.UpdateStudentAsync(student);
+
+        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { user.UserId });
+        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
     }
 }

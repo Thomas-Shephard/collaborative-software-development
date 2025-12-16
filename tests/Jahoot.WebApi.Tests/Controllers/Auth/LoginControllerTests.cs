@@ -1,16 +1,14 @@
 using System.Net;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Utils;
 using Jahoot.WebApi.Controllers.Auth;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
-using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Data;
 
 namespace Jahoot.WebApi.Tests.Controllers.Auth;
 
@@ -20,19 +18,16 @@ public class LoginControllerTests
     private Mock<ILoginAttemptService> _loginAttemptServiceMock;
     private LoginController _loginController;
     private Mock<IUserRepository> _userRepositoryMock;
+    private Mock<ITokenService> _tokenServiceMock;
 
     [SetUp]
     public void Setup()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
         _loginAttemptServiceMock = new Mock<ILoginAttemptService>();
-        JwtSettings jwtSettings = new()
-        {
-            Secret = "a-very-secure-secret-key-that-is-long-enough",
-            Issuer = "Jahoot",
-            Audience = "Jahoot"
-        };
-        _loginController = new LoginController(_userRepositoryMock.Object, jwtSettings, _loginAttemptServiceMock.Object);
+        _tokenServiceMock = new Mock<ITokenService>();
+
+        _loginController = new LoginController(_userRepositoryMock.Object, _loginAttemptServiceMock.Object, _tokenServiceMock.Object);
         _httpContextMock = new Mock<HttpContext>();
         Mock<ConnectionInfo> connection = new();
         connection.Setup(c => c.RemoteIpAddress).Returns(new IPAddress(new byte[] { 127, 0, 0, 1 }));
@@ -109,26 +104,26 @@ public class LoginControllerTests
             LastLogin = null
         };
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(loginRequestModel.Email)).ReturnsAsync(user);
-        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<User>()))
-                           .Callback<User>(u => user.LastLogin = u.LastLogin)
+        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<User>(), It.IsAny<IDbTransaction?>()))
+                           .Callback<User, IDbTransaction?>((u, t) => user.LastLogin = u.LastLogin)
                            .Returns(Task.CompletedTask);
+
+        const string expectedToken = "mocked_jwt_token";
+        _tokenServiceMock.Setup(s => s.GenerateToken(user)).Returns(expectedToken);
 
         IActionResult result = await _loginController.Login(loginRequestModel);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult okResult = (OkObjectResult)result;
         string? tokenString = okResult.Value?.GetType().GetProperty("Token")?.GetValue(okResult.Value, null) as string;
-        Assert.That(tokenString, Is.Not.Null);
-
-        JwtSecurityTokenHandler handler = new();
-        JwtSecurityToken jsonToken = handler.ReadJwtToken(tokenString);
+        Assert.That(tokenString, Is.EqualTo(expectedToken));
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(jsonToken.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == nameof(Role.Student)), Is.True);
             Assert.That(user.LastLogin, Is.Not.Null);
         }
         _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(user), Times.Once);
+        _tokenServiceMock.Verify(s => s.GenerateToken(user), Times.Once);
     }
 
     [Test]
