@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using System.ComponentModel;
 
 namespace Jahoot.Core.Tests.Models;
 
@@ -54,6 +55,7 @@ public class StudentTests
         Assert.That(initials, Is.EqualTo(expectedInitial));
     }
 
+    [TestCase(null)]
     [TestCase("")]
     [TestCase("   ")]
     public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string name)
@@ -131,5 +133,35 @@ public class StudentTests
 
         // Act & Assert
         Assert.That(student1.GetHashCode(), Is.Not.EqualTo(student2.GetHashCode()));
+    }
+
+    [Test]
+    public void SetProperty_WhenAccountStatusChanged_RaisesPropertyChangedEvent()
+    {
+        // Arrange
+        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active };
+        string? raisedPropertyName = null;
+        student.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        student.AccountStatus = StudentAccountStatus.Disabled;
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.EqualTo(nameof(Student.AccountStatus)));
+    }
+
+    [Test]
+    public void SetProperty_WhenAccountStatusUnchanged_DoesNotRaisePropertyChangedEvent()
+    {
+        // Arrange
+        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active };
+        string? raisedPropertyName = null;
+        student.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        student.AccountStatus = StudentAccountStatus.Active;
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.Null);
     }
 }

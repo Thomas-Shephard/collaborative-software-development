@@ -72,7 +72,7 @@ public class UserTests
     }
     
     [Test]
-    public void SetProperty_WhenValueChanged_RaisesPropertyChangedEvent()
+    public void SetProperty_WhenNameChanged_RaisesPropertyChangedEvent()
     {
         // Arrange
         var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>() };
@@ -87,7 +87,7 @@ public class UserTests
     }
 
     [Test]
-    public void SetProperty_WhenValueUnchanged_DoesNotRaisePropertyChangedEvent()
+    public void SetProperty_WhenNameUnchanged_DoesNotRaisePropertyChangedEvent()
     {
         // Arrange
         var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>() };
@@ -96,6 +96,37 @@ public class UserTests
 
         // Act
         user.Name = "Initial Name";
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.Null);
+    }
+    
+    [Test]
+    public void SetProperty_WhenLastLoginChanged_RaisesPropertyChangedEvent()
+    {
+        // Arrange
+        var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>() };
+        string? raisedPropertyName = null;
+        user.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        user.LastLogin = DateTime.UtcNow;
+
+        // Assert
+        Assert.That(raisedPropertyName, Is.EqualTo(nameof(User.LastLogin)));
+    }
+
+    [Test]
+    public void SetProperty_WhenLastLoginUnchanged_DoesNotRaisePropertyChangedEvent()
+    {
+        // Arrange
+        var lastLogin = DateTime.UtcNow;
+        var user = new User { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), LastLogin = lastLogin };
+        string? raisedPropertyName = null;
+        user.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
+
+        // Act
+        user.LastLogin = lastLogin;
 
         // Assert
         Assert.That(raisedPropertyName, Is.Null);
