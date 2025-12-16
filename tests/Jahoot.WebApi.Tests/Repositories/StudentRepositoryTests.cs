@@ -19,6 +19,28 @@ public class StudentRepositoryTests : RepositoryTestBase
         _repository = new StudentRepository(Connection);
     }
 
+    private async Task<(int studentId, int userId)> CreateStudentInDb(string name = UserName, string email = UserEmail, string passwordHash = UserPasswordHash, StudentAccountStatus status = StudentAccountStatus.PendingApproval)
+    {
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = name, Email = email, Hash = passwordHash });
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        string statusString = status switch
+        {
+            StudentAccountStatus.PendingApproval => "pending_approval",
+            StudentAccountStatus.Active => "active",
+            StudentAccountStatus.Disabled => "disabled",
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+        };
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, @AccountStatus)", new { UserId = userId, AccountStatus = statusString });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        return (studentId, userId);
+    }
+
+    private async Task<int> CreateSubjectInDb(string subjectName)
+    {
+        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES (@Name)", new { Name = subjectName });
+        return await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+    }
+
     [Test]
     public async Task CreateStudentAsync_FullDetails_CreatesUserAndStudent()
     {
@@ -62,35 +84,51 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task GetStudentByUserIdAsync_StudentExists_ReturnsStudentWithRoles()
+    public async Task GetStudentByUserIdAsync_StudentExists_ReturnsStudentWithRolesAndNoSubjects()
     {
-        await _repository.CreateStudentAsync(UserName, UserEmail, UserPasswordHash);
-        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = @Email", new { Email = UserEmail });
-        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT student_id FROM Student WHERE user_id = @UserId", new { user.UserId });
+        (int studentId, int userId) = await CreateStudentInDb();
 
-        Student? result = await _repository.GetStudentByUserIdAsync(user.UserId);
+        Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
         Assert.That(result, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.UserId, Is.EqualTo(user.UserId));
+            Assert.That(result.UserId, Is.EqualTo(userId));
             Assert.That(result.Name, Is.EqualTo(UserName));
             Assert.That(result.Email, Is.EqualTo(UserEmail));
             Assert.That(result.Roles, Contains.Item(Role.Student));
             Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
-            Assert.That(result.StudentId, Is.EqualTo(dbStudent.student_id));
+            Assert.That(result.StudentId, Is.EqualTo(studentId));
+            Assert.That(result.Subjects, Is.Empty);
+        }
+    }
+
+    [Test]
+    public async Task GetStudentByUserIdAsync_StudentExistsWithSubjects_ReturnsStudentWithSubjects()
+    {
+        (int studentId, int userId) = await CreateStudentInDb();
+        int subject1Id = await CreateSubjectInDb("Math");
+        int subject2Id = await CreateSubjectInDb("Science");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject2Id });
+
+        Student? result = await _repository.GetStudentByUserIdAsync(userId);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Subjects, Has.Count.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Subjects.Any(s => s.SubjectId == subject1Id && s.Name == "Math"), Is.True);
+            Assert.That(result.Subjects.Any(s => s.SubjectId == subject2Id && s.Name == "Science"), Is.True);
         }
     }
 
     [Test]
     public async Task GetStudentByUserIdAsync_StudentAndLecturer_ReturnsBothRoles()
     {
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
-        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'active')", new { UserId = userId });
+        (int studentId, int userId) = await CreateStudentInDb(status: StudentAccountStatus.Active);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, FALSE)", new { UserId = userId });
-        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT student_id FROM Student WHERE user_id = @UserId", new { UserId = userId });
 
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
@@ -100,19 +138,15 @@ public class StudentRepositoryTests : RepositoryTestBase
             Assert.That(result.Roles, Contains.Item(Role.Student));
             Assert.That(result.Roles, Contains.Item(Role.Lecturer));
             Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.Active));
-            Assert.That(result.StudentId, Is.EqualTo(dbStudent.student_id));
+            Assert.That(result.StudentId, Is.EqualTo(studentId));
         }
     }
 
     [Test]
     public async Task GetStudentByUserIdAsync_StudentAndAdmin_ReturnsThreeRoles()
     {
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
-        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'disabled')", new { UserId = userId });
+        (int studentId, int userId) = await CreateStudentInDb(status: StudentAccountStatus.Disabled);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, TRUE)", new { UserId = userId });
-        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT student_id FROM Student WHERE user_id = @UserId", new { UserId = userId });
 
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
@@ -123,7 +157,7 @@ public class StudentRepositoryTests : RepositoryTestBase
             Assert.That(result.Roles, Contains.Item(Role.Lecturer));
             Assert.That(result.Roles, Contains.Item(Role.Admin));
             Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.Disabled));
-            Assert.That(result.StudentId, Is.EqualTo(dbStudent.student_id));
+            Assert.That(result.StudentId, Is.EqualTo(studentId));
         }
     }
 
@@ -139,15 +173,18 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task GetStudentsByStatusAsync_ReturnsMatchingStudents()
+    public async Task GetStudentsByStatusAsync_ReturnsMatchingStudentsWithSubjects()
     {
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Pending', 'pending@test.com', 'hash')");
-        int pendingId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'pending_approval')", new { UserId = pendingId });
+        (int pendingStudentId, int pendingUserId) = await CreateStudentInDb("Pending", "pending@test.com", "hash");
+        (int activeStudentId, int activeUserId) = await CreateStudentInDb("Active", "active@test.com", "hash", StudentAccountStatus.Active);
 
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('Active', 'active@test.com', 'hash')");
-        int activeId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'active')", new { UserId = activeId });
+        int mathSubjectId = await CreateSubjectInDb("Math");
+        int physicsSubjectId = await CreateSubjectInDb("Physics");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = pendingStudentId, SubjectId = mathSubjectId });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = mathSubjectId });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = physicsSubjectId });
+
 
         Student[] result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval))
                                              .ToArray();
@@ -155,8 +192,23 @@ public class StudentRepositoryTests : RepositoryTestBase
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Has.Length.EqualTo(1));
-            Assert.That(result[0].UserId, Is.EqualTo(pendingId));
+            Assert.That(result[0].UserId, Is.EqualTo(pendingUserId));
             Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
+            Assert.That(result[0].Subjects, Has.Count.EqualTo(1));
+            Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
+        }
+
+        result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.Active))
+                                             .ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result[0].UserId, Is.EqualTo(activeUserId));
+            Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.Active));
+            Assert.That(result[0].Subjects, Has.Count.EqualTo(2));
+            Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
+            Assert.That(result[0].Subjects.Any(s => s.SubjectId == physicsSubjectId && s.Name == "Physics"), Is.True);
         }
     }
 
@@ -184,18 +236,88 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task UpdateStudentAsync_UpdatesAccountStatus()
+    public async Task UpdateStudentAsync_UpdatesAccountStatusAndAddsSubjects()
     {
-        await _repository.CreateStudentAsync(UserName, UserEmail, UserPasswordHash);
-        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = @Email", new { Email = UserEmail });
-        Student? student = await _repository.GetStudentByUserIdAsync(user.UserId);
+        (int studentId, int userId) = await CreateStudentInDb();
+        int subject1Id = await CreateSubjectInDb("Math");
+        int subject2Id = await CreateSubjectInDb("Science");
+
+        Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
         student.AccountStatus = StudentAccountStatus.Active;
+        student.Subjects = new List<Subject>
+        {
+            new() { SubjectId = subject1Id, Name = "Math" },
+            new() { SubjectId = subject2Id, Name = "Science" }
+        };
 
         await _repository.UpdateStudentAsync(student);
 
-        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { user.UserId });
+        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
         Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+
+        dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
+        Assert.That(studentSubjects, Has.Length.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(studentSubjects.Any(ss => ss.subject_id == subject1Id), Is.True);
+            Assert.That(studentSubjects.Any(ss => ss.subject_id == subject2Id), Is.True);
+        }
+    }
+
+    [Test]
+    public async Task UpdateStudentAsync_UpdatesAccountStatusAndRemovesSubjects()
+    {
+        (int studentId, int userId) = await CreateStudentInDb();
+        int subject1Id = await CreateSubjectInDb("Math");
+        int subject2Id = await CreateSubjectInDb("Science");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject2Id });
+
+        Student? student = await _repository.GetStudentByUserIdAsync(userId);
+        Assert.That(student, Is.Not.Null);
+
+        student.AccountStatus = StudentAccountStatus.Active;
+        student.Subjects = new List<Subject>
+        {
+            new() { SubjectId = subject1Id, Name = "Math" }
+        };
+
+        await _repository.UpdateStudentAsync(student);
+
+        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
+        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+
+        dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(studentSubjects.Any(ss => ss.subject_id == subject1Id), Is.True);
+            Assert.That(studentSubjects.Any(ss => ss.subject_id == subject2Id), Is.False);
+        }
+    }
+
+    [Test]
+    public async Task UpdateStudentAsync_UpdatesAccountStatusAndNoSubjects()
+    {
+        (int studentId, int userId) = await CreateStudentInDb();
+        int subject1Id = await CreateSubjectInDb("Math");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
+
+        Student? student = await _repository.GetStudentByUserIdAsync(userId);
+        Assert.That(student, Is.Not.Null);
+
+        student.AccountStatus = StudentAccountStatus.Active;
+        student.Subjects = new List<Subject>();
+
+        await _repository.UpdateStudentAsync(student);
+
+        dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
+        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+
+        IEnumerable<dynamic> studentSubjects = await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId });
+        Assert.That(studentSubjects, Is.Empty);
     }
 }

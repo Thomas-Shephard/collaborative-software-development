@@ -26,6 +26,12 @@ public class SubjectRepository(IDbConnection connection) : ISubjectRepository
         return await connection.QuerySingleOrDefaultAsync<Subject>(query, new { Id = id });
     }
 
+    public async Task<IEnumerable<Subject>> GetSubjectsByIdsAsync(IEnumerable<int> ids)
+    {
+        const string query = "SELECT * FROM Subject WHERE subject_id IN @Ids";
+        return await connection.QueryAsync<Subject>(query, new { Ids = ids });
+    }
+
     public async Task<Subject?> GetSubjectByNameAsync(string name)
     {
         const string query = "SELECT * FROM Subject WHERE name = @Name";

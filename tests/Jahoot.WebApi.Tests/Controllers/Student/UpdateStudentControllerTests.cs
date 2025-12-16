@@ -16,6 +16,7 @@ public class UpdateStudentControllerTests
 {
     private Mock<IStudentRepository> _studentRepositoryMock;
     private Mock<IUserRepository> _userRepositoryMock;
+    private Mock<ISubjectRepository> _subjectRepositoryMock;
     private UpdateStudentController _controller;
 
     [SetUp]
@@ -23,7 +24,8 @@ public class UpdateStudentControllerTests
     {
         _studentRepositoryMock = new Mock<IStudentRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
-        _controller = new UpdateStudentController(_studentRepositoryMock.Object, _userRepositoryMock.Object);
+        _subjectRepositoryMock = new Mock<ISubjectRepository>();
+        _controller = new UpdateStudentController(_studentRepositoryMock.Object, _userRepositoryMock.Object, _subjectRepositoryMock.Object);
     }
 
     private void SetupUserClaims(params Role[] roles)
@@ -41,11 +43,13 @@ public class UpdateStudentControllerTests
     {
         SetupUserClaims(Role.Lecturer);
         const int userId = 1;
+        const int subjectId = 10;
         UpdateStudentRequestModel requestModel = new()
         {
             Name = "New Name",
             Email = "new@test.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = [subjectId]
         };
 
         StudentModel student = new()
@@ -56,18 +60,24 @@ public class UpdateStudentControllerTests
             PasswordHash = "hash",
             Roles = new List<Role> { Role.Student },
             StudentId = 101,
-            AccountStatus = StudentAccountStatus.PendingApproval
+            AccountStatus = StudentAccountStatus.PendingApproval,
+            Subjects = []
         };
+
+        Jahoot.Core.Models.Subject subject = new() { SubjectId = subjectId, Name = "Test Subject" };
 
         _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync(student);
         _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(requestModel.Email)).ReturnsAsync((User?)null);
+        _subjectRepositoryMock.Setup(repo => repo.GetSubjectsByIdsAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(subjectId)))).ReturnsAsync([subject]);
 
         IActionResult result = await _controller.UpdateStudent(userId, requestModel);
 
         Assert.That(result, Is.TypeOf<OkResult>());
 
         _studentRepositoryMock.Verify(repo => repo.UpdateStudentAsync(It.Is<StudentModel>(s =>
-            s.AccountStatus == requestModel.AccountStatus)), Times.Once);
+            s.AccountStatus == requestModel.AccountStatus &&
+            s.Subjects.Count == 1 &&
+            s.Subjects[0].SubjectId == subjectId)), Times.Once);
 
         _userRepositoryMock.Verify(repo => repo.UpdateUserAsync(It.Is<StudentModel>(s =>
             s.Name == requestModel.Name &&
@@ -83,7 +93,8 @@ public class UpdateStudentControllerTests
         {
             Name = "New Name",
             Email = "new@test.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = []
         };
 
         _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync((StudentModel?)null);
@@ -102,7 +113,8 @@ public class UpdateStudentControllerTests
         {
             Name = "New Name",
             Email = "taken@test.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = []
         };
 
         StudentModel student = new()
@@ -113,7 +125,8 @@ public class UpdateStudentControllerTests
             PasswordHash = "hash",
             Roles = new List<Role> { Role.Student },
             StudentId = 101,
-            AccountStatus = StudentAccountStatus.PendingApproval
+            AccountStatus = StudentAccountStatus.PendingApproval,
+            Subjects = []
         };
 
         User otherUser = new()
