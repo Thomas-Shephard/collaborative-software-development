@@ -43,7 +43,12 @@ public static class Program
 
         DatabaseMigrator.ApplyMigrations(dbSettings.ConnectionString);
 
-        builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(dbSettings.ConnectionString));
+        builder.Services.AddScoped<IDbConnection>(_ =>
+        {
+            MySqlConnection connection = new(dbSettings.ConnectionString);
+            connection.Open();
+            return connection;
+        });
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
