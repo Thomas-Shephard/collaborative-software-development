@@ -28,7 +28,7 @@ public class PasswordResetRepository(IDbConnection connection, IUserRepository u
 
     public async Task<PasswordResetToken?> GetPasswordResetTokenByEmail(string email, IDbTransaction? transaction = null)
     {
-        User? user = await userRepository.GetUserByEmailAsync(email);
+        User? user = await userRepository.GetUserByEmailAsync(email, transaction);
         if (user == null)
         {
             return null;
