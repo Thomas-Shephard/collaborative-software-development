@@ -8,12 +8,14 @@ using Jahoot.Core.Models;
 using Jahoot.WebApi.Authorization;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
+using Jahoot.WebApi.Services.Background;
 using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Jahoot.WebApi;
 
@@ -30,22 +32,18 @@ public static class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
-        string? dbHost = builder.Configuration["DB_HOST"];
-        string? dbPort = builder.Configuration["DB_PORT"];
-        string? dbName = builder.Configuration["DB_NAME"];
-        string? dbUser = builder.Configuration["DB_USER"];
-        string? dbPassword = builder.Configuration["DB_PASSWORD"];
-
-        if (string.IsNullOrEmpty(dbHost) || string.IsNullOrEmpty(dbPort) || string.IsNullOrEmpty(dbName) || string.IsNullOrEmpty(dbUser) || string.IsNullOrEmpty(dbPassword))
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
-            throw new InvalidOperationException("DB configuration (DB_HOST, DB_PORT, DB_NAME, DB_USER, or DB_PASSWORD) is not configured.");
-        }
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
-        string connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User={dbUser};Password={dbPassword}";
+        DatabaseSettings dbSettings = builder.Services.AddAndConfigureFromEnv<DatabaseSettings>(builder.Configuration, "DB");
 
-        DatabaseMigrator.ApplyMigrations(connectionString);
+        DatabaseMigrator.ApplyMigrations(dbSettings.ConnectionString);
 
-        builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
+        builder.Services.AddScoped<IDbConnection>(_ => new MySqlConnection(dbSettings.ConnectionString));
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IStudentRepository, StudentRepository>();
@@ -54,14 +52,23 @@ public static class Program
         builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
         builder.Services.AddScoped<ITestRepository, TestRepository>();
 
-        JwtSettings jwtSettings = new()
-        {
-            Secret = builder.Configuration["JWT_SECRET"] ?? throw new InvalidOperationException("JWT_SECRET is not configured."),
-            Issuer = builder.Configuration["JWT_ISSUER"] ?? throw new InvalidOperationException("JWT_ISSUER is not configured."),
-            Audience = builder.Configuration["JWT_AUDIENCE"] ?? throw new InvalidOperationException("JWT_AUDIENCE is not configured.")
-        };
-        builder.Services.AddSingleton(jwtSettings);
+        bool useMockEmailService = bool.TryParse(builder.Configuration["USE_MOCK_EMAIL_SERVICE"], out bool useMock) && useMock;
 
+        if (useMockEmailService)
+        {
+            builder.Services.AddSingleton<IEmailService, MockEmailService>();
+        }
+        else
+        {
+            builder.Services.AddAndConfigureFromEnv<EmailSettings>(builder.Configuration, "SMTP");
+            builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
+            builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+        }
+
+        builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+        builder.Services.AddHostedService<EmailBackgroundService>();
+
+        JwtSettings jwtSettings = builder.Services.AddAndConfigureFromEnv<JwtSettings>(builder.Configuration, "JWT");
         LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
         TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
 
@@ -110,6 +117,9 @@ public static class Program
         app.MapOpenApi();
         app.MapScalarApiReference("/scalar");
         app.UseHttpsRedirection();
+        app.UseForwardedHeaders();
+
+        app.UseStaticFiles();
 
         app.UseAuthentication();
         app.UseAuthorization();
