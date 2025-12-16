@@ -23,7 +23,7 @@ namespace Jahoot.Display.LecturerViews
 
     public class StudentManagementViewModel : BaseViewModel
     {
-        private ObservableCollection<Student> _students;
+        private ObservableCollection<Student> _students = new ObservableCollection<Student>();
         public ObservableCollection<Student> Students
         {
             get { return _students; }
