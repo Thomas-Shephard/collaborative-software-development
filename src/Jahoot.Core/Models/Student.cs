@@ -11,7 +11,22 @@ public class Student : User
     }
 
     // New Initials property
-    public string Initials => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name[0].ToString().ToUpper();
+    public string Initials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return string.Empty;
+            }
+            string trimmedName = Name.Trim();
+            if (trimmedName.Length > 0)
+            {
+                return trimmedName[0].ToString().ToUpper();
+            }
+            return string.Empty;
+        }
+    }
 
     public override bool Equals(object? obj)
     {

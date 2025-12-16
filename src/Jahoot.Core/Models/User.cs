@@ -7,8 +7,19 @@ namespace Jahoot.Core.Models;
 public class User : INotifyPropertyChanged
 {
     public int UserId { get; init; }
-    public required string Email { get; set; }
-    public required string Name { get; set; }
+    private string _email = null!;
+    public required string Email
+    {
+        get => _email;
+        set => SetProperty(ref _email, value);
+    }
+
+    private string _name = null!;
+    public required string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
     [JsonIgnore]
     public required string PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
