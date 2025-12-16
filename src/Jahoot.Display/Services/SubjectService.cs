@@ -10,7 +10,7 @@ public class SubjectService(IHttpService httpService) : ISubjectService
         string url = "api/subject/list";
         if (isActive.HasValue)
         {
-            url += $"?isActive={isActive.Value.ToString().ToLowerInvariant}";
+            url += $"?isActive={isActive.Value}";
         }
 
         return await httpService.GetAsync<IEnumerable<Subject>>(url) ?? [];
