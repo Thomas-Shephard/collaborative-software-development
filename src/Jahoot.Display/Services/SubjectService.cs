@@ -5,9 +5,15 @@ namespace Jahoot.Display.Services;
 
 public class SubjectService(IHttpService httpService) : ISubjectService
 {
-    public async Task<IEnumerable<Subject>> GetAllSubjectsAsync()
+    public async Task<IEnumerable<Subject>> GetAllSubjectsAsync(bool? isActive = null)
     {
-        return await httpService.GetAsync<IEnumerable<Subject>>("api/subject/list") ?? [];
+        string url = "api/subject/list";
+        if (isActive.HasValue)
+        {
+            url += $"?isActive={isActive.Value}";
+        }
+
+        return await httpService.GetAsync<IEnumerable<Subject>>(url) ?? [];
     }
 
     public async Task<Result> CreateSubjectAsync(CreateSubjectRequestModel request)

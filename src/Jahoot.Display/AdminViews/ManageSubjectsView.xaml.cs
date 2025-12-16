@@ -43,6 +43,22 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         }
     }
 
+    public List<string> FilterOptions { get; } = ["Active", "Inactive", "All"];
+
+    public string SelectedFilter
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                OnPropertyChanged();
+                _ = LoadSubjects();
+            }
+        }
+    } = "All";
+
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -58,7 +74,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
     {
         if ((bool)e.NewValue)
         {
-            await LoadSubjects();
+            await LoadSubjects(true);
         }
     }
 
@@ -67,23 +83,46 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         _subjectService = subjectService;
     }
 
-    private async Task LoadSubjects()
+    private async Task LoadSubjects(bool forceUpdateStats = false)
     {
         if (_subjectService == null) return;
 
         try
         {
-            List<Subject> subjects = [.. (await _subjectService.GetAllSubjectsAsync())];
+            bool shouldUpdateStats = forceUpdateStats || SelectedFilter == "All";
+            List<Subject> subjectsForGrid;
+
+            if (shouldUpdateStats)
+            {
+                var allSubjects = (await _subjectService.GetAllSubjectsAsync(null)).ToList();
+
+                TotalSubjects = allSubjects.Count;
+                ActiveSubjects = allSubjects.Count(s => s.IsActive);
+                InactiveSubjects = allSubjects.Count(s => !s.IsActive);
+
+                subjectsForGrid = SelectedFilter switch
+                {
+                    "Active" => allSubjects.Where(s => s.IsActive).ToList(),
+                    "Inactive" => allSubjects.Where(s => !s.IsActive).ToList(),
+                    _ => allSubjects
+                };
+            }
+            else
+            {
+                bool? isActive = SelectedFilter switch
+                {
+                    "Active" => true,
+                    "Inactive" => false,
+                    _ => null
+                };
+                subjectsForGrid = [.. (await _subjectService.GetAllSubjectsAsync(isActive))];
+            }
 
             Subjects.Clear();
-            foreach (Subject subject in subjects)
+            foreach (Subject subject in subjectsForGrid)
             {
                 Subjects.Add(subject);
             }
-
-            TotalSubjects = subjects.Count;
-            ActiveSubjects = subjects.Count(s => s.IsActive);
-            InactiveSubjects = subjects.Count(s => !s.IsActive);
         }
         catch
         {
@@ -95,16 +134,16 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
     {
         if (_subjectService == null) return;
 
-        SubjectFormWindow form = new SubjectFormWindow(_subjectService);
+        SubjectFormWindow form = new(_subjectService);
         if (form.ShowDialog() == true)
         {
-            await LoadSubjects();
+            await LoadSubjects(true);
         }
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        await LoadSubjects();
+        await LoadSubjects(true);
     }
 
     private async void EditSubject_Click(object sender, RoutedEventArgs e)
@@ -116,7 +155,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
             SubjectFormWindow form = new(_subjectService, subject);
             if (form.ShowDialog() == true)
             {
-                await LoadSubjects();
+                await LoadSubjects(true);
             }
         }
     }
