@@ -7,6 +7,6 @@ public interface IStudentRepository
     Task CreateStudentAsync(string name, string email, string hashedPassword);
     Task CreateStudentAsync(int userId);
     Task<Student?> GetStudentByUserIdAsync(int userId);
-    Task<IEnumerable<Student>> GetStudentsByStatusAsync(StudentAccountStatus status);
+    Task<IEnumerable<Student>> GetStudentsByApprovalStatusAsync(bool isApproved);
     Task UpdateStudentAsync(Student student);
 }

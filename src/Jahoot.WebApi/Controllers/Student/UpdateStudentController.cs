@@ -45,7 +45,8 @@ public class UpdateStudentController(IStudentRepository studentRepository, IUser
         Dictionary<int, Core.Models.Subject> subjectMap = retrievedSubjects.ToDictionary(s => s.SubjectId);
         subjects.AddRange(requestModel.SubjectIds.Select(id => subjectMap[id]));
 
-        student.AccountStatus = requestModel.AccountStatus;
+        student.IsApproved = requestModel.IsApproved;
+        student.IsDisabled = requestModel.IsDisabled;
         student.Name = requestModel.Name;
         student.Email = requestModel.Email;
         student.Subjects = subjects.AsReadOnly();

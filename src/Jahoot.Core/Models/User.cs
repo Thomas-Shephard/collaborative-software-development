@@ -10,6 +10,7 @@ public class User
     [JsonIgnore]
     public string? PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
+    public bool IsDisabled { get; set; }
     public DateTime? LastLogin { get; set; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }

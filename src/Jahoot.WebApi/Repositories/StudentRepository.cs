@@ -4,10 +4,8 @@ using Jahoot.Core.Models;
 
 namespace Jahoot.WebApi.Repositories;
 
-public class StudentRepository(IDbConnection connection) : IStudentRepository
+public class StudentRepository(IDbConnection connection, IUserRepository userRepository) : IStudentRepository
 {
-    private const string CreateStudentQuery = "INSERT INTO Student (user_id) VALUES (@UserId);";
-
     private sealed class StudentData
     {
         public int UserId { get; init; }
@@ -18,8 +16,11 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
         public DateTime CreatedAt { get; init; }
         public DateTime UpdatedAt { get; init; }
         public int StudentId { get; init; }
-        public required string AccountStatus { get; init; }
+        public bool IsApproved { get; init; }
+        public bool IsDisabled { get; init; }
     }
+
+    private const string CreateStudentQuery = "INSERT INTO Student (user_id) VALUES (@UserId);";
 
     public async Task CreateStudentAsync(string name, string email, string hashedPassword)
     {
@@ -46,20 +47,21 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
     public async Task<Student?> GetStudentByUserIdAsync(int userId)
     {
         const string studentQuery = """
-                             SELECT user.*, student.*, lecturer.is_admin
+                             SELECT user.*, student.*
                              FROM Student student
                                       JOIN User user ON student.user_id = user.user_id
-                                      LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
                              WHERE student.user_id = @UserId
                              """;
 
-        Student? student = (await connection.QueryAsync<StudentData, bool?, Student>(studentQuery, MapStudent, new { UserId = userId }, splitOn: "is_admin"))
-            .SingleOrDefault();
+        StudentData? studentData = await connection.QuerySingleOrDefaultAsync<StudentData>(studentQuery, new { UserId = userId });
 
-        if (student is null)
+        if (studentData is null)
         {
             return null;
         }
+
+        List<Role> roles = await userRepository.GetRolesByUserIdAsync(studentData.UserId);
+        Student student = MapStudent(studentData, roles);
 
         const string subjectQuery = """
                                     SELECT subject.*
@@ -74,26 +76,23 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
         return student;
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsByStatusAsync(StudentAccountStatus status)
+    public async Task<IEnumerable<Student>> GetStudentsByApprovalStatusAsync(bool isApproved)
     {
-        string statusString = status switch
-        {
-            StudentAccountStatus.PendingApproval => "pending_approval",
-            StudentAccountStatus.Active => "active",
-            StudentAccountStatus.Disabled => "disabled",
-            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
-        };
-
         const string studentQuery = """
-                             SELECT user.*, student.*, lecturer.is_admin
-                             FROM Student student
-                                      JOIN User user ON student.user_id = user.user_id
-                                      LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
-                             WHERE student.account_status = @Status
-                             """;
+                                    SELECT user.*, student.*
+                                    FROM Student student
+                                             JOIN User user ON student.user_id = user.user_id
+                                    WHERE student.is_approved = @IsApproved
+                                    """;
 
-        IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(studentQuery, MapStudent, new { Status = statusString }, splitOn: "is_admin");
-        List<Student> studentList = students.ToList();
+        IEnumerable<StudentData> studentsData = await connection.QueryAsync<StudentData>(studentQuery, new { IsApproved = isApproved });
+        List<Student> studentList = [];
+
+        foreach (StudentData studentData in studentsData)
+        {
+            List<Role> roles = await userRepository.GetRolesByUserIdAsync(studentData.UserId);
+            studentList.Add(MapStudent(studentData, roles));
+        }
 
         if (studentList.Count == 0)
         {
@@ -130,24 +129,16 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
 
         try
         {
-            string statusString = student.AccountStatus switch
-            {
-                StudentAccountStatus.PendingApproval => "pending_approval",
-                StudentAccountStatus.Active => "active",
-                StudentAccountStatus.Disabled => "disabled",
-                _ => throw new ArgumentOutOfRangeException(nameof(student), student.AccountStatus, null)
-            };
-
-            const string updateStudentQuery = "UPDATE Student SET account_status = @AccountStatus WHERE student_id = @StudentId";
-            await connection.ExecuteAsync(updateStudentQuery, new { AccountStatus = statusString, student.StudentId }, transaction);
+            const string updateStudentQuery = "UPDATE Student SET is_approved = @IsApproved WHERE student_id = @StudentId; UPDATE User SET is_disabled = @IsDisabled WHERE user_id = @UserId;";
+            await connection.ExecuteAsync(updateStudentQuery, student, transaction);
 
             const string deleteSubjectsQuery = "DELETE FROM StudentSubject WHERE student_id = @StudentId";
-            await connection.ExecuteAsync(deleteSubjectsQuery, new { student.StudentId }, transaction);
+            await connection.ExecuteAsync(deleteSubjectsQuery, student, transaction);
 
             if (student.Subjects.Any())
             {
                 const string insertSubjectsQuery = "INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)";
-                await connection.ExecuteAsync(insertSubjectsQuery, student.Subjects.Select(s => new { student.StudentId, s.SubjectId }), transaction);
+                await connection.ExecuteAsync(insertSubjectsQuery, student.Subjects.Select(subject => new { student.StudentId, subject.SubjectId }), transaction);
             }
 
             transaction.Commit();
@@ -159,30 +150,8 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
         }
     }
 
-    private static Student MapStudent(StudentData studentData, bool? isAdmin)
+    private static Student MapStudent(StudentData studentData, List<Role> roles)
     {
-        List<Role> roles = [Role.Student];
-
-        if (isAdmin.HasValue)
-        {
-            roles.Add(Role.Lecturer);
-            if (isAdmin.Value)
-            {
-                roles.Add(Role.Admin);
-            }
-        }
-
-        // Map database enum string to C# enum
-        // The database enum values are 'pending_approval', 'active', 'disabled'
-        // The C# enum values are PendingApproval, Active, Disabled
-        StudentAccountStatus status = studentData.AccountStatus switch
-        {
-            "pending_approval" => StudentAccountStatus.PendingApproval,
-            "active" => StudentAccountStatus.Active,
-            "disabled" => StudentAccountStatus.Disabled,
-            _ => throw new InvalidOperationException($"Unknown account status: {studentData.AccountStatus}")
-        };
-
         return new Student
         {
             UserId = studentData.UserId,
@@ -194,7 +163,8 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
             CreatedAt = studentData.CreatedAt,
             UpdatedAt = studentData.UpdatedAt,
             StudentId = studentData.StudentId,
-            AccountStatus = status,
+            IsApproved = studentData.IsApproved,
+            IsDisabled = studentData.IsDisabled,
             Subjects = []
         };
     }

@@ -38,7 +38,7 @@ public class ListStudentsControllerTests
     public async Task GetStudents_WithLecturerRole_ReturnsOkWithStudents()
     {
         SetupUserClaims(Role.Lecturer);
-        const StudentAccountStatus status = StudentAccountStatus.PendingApproval;
+        const bool isApproved = false;
 
         List<StudentModel> students =
         [
@@ -50,7 +50,8 @@ public class ListStudentsControllerTests
                 PasswordHash = "hash1",
                 Roles = new List<Role> { Role.Student },
                 StudentId = 101,
-                AccountStatus = StudentAccountStatus.PendingApproval,
+                IsApproved = false,
+                IsDisabled = false,
                 Subjects = []
             },
 
@@ -62,15 +63,16 @@ public class ListStudentsControllerTests
                 PasswordHash = "hash2",
                 Roles = new List<Role> { Role.Student },
                 StudentId = 102,
-                AccountStatus = StudentAccountStatus.PendingApproval,
+                IsApproved = false,
+                IsDisabled = false,
                 Subjects = []
             }
         ];
 
-        _studentRepositoryMock.Setup(repo => repo.GetStudentsByStatusAsync(status))
+        _studentRepositoryMock.Setup(repo => repo.GetStudentsByApprovalStatusAsync(isApproved))
                               .ReturnsAsync(students);
 
-        IActionResult result = await _controller.GetStudents(status);
+        IActionResult result = await _controller.GetStudents(isApproved);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult? okResult = result as OkObjectResult;
@@ -85,7 +87,7 @@ public class ListStudentsControllerTests
         Assert.That(returnedStudents, Is.Not.Null);
         Assert.That(returnedStudents, Has.Length.EqualTo(2));
 
-        _studentRepositoryMock.Verify(repo => repo.GetStudentsByStatusAsync(status), Times.Once);
+        _studentRepositoryMock.Verify(repo => repo.GetStudentsByApprovalStatusAsync(isApproved), Times.Once);
     }
 
     [Test]
