@@ -8,6 +8,7 @@
     public partial class App : Application
     {
         public IServiceProvider ServiceProvider { get; private set; }
+        private const string ClassBaseAddress = "http://localhost";
 
         public App()
         {
@@ -21,7 +22,7 @@
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
             services.AddSingleton<HttpClient>(new HttpClient
             {
-                BaseAddress = new Uri("http://localhost")
+                BaseAddress = new Uri(ClassBaseAddress)
             });
             services.AddSingleton<IHttpService, HttpService>();
             services.AddTransient<IAuthService, AuthService>();
