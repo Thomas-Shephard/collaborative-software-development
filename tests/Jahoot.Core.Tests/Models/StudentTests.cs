@@ -58,7 +58,7 @@ public class StudentTests
     [TestCase(null)]
     [TestCase("")]
     [TestCase("   ")]
-    public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string name)
+    public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string? name)
     {
         // Arrange
         var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
