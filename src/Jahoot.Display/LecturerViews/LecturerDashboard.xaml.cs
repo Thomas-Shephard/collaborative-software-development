@@ -24,7 +24,7 @@ namespace Jahoot.Display.LecturerViews
         {
             if (this.DataContext is LecturerDashboardViewModel viewModel &&
                 sender is NavigationalTabs tabs &&
-                tabs.MainTabsControl.SelectedItem is NavigationTabItem selectedTab)
+                tabs.SelectedItem is NavigationTabItem selectedTab)
             {
                 Type viewType = selectedTab.ViewType;
 
