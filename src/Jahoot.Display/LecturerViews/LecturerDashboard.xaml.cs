@@ -27,7 +27,6 @@ namespace Jahoot.Display.LecturerViews
                 tabs.MainTabsControl.SelectedItem is NavigationTabItem selectedTab)
             {
                 Type viewType = selectedTab.ViewType;
-                if (viewType == null) return;
 
                 UserControl? view = Activator.CreateInstance(viewType) as UserControl;
                 if (view == null) return;
