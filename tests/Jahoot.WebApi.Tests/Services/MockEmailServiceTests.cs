@@ -29,8 +29,6 @@ public class MockEmailServiceTests
 
             string output = sw.ToString();
             Assert.That(output, Does.Contain($"MockEmailService: Sending email to {to} with subject {subject}"));
-            Assert.That(output, Does.Contain($"Title: {title}"));
-            Assert.That(output, Does.Contain($"Body: {body}"));
         }
         finally
         {

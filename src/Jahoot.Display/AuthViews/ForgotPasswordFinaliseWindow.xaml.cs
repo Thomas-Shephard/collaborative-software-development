@@ -32,7 +32,11 @@ public partial class ForgotPasswordFinaliseWindow : Window
             ShowError("Please enter the reset code.");
             return;
         }
-
+        if (token.Length != 6)
+        {
+            ShowError("The reset code must be a 6-digit code.");
+            return;
+        }
         var strongPasswordAttribute = new StrongPasswordAttribute();
         if (!strongPasswordAttribute.IsValid(password))
         {
@@ -47,7 +51,7 @@ public partial class ForgotPasswordFinaliseWindow : Window
         }
 
         ResetButton.IsEnabled = false;
-        ResetButton.Content = "Reseting...";
+        ResetButton.Content = "Resetting...";
         HideMessages();
 
         try

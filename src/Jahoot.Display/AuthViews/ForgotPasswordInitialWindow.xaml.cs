@@ -1,5 +1,4 @@
 using Jahoot.Display.Services;
-using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
@@ -39,7 +38,8 @@ public partial class ForgotPasswordInitialWindow : Window
             {
                 var resetWindow = ActivatorUtilities.CreateInstance<ForgotPasswordFinaliseWindow>(_serviceProvider);
                 resetWindow.PreFillEmail(email);
-                
+                resetWindow.Owner = this;
+
                 // Close this window and show the next one
                 resetWindow.Show();
                 Close();
