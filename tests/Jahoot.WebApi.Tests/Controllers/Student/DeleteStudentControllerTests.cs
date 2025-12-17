@@ -39,7 +39,7 @@ public class DeleteStudentControllerTests
     public async Task DeleteStudent_StudentExists_DeletesUserAndReturnsOk()
     {
         const int userId = 1;
-        Core.Models.Student student = new() { StudentId = 1, UserId = userId, Email = "test@example.com", Name = "Test", PasswordHash = "hash", Roles = [], AccountStatus = StudentAccountStatus.Active, Subjects = [] };
+        Core.Models.Student student = new() { StudentId = 1, UserId = userId, Email = "test@example.com", Name = "Test", PasswordHash = "hash", Roles = [], IsApproved = true, IsDisabled = false, Subjects = [] };
         _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync(student);
 
         IActionResult result = await _controller.DeleteStudent(userId);

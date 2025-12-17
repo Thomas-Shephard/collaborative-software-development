@@ -1,18 +1,20 @@
 using Dapper;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Repositories;
+using Moq;
 
 namespace Jahoot.WebApi.Tests.Repositories;
 
 public class LecturerRepositoryTests : RepositoryTestBase
 {
     private LecturerRepository _repository;
+    private Mock<IUserRepository> _mockUserRepository;
 
     [SetUp]
-    public new async Task Setup()
+    public new void Setup()
     {
-        await base.Setup();
-        _repository = new LecturerRepository(Connection);
+        _mockUserRepository = new Mock<IUserRepository>();
+        _repository = new LecturerRepository(Connection, _mockUserRepository.Object);
     }
 
     [Test]
@@ -52,6 +54,9 @@ public class LecturerRepositoryTests : RepositoryTestBase
         await _repository.CreateLecturerAsync("Dr. Test", "test@example.com", "hash", true);
         User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = 'test@example.com'");
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(user.UserId))
+            .ReturnsAsync([Role.Lecturer, Role.Admin]);
+
         Lecturer? result = await _repository.GetLecturerByUserIdAsync(user.UserId);
 
         Assert.That(result, Is.Not.Null);
@@ -71,6 +76,9 @@ public class LecturerRepositoryTests : RepositoryTestBase
         await _repository.CreateLecturerAsync("Dr. Multi", "multi@example.com", "hash", false);
         User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = 'multi@example.com'");
         await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { user.UserId });
+
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(user.UserId))
+            .ReturnsAsync([Role.Lecturer, Role.Student]);
 
         Lecturer? result = await _repository.GetLecturerByUserIdAsync(user.UserId);
 
@@ -101,6 +109,9 @@ public class LecturerRepositoryTests : RepositoryTestBase
         await _repository.CreateLecturerAsync("L1", "l1@test.com", "hash", true);
         await _repository.CreateLecturerAsync("L2", "l2@test.com", "hash", false);
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdsAsync(It.IsAny<IEnumerable<int>>(), null))
+            .ReturnsAsync([]);
+
         IEnumerable<Lecturer> result = await _repository.GetLecturersAsync();
 
         Assert.That(result.Count(), Is.EqualTo(2));
@@ -111,6 +122,10 @@ public class LecturerRepositoryTests : RepositoryTestBase
     {
         await _repository.CreateLecturerAsync("L1", "l1@test.com", "hash", true);
         User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = 'l1@test.com'");
+
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(user.UserId))
+            .ReturnsAsync([Role.Lecturer, Role.Admin]);
+
         Lecturer? lecturer = await _repository.GetLecturerByUserIdAsync(user.UserId);
 
         Assert.That(lecturer, Is.Not.Null);

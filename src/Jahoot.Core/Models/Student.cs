@@ -3,6 +3,13 @@ namespace Jahoot.Core.Models;
 public class Student : User
 {
     public int StudentId { get; init; }
+
+    private bool _isApproved;
+    public bool IsApproved
+    {
+        get => _isApproved;
+        set => SetProperty(ref _isApproved, value);
+    }
     public string Initials
     {
         get
@@ -32,12 +39,6 @@ public class Student : User
     {
         return HashCode.Combine(UserId);
     }
-    
-    private StudentAccountStatus _accountStatus;
-    public required StudentAccountStatus AccountStatus
-    {
-        get => _accountStatus;
-        set => SetProperty(ref _accountStatus, value);
-    }
+
     public required IReadOnlyList<Subject> Subjects { get; set; }
 }
