@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using Jahoot.Display.Extensions;
 
 namespace Jahoot.Display.AdminViews;
 
@@ -119,11 +120,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
                 subjectsForGrid = [.. (await _subjectService.GetAllSubjectsAsync(isActive))];
             }
 
-            Subjects.Clear();
-            foreach (Subject subject in subjectsForGrid)
-            {
-                Subjects.Add(subject);
-            }
+            Subjects.UpdateCollection(subjectsForGrid);
         }
         catch
         {

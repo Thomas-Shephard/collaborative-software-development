@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using Jahoot.Display.Extensions;
 
 namespace Jahoot.Display.AdminViews;
 
@@ -29,17 +30,17 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         IsVisibleChanged += ManageLecturersView_IsVisibleChanged;
     }
 
-    public void Initialize(ILecturerService lecturerService)
+    public async Task Initialize(ILecturerService lecturerService)
     {
         _lecturerService = lecturerService;
-        // Lecturers will be loaded when the view becomes visible.
+        await LoadLecturers();
     }
 
-    private void ManageLecturersView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    private async void ManageLecturersView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (IsVisible && _lecturerService != null && (Lecturers == null || Lecturers.Count == 0))
         {
-            LoadLecturers();
+            await LoadLecturers();
         }
     }
     private async Task LoadLecturers()
@@ -47,7 +48,7 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         try
         {
             var lecturers = await _lecturerService.GetAllLecturersAsync();
-            Lecturers = new ObservableCollection<Lecturer>(lecturers);
+            Lecturers.UpdateCollection(lecturers);
         }
         catch (Exception ex)
         {
