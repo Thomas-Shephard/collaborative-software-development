@@ -9,4 +9,5 @@ public interface ILecturerService
     Task<Result> CreateLecturerAsync(CreateLecturerRequestModel request);
     Task<Result> UpdateLecturerAsync(int id, UpdateLecturerRequestModel request);
     Task<Result> DeleteLecturerAsync(int id);
+    Task<Result> ResetLecturerPasswordAsync(string email);
 }

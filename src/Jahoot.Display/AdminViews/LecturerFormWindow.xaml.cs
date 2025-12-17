@@ -123,9 +123,31 @@ public partial class LecturerFormWindow : Window
         ErrorText.Visibility = Visibility.Visible;
     }
 
-    private void ResetPassword_Click(object sender, RoutedEventArgs e)
+    private async void ResetPassword_Click(object sender, RoutedEventArgs e)
     {
-        // Per instructions: "Do not implement reset password yet."
-        MessageBox.Show("Reset Password functionality is coming soon.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (_lecturer == null) return;
+
+        var result = MessageBox.Show($"Are you sure you want to reset the password for {_lecturer.Name}?\nThis will send a password reset email to {_lecturer.Email}.", 
+            "Confirm Password Reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                var resetResult = await _lecturerService.ResetLecturerPasswordAsync(_lecturer.Email);
+                if (resetResult.Success)
+                {
+                    MessageBox.Show("Password reset email has been sent.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    ShowError(resetResult.ErrorMessage ?? "Failed to send reset email.");
+                }
+            }
+            catch
+            {
+                ShowError($"An error occurred.");
+            }
+        }
     }
 }

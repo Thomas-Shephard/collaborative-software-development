@@ -24,4 +24,9 @@ public class LecturerService(IHttpService httpService) : ILecturerService
     {
         return await httpService.DeleteAsync($"api/lecturer/{id}");
     }
+
+    public async Task<Result> ResetLecturerPasswordAsync(string email)
+    {
+        return await httpService.PostAsync("api/auth/forgot-password", new ForgotPasswordRequestModel { Email = email });
+    }
 }
