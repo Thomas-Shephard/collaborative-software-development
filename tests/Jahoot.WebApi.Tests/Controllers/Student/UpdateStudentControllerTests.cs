@@ -188,8 +188,11 @@ public class UpdateStudentControllerTests
 
         IActionResult result = await _controller.UpdateStudent(userId, requestModel);
 
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult)?.Value, Is.EqualTo("An approved student cannot be unapproved."));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult)?.Value, Is.EqualTo("An approved student cannot be unapproved."));
+        }
         _emailQueueMock.Verify(queue => queue.QueueBackgroundEmailAsync(It.IsAny<EmailMessage>()), Times.Never); // No email should be sent
     }
 

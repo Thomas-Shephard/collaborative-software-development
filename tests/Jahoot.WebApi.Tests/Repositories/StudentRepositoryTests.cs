@@ -52,7 +52,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         dynamic student = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { user.UserId });
         Assert.That(student, Is.Not.Null);
-        Assert.That(student.is_approved, Is.EqualTo(false));
+        Assert.That(student.is_approved, Is.False);
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         dynamic student = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { UserId = userId });
         Assert.That(student, Is.Not.Null);
-        Assert.That(student.is_approved, Is.EqualTo(false));
+        Assert.That(student.is_approved, Is.False);
     }
 
     [Test]
@@ -204,7 +204,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         {
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result[0].UserId, Is.EqualTo(pendingUserId));
-            Assert.That(result[0].IsApproved, Is.EqualTo(false));
+            Assert.That(result[0].IsApproved, Is.False);
             Assert.That(result[0].Subjects, Has.Count.EqualTo(1));
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
         }
@@ -216,7 +216,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         {
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result[0].UserId, Is.EqualTo(activeUserId));
-            Assert.That(result[0].IsApproved, Is.EqualTo(true));
+            Assert.That(result[0].IsApproved, Is.True);
             Assert.That(result[0].Subjects, Has.Count.EqualTo(2));
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == physicsSubjectId && s.Name == "Physics"), Is.True);
@@ -248,7 +248,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
+        Assert.That(dbStudent.is_approved, Is.True);
 
         dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
         Assert.That(studentSubjects, Has.Length.EqualTo(2));
@@ -284,7 +284,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
+        Assert.That(dbStudent.is_approved, Is.True);
 
         dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
         using (Assert.EnterMultipleScope())
@@ -314,7 +314,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
+        Assert.That(dbStudent.is_approved, Is.True);
 
         IEnumerable<dynamic> studentSubjects = await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId });
         Assert.That(studentSubjects, Is.Empty);
