@@ -70,7 +70,7 @@ public class UpdateStudentController(IStudentRepository studentRepository, IUser
                 To = requestModel.Email,
                 Subject = "Jahoot Account Approved",
                 Title = "Welcome to Jahoot!",
-                Body = $"Dear {requestModel.Name},\n\nYour student account has been approved. You can now access all student features.\n\nIf you have any questions, please contact your administrator or lecturer.\n\nBest regards,\nThe Jahoot Team"
+                Body = "Your Jahoot account has been approved. You can now access all student features."
             };
             await emailQueue.QueueBackgroundEmailAsync(email);
         }
