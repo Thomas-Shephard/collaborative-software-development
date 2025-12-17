@@ -72,7 +72,7 @@
                         Grid.Column="1"
                         Content="Reset Password"
                         Click="ResetPassword_Click"
-                        Style="{StaticResource FormSaveButton}"/>
+                        Style="{StaticResource FormResetPasswordButton}"/>
             </Grid>
 
             <TextBlock x:Name="ErrorText" Grid.Row="5" Foreground="#C62828" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
