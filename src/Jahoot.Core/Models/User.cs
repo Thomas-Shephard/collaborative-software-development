@@ -8,7 +8,7 @@ public class User
     public required string Email { get; set; }
     public required string Name { get; set; }
     [JsonIgnore]
-    public required string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
     public DateTime? LastLogin { get; set; }
     public DateTime CreatedAt { get; init; }
