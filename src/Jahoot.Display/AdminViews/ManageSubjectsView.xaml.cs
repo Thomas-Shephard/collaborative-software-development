@@ -78,9 +78,10 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         }
     }
 
-    public void Initialize(ISubjectService subjectService)
+    public async Task Initialize(ISubjectService subjectService)
     {
         _subjectService = subjectService;
+        await LoadSubjects();
     }
 
     private async Task LoadSubjects(bool forceUpdateStats = false)

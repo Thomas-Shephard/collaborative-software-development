@@ -10,8 +10,13 @@ namespace Jahoot.Display.Pages
         {
             InitializeComponent();
             this.DataContext = new AdminDashboardViewModel();
-            SubjectsView.Initialize(subjectService);
-            LecturersView.Initialize(lecturerService);
+            _ = InitializeViewsAsync(subjectService, lecturerService);
+        }
+
+        private async Task InitializeViewsAsync(ISubjectService subjectService, ILecturerService lecturerService)
+        {
+            await SubjectsView.Initialize(subjectService);
+            await LecturersView.Initialize(lecturerService);
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)

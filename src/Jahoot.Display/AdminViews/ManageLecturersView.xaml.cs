@@ -28,13 +28,13 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         DataContext = this;
     }
 
-    public void Initialize(ILecturerService lecturerService)
+    public async Task Initialize(ILecturerService lecturerService)
     {
         _lecturerService = lecturerService;
-        LoadLecturers();
+        await LoadLecturers();
     }
 
-    private async void LoadLecturers()
+    private async Task LoadLecturers()
     {
         try
         {
@@ -47,22 +47,22 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void Refresh_Click(object sender, RoutedEventArgs e)
+    private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        LoadLecturers();
+        await LoadLecturers();
     }
 
-    private void CreateLecturer_Click(object sender, RoutedEventArgs e)
+    private async void CreateLecturer_Click(object sender, RoutedEventArgs e)
     {
         var form = new LecturerFormWindow(_lecturerService);
         form.Owner = Window.GetWindow(this);
         if (form.ShowDialog() == true)
         {
-            LoadLecturers();
+            await LoadLecturers();
         }
     }
 
-    private void EditLecturer_Click(object sender, RoutedEventArgs e)
+    private async void EditLecturer_Click(object sender, RoutedEventArgs e)
     {
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
@@ -71,11 +71,11 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         form.Owner = Window.GetWindow(this);
         if (form.ShowDialog() == true)
         {
-            LoadLecturers();
+            await LoadLecturers();
         }
     }
 
-    private void DisableLecturer_Click(object sender, RoutedEventArgs e)
+    private async void DisableLecturer_Click(object sender, RoutedEventArgs e)
     {
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
@@ -83,38 +83,38 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         var result = MessageBox.Show($"Are you sure you want to disable this account?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (result == MessageBoxResult.Yes)
         {
-            // Pending Thomas's work to disable a lecturer
-            MessageBox.Show($"Disable feature does not exist yet", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-    }
-
-    private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
-    {
-        var lecturer = (sender as Button)?.CommandParameter as Lecturer;
-        if (lecturer == null) return;
-
-        var result = MessageBox.Show($"Warning: This action is permanent. Are you sure you want to delete this account?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes)
-        {
-             try
-             {
-                 var deleteResult = await _lecturerService.DeleteLecturerAsync(lecturer.UserId); // Assuming UserId is the ID to use
-                 if (deleteResult.Success)
-                 {
-                     LoadLecturers();
-                 }
-                 else
-                 {
-                     MessageBox.Show($"Error deleting lecturer: {deleteResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                 }
-             }
-             catch (Exception ex)
-             {
-                 MessageBox.Show($"Error deleting lecturer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-             }
-        }
-    }
-
+                        // Pending Thomas's work to disable a lecturer
+                        MessageBox.Show($"Disable feature does not exist yet", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await LoadLecturers(); // Even if it's a placeholder, awaiting ensures UI consistency if we later implement async logic.
+                    }
+                }
+            
+                private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
+                {
+                    var lecturer = (sender as Button)?.CommandParameter as Lecturer;
+                    if (lecturer == null) return;
+            
+                    var result = MessageBox.Show($"Warning: This action is permanent. Are you sure you want to delete this account?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                         try
+                         {
+                             var deleteResult = await _lecturerService.DeleteLecturerAsync(lecturer.UserId);
+                             if (deleteResult.Success)
+                             {
+                                 await LoadLecturers();
+                             }
+                             else
+                             {
+                                 MessageBox.Show($"Error deleting lecturer: {deleteResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                             }
+                         }
+                         catch (Exception ex)
+                         {
+                             MessageBox.Show($"Error deleting lecturer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                         }
+                    }
+                }
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

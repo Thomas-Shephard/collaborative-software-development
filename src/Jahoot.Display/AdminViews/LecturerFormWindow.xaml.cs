@@ -76,8 +76,6 @@ public partial class LecturerFormWindow : Window
                 return;
             }
             
-            // Optional: Check StrongPasswordAttribute manually or rely on backend
-            // Doing a quick check here for better UX
             var strongPass = new StrongPasswordAttribute();
             if (!strongPass.IsValid(password))
             {
@@ -105,7 +103,7 @@ public partial class LecturerFormWindow : Window
                 IsAdmin = isAdmin
             };
 
-            result = await _lecturerService.UpdateLecturerAsync(_lecturer.UserId, request); // Assuming UserId is the identifier
+            result = await _lecturerService.UpdateLecturerAsync(_lecturer.UserId, request); 
         }
 
         if (result.Success)
