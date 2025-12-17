@@ -109,7 +109,7 @@ public class LecturerRepositoryTests : RepositoryTestBase
         await _repository.CreateLecturerAsync("L1", "l1@test.com", "hash", true);
         await _repository.CreateLecturerAsync("L2", "l2@test.com", "hash", false);
 
-        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(It.IsAny<int>()))
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdsAsync(It.IsAny<IEnumerable<int>>(), null))
             .ReturnsAsync([]);
 
         IEnumerable<Lecturer> result = await _repository.GetLecturersAsync();

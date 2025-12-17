@@ -190,8 +190,12 @@ public class StudentRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = mathSubjectId });
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = physicsSubjectId });
 
-        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(It.IsAny<int>()))
-            .ReturnsAsync([Role.Student]);
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdsAsync(It.IsAny<IEnumerable<int>>(), null))
+            .ReturnsAsync(new Dictionary<int, List<Role>>
+            {
+                { pendingUserId, [Role.Student] },
+                { activeUserId, [Role.Student] }
+            });
 
         Student[] result = (await _repository.GetStudentsByApprovalStatusAsync(false))
                                              .ToArray();

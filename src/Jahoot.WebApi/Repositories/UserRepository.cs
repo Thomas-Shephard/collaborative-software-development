@@ -71,6 +71,51 @@ public class UserRepository(IDbConnection connection) : IUserRepository
         return roles;
     }
 
+    public async Task<Dictionary<int, List<Role>>> GetRolesByUserIdsAsync(IEnumerable<int> userIds, IDbTransaction? transaction = null)
+    {
+        const string query = """
+                             SELECT user.user_id, user.is_disabled, lecturer.is_admin, student.is_approved AS is_student_approved
+                             FROM User user
+                                      LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
+                                      LEFT JOIN Student student ON user.user_id = student.user_id
+                             WHERE user.user_id IN @UserIds
+                             """;
+
+        IEnumerable<dynamic> results = await connection.QueryAsync<dynamic>(query, new { UserIds = userIds }, transaction);
+
+        Dictionary<int, List<Role>> rolesByUserId = [];
+
+        foreach (dynamic result in results)
+        {
+            int userId = (int)result.user_id;
+            List<Role> roles = [];
+
+            if (!result.is_disabled)
+            {
+                bool? lecturerIsAdmin = result.is_admin;
+                bool? studentIsApproved = result.is_student_approved;
+
+                if (lecturerIsAdmin.HasValue)
+                {
+                    roles.Add(Role.Lecturer);
+                    if (lecturerIsAdmin.Value)
+                    {
+                        roles.Add(Role.Admin);
+                    }
+                }
+
+                if (studentIsApproved.HasValue && studentIsApproved.Value)
+                {
+                    roles.Add(Role.Student);
+                }
+            }
+            
+            rolesByUserId[userId] = roles;
+        }
+
+        return rolesByUserId;
+    }
+
     public async Task UpdateUserAsync(User user, IDbTransaction? transaction = null)
     {
         await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin, is_disabled = @IsDisabled WHERE user_id = @UserId", user, transaction);

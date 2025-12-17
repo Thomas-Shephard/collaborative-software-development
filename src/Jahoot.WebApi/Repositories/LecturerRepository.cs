@@ -72,16 +72,17 @@ public class LecturerRepository(IDbConnection connection, IUserRepository userRe
                                               JOIN User user ON lecturer.user_id = user.user_id
                                      """;
 
-        IEnumerable<LecturerData> lecturersData = await connection.QueryAsync<LecturerData>(lecturerQuery);
-        List<Lecturer> lecturerList = [];
-
-        foreach (LecturerData lecturerData in lecturersData)
+        IEnumerable<LecturerData> lecturersData = (await connection.QueryAsync<LecturerData>(lecturerQuery)).ToList();
+        
+        if (!lecturersData.Any())
         {
-            List<Role> roles = await userRepository.GetRolesByUserIdAsync(lecturerData.UserId);
-            lecturerList.Add(MapLecturer(lecturerData, roles));
+            return [];
         }
 
-        return lecturerList;
+        Dictionary<int, List<Role>> rolesByUserId = await userRepository.GetRolesByUserIdsAsync(lecturersData.Select(x => x.UserId));
+        
+        return lecturersData.Select(lecturerData => 
+            MapLecturer(lecturerData, rolesByUserId.GetValueOrDefault(lecturerData.UserId, []))).ToList();
     }
 
     public async Task UpdateLecturerAsync(Lecturer lecturer)

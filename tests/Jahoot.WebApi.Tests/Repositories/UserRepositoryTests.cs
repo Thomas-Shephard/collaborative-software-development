@@ -351,4 +351,38 @@ public class UserRepositoryTests : RepositoryTestBase
 
         Assert.That(roles, Is.Empty);
     }
+
+    [Test]
+    public async Task GetRolesByUserIdsAsync_MultipleUsers_ReturnsExpectedRoles()
+    {
+        DateTime now = DateTime.UtcNow;
+        int userId1 = await InsertUser(new User { Email = "u1@test.com", Name = "U1", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertLecturer(userId1, true);
+
+        int userId2 = await InsertUser(new User { Email = "u2@test.com", Name = "U2", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertStudent(userId2, true);
+
+        int userId3 = await InsertUser(new User { Email = "u3@test.com", Name = "U3", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertLecturer(userId3, false);
+
+        int userId4 = await InsertUser(new User { Email = "u4@test.com", Name = "U4", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await Connection.ExecuteAsync("UPDATE User SET is_disabled = TRUE WHERE user_id = @UserId", new { UserId = userId4 });
+        await InsertStudent(userId4, true);
+
+        int userId5 = await InsertUser(new User { Email = "u5@test.com", Name = "U5", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+
+        int[] userIds = [userId1, userId2, userId3, userId4, userId5];
+
+        Dictionary<int, List<Role>> result = await _userRepository.GetRolesByUserIdsAsync(userIds);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(5));
+            Assert.That(result[userId1], Is.EquivalentTo([Role.Lecturer, Role.Admin]));
+            Assert.That(result[userId2], Is.EquivalentTo([Role.Student]));
+            Assert.That(result[userId3], Is.EquivalentTo([Role.Lecturer]));
+            Assert.That(result[userId4], Is.Empty);
+            Assert.That(result[userId5], Is.Empty);
+        }
+    }
 }

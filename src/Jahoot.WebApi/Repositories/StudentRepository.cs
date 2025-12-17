@@ -85,19 +85,17 @@ public class StudentRepository(IDbConnection connection, IUserRepository userRep
                                     WHERE student.is_approved = @IsApproved
                                     """;
 
-        IEnumerable<StudentData> studentsData = await connection.QueryAsync<StudentData>(studentQuery, new { IsApproved = isApproved });
-        List<Student> studentList = [];
+        IEnumerable<StudentData> studentsData = (await connection.QueryAsync<StudentData>(studentQuery, new { IsApproved = isApproved })).ToList();
 
-        foreach (StudentData studentData in studentsData)
+        if (!studentsData.Any())
         {
-            List<Role> roles = await userRepository.GetRolesByUserIdAsync(studentData.UserId);
-            studentList.Add(MapStudent(studentData, roles));
+            return [];
         }
 
-        if (studentList.Count == 0)
-        {
-            return studentList;
-        }
+        Dictionary<int, List<Role>> rolesByUserId = await userRepository.GetRolesByUserIdsAsync(studentsData.Select(x => x.UserId));
+
+        List<Student> studentList = studentsData.Select(studentData => 
+            MapStudent(studentData, rolesByUserId.GetValueOrDefault(studentData.UserId, []))).ToList();
 
         const string subjectQuery = """
                                     SELECT student_subject.student_id, subject.*
