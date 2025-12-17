@@ -245,4 +245,110 @@ public class UserRepositoryTests : RepositoryTestBase
             Assert.That(result.IsDisabled, Is.True);
         }
     }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsStudent_ReturnsStudentRole()
+    {
+        User user = new()
+        {
+            Email = "student_role@example.com",
+            Name = "Student Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId, true);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Student]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsLecturer_ReturnsLecturerRole()
+    {
+        User user = new()
+        {
+            Email = "lecturer_role@example.com",
+            Name = "Lecturer Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, false);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Lecturer]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsAdmin_ReturnsAdminAndLecturerRoles()
+    {
+        User user = new()
+        {
+            Email = "admin_role@example.com",
+            Name = "Admin Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, true);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Lecturer, Role.Admin]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_StudentNotApproved_ReturnsEmpty()
+    {
+        User user = new()
+        {
+            Email = "unapproved@example.com",
+            Name = "Unapproved Student",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId, false); // Not approved
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsDisabled_ReturnsEmpty()
+    {
+        User user = new()
+        {
+            Email = "disabled_role@example.com",
+            Name = "Disabled Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = true
+        };
+        int userId = await InsertUser(user);
+        await Connection.ExecuteAsync("UPDATE User SET is_disabled = TRUE WHERE user_id = @UserId", new { UserId = userId });
+        await InsertStudent(userId, true); // Approved student, but disabled user
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.Empty);
+    }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Jahoot.WebApi.Services.Background;
 using StudentModel = Jahoot.Core.Models.Student;
 
 namespace Jahoot.WebApi.Tests.Controllers.Student;
@@ -17,6 +18,7 @@ public class UpdateStudentControllerTests
     private Mock<IStudentRepository> _studentRepositoryMock;
     private Mock<IUserRepository> _userRepositoryMock;
     private Mock<ISubjectRepository> _subjectRepositoryMock;
+    private Mock<IEmailQueue> _emailQueueMock;
     private UpdateStudentController _controller;
 
     [SetUp]
@@ -25,7 +27,8 @@ public class UpdateStudentControllerTests
         _studentRepositoryMock = new Mock<IStudentRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
         _subjectRepositoryMock = new Mock<ISubjectRepository>();
-        _controller = new UpdateStudentController(_studentRepositoryMock.Object, _userRepositoryMock.Object, _subjectRepositoryMock.Object);
+        _emailQueueMock = new Mock<IEmailQueue>();
+        _controller = new UpdateStudentController(_studentRepositoryMock.Object, _userRepositoryMock.Object, _subjectRepositoryMock.Object, _emailQueueMock.Object);
     }
 
     private void SetupUserClaims(params Role[] roles)
@@ -48,7 +51,8 @@ public class UpdateStudentControllerTests
         {
             Name = "New Name",
             Email = "new@test.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = [subjectId]
         };
 
@@ -60,7 +64,8 @@ public class UpdateStudentControllerTests
             PasswordHash = "hash",
             Roles = new List<Role> { Role.Student },
             StudentId = 101,
-            AccountStatus = StudentAccountStatus.PendingApproval,
+            IsApproved = false,
+            IsDisabled = false,
             Subjects = []
         };
 
@@ -75,7 +80,8 @@ public class UpdateStudentControllerTests
         Assert.That(result, Is.TypeOf<OkResult>());
 
         _studentRepositoryMock.Verify(repo => repo.UpdateStudentAsync(It.Is<StudentModel>(s =>
-            s.AccountStatus == requestModel.AccountStatus &&
+            s.IsApproved == requestModel.IsApproved &&
+            s.IsDisabled == requestModel.IsDisabled &&
             s.Subjects.Count == 1 &&
             s.Subjects[0].SubjectId == subjectId)), Times.Once);
 
@@ -93,7 +99,8 @@ public class UpdateStudentControllerTests
         {
             Name = "New Name",
             Email = "new@test.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = []
         };
 
@@ -113,7 +120,8 @@ public class UpdateStudentControllerTests
         {
             Name = "New Name",
             Email = "taken@test.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = []
         };
 
@@ -125,7 +133,8 @@ public class UpdateStudentControllerTests
             PasswordHash = "hash",
             Roles = new List<Role> { Role.Student },
             StudentId = 101,
-            AccountStatus = StudentAccountStatus.PendingApproval,
+            IsApproved = false,
+            IsDisabled = false,
             Subjects = []
         };
 
@@ -146,6 +155,92 @@ public class UpdateStudentControllerTests
         IActionResult result = await _controller.UpdateStudent(userId, requestModel);
 
         Assert.That(result, Is.TypeOf<ConflictObjectResult>());
+    }
+
+    [Test]
+    public async Task UpdateStudent_ApprovedStudentCannotBeUnapproved_ReturnsBadRequest()
+    {
+        SetupUserClaims(Role.Lecturer);
+        const int userId = 1;
+        UpdateStudentRequestModel requestModel = new()
+        {
+            Name = "New Name",
+            Email = "new@test.com",
+            IsApproved = false,
+            IsDisabled = false,
+            SubjectIds = []
+        };
+
+        StudentModel student = new()
+        {
+            UserId = userId,
+            Email = "old@test.com",
+            Name = "Old Name",
+            PasswordHash = "hash",
+            Roles = new List<Role> { Role.Student },
+            StudentId = 101,
+            IsApproved = true, // Student is already approved
+            IsDisabled = false,
+            Subjects = []
+        };
+
+        _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync(student);
+
+        IActionResult result = await _controller.UpdateStudent(userId, requestModel);
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult)?.Value, Is.EqualTo("An approved student cannot be unapproved."));
+        _emailQueueMock.Verify(queue => queue.QueueBackgroundEmailAsync(It.IsAny<EmailMessage>()), Times.Never); // No email should be sent
+    }
+
+    [Test]
+    public async Task UpdateStudent_ApprovingStudentSendsEmail_EmailsQueued()
+    {
+        SetupUserClaims(Role.Lecturer);
+        const int userId = 1;
+        const int subjectId = 10;
+        UpdateStudentRequestModel requestModel = new()
+        {
+            Name = "Approved Student",
+            Email = "approved@test.com",
+            IsApproved = true, // Approving the student
+            IsDisabled = false,
+            SubjectIds = [subjectId]
+        };
+
+        StudentModel student = new()
+        {
+            UserId = userId,
+            Email = "pending@test.com",
+            Name = "Pending Student",
+            PasswordHash = "hash",
+            Roles = new List<Role> { Role.Student },
+            StudentId = 101,
+            IsApproved = false, // Student is initially not approved
+            IsDisabled = false,
+            Subjects = []
+        };
+        Jahoot.Core.Models.Subject subject = new() { SubjectId = subjectId, Name = "Test Subject" };
+
+        _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync(student);
+        _userRepositoryMock.Setup(repo => repo.GetUserByEmailAsync(requestModel.Email)).ReturnsAsync((User?)null);
+        _subjectRepositoryMock.Setup(repo => repo.GetSubjectsByIdsAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(subjectId)))).ReturnsAsync([subject]);
+        _studentRepositoryMock.Setup(repo => repo.UpdateStudentAsync(It.IsAny<StudentModel>())).Returns(Task.CompletedTask);
+        _userRepositoryMock.Setup(repo => repo.UpdateUserAsync(It.IsAny<StudentModel>())).Returns(Task.CompletedTask);
+        _emailQueueMock.Setup(queue => queue.QueueBackgroundEmailAsync(It.IsAny<EmailMessage>())).Returns(ValueTask.CompletedTask);
+
+        IActionResult result = await _controller.UpdateStudent(userId, requestModel);
+
+        Assert.That(result, Is.TypeOf<OkResult>());
+        _emailQueueMock.Verify(queue => queue.QueueBackgroundEmailAsync(It.Is<EmailMessage>(
+            m => m.To == requestModel.Email &&
+                 m.Subject == "Jahoot Account Approved" &&
+                 m.Title == "Welcome to Jahoot!" &&
+                 m.Body.Contains($"Dear {requestModel.Name}") &&
+                 m.Body.Contains("Your student account has been approved.")
+        )), Times.Once);
+
+        _studentRepositoryMock.Verify(repo => repo.UpdateStudentAsync(It.Is<StudentModel>(s => s.IsApproved && !s.IsDisabled)), Times.Once);
     }
 
     [Test]

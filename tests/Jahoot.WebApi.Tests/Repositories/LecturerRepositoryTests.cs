@@ -1,18 +1,26 @@
 using Dapper;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Repositories;
+using Moq;
 
 namespace Jahoot.WebApi.Tests.Repositories;
 
 public class LecturerRepositoryTests : RepositoryTestBase
 {
     private LecturerRepository _repository;
+    private IUserRepository _mockUserRepository;
 
     [SetUp]
     public new async Task Setup()
     {
         await base.Setup();
-        _repository = new LecturerRepository(Connection);
+        // Since IUserRepository is now a dependency, we need a mock for tests.
+        // For repository tests, we can generally provide a simple mock that does nothing if the methods aren't directly under test.
+        // Or, better, provide a real one that works with the same connection if it's integrated, but that increases complexity.
+        // Given that IUserRepository is also connected to the same DB, I will use a simple mock just to satisfy the constructor.
+        // If the repository methods under test make calls to IUserRepository, then a more sophisticated mock or real instance sharing the connection will be needed.
+        _mockUserRepository = new Mock<IUserRepository>().Object; 
+        _repository = new LecturerRepository(Connection, _mockUserRepository);
     }
 
     [Test]

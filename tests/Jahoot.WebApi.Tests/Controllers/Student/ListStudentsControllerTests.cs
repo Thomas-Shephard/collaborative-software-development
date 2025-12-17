@@ -90,19 +90,7 @@ public class ListStudentsControllerTests
         _studentRepositoryMock.Verify(repo => repo.GetStudentsByApprovalStatusAsync(isApproved), Times.Once);
     }
 
-    [Test]
-    public async Task GetStudents_InvalidStatusEnumValue_ReturnsBadRequest()
-    {
-        SetupUserClaims(Role.Lecturer);
-        const StudentAccountStatus invalidStatus = (StudentAccountStatus)999; // Cast an invalid integer to the enum
 
-        IActionResult result = await _controller.GetStudents(invalidStatus);
-
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        BadRequestObjectResult? badRequestResult = result as BadRequestObjectResult;
-        Assert.That(badRequestResult, Is.Not.Null);
-        Assert.That(badRequestResult?.Value?.ToString(), Does.Contain("Invalid student account status"));
-    }
 
     [Test]
     public void GetStudents_RequiresLecturerAuthorization()

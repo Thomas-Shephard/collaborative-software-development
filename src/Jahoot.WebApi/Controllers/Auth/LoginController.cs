@@ -46,6 +46,11 @@ public class LoginController(IUserRepository userRepository, ILoginAttemptServic
 
         await loginAttemptService.ResetFailedLoginAttempts(requestModel.Email, ipAddress);
 
+        if (user!.Roles.Count == 0)
+        {
+            return StatusCode(403, "Contact their lecturer/admin for access");
+        }
+
         DateTime loginTime = DateTime.UtcNow;
 
         user!.LastLogin = loginTime;

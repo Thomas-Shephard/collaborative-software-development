@@ -21,7 +21,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = "John Doe",
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = [ 1 ]
         };
 
@@ -37,7 +38,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = null!,
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = []
         };
 
@@ -54,7 +56,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = new string('A', 71), // MaxLength is 70
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = [ 1, 2, 3 ]
         };
 
@@ -74,7 +77,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = "John Doe",
             Email = email!,
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = []
         };
 
@@ -91,7 +95,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = "John Doe",
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active,
+            IsApproved = true,
+            IsDisabled = false,
             SubjectIds = [1, 1]
         };
 

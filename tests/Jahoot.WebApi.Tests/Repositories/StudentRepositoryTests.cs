@@ -1,6 +1,7 @@
 using Dapper;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Repositories;
+using Moq;
 
 namespace Jahoot.WebApi.Tests.Repositories;
 
@@ -11,26 +12,21 @@ public class StudentRepositoryTests : RepositoryTestBase
     private const string UserPasswordHash = "hashed_password";
 
     private StudentRepository _repository;
+    private IUserRepository _mockUserRepository;
 
     [SetUp]
     public new async Task Setup()
     {
         await base.Setup();
-        _repository = new StudentRepository(Connection);
+        _mockUserRepository = new Mock<IUserRepository>().Object;
+        _repository = new StudentRepository(Connection, _mockUserRepository);
     }
 
-    private async Task<(int studentId, int userId)> CreateStudentInDb(string name = UserName, string email = UserEmail, string passwordHash = UserPasswordHash, StudentAccountStatus status = StudentAccountStatus.PendingApproval)
+    private async Task<(int studentId, int userId)> CreateStudentInDb(string name = UserName, string email = UserEmail, string passwordHash = UserPasswordHash, bool isApproved = false, bool isDisabled = false)
     {
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = name, Email = email, Hash = passwordHash });
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash, is_disabled) VALUES (@Name, @Email, @Hash, @IsDisabled)", new { Name = name, Email = email, Hash = passwordHash, IsDisabled = isDisabled });
         int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-        string statusString = status switch
-        {
-            StudentAccountStatus.PendingApproval => "pending_approval",
-            StudentAccountStatus.Active => "active",
-            StudentAccountStatus.Disabled => "disabled",
-            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
-        };
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, @AccountStatus)", new { UserId = userId, AccountStatus = statusString });
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, is_approved) VALUES (@UserId, @IsApproved)", new { UserId = userId, IsApproved = isApproved });
         int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
         return (studentId, userId);
     }
@@ -56,7 +52,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         dynamic student = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { user.UserId });
         Assert.That(student, Is.Not.Null);
-        Assert.That(student.account_status, Is.EqualTo("pending_approval"));
+        Assert.That(student.is_approved, Is.EqualTo(false));
     }
 
     [Test]
@@ -80,7 +76,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         dynamic student = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { UserId = userId });
         Assert.That(student, Is.Not.Null);
-        Assert.That(student.account_status, Is.EqualTo("pending_approval"));
+        Assert.That(student.is_approved, Is.EqualTo(false));
     }
 
     [Test]
@@ -97,7 +93,6 @@ public class StudentRepositoryTests : RepositoryTestBase
             Assert.That(result.Name, Is.EqualTo(UserName));
             Assert.That(result.Email, Is.EqualTo(UserEmail));
             Assert.That(result.Roles, Contains.Item(Role.Student));
-            Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
             Assert.That(result.StudentId, Is.EqualTo(studentId));
             Assert.That(result.Subjects, Is.Empty);
         }
@@ -127,7 +122,7 @@ public class StudentRepositoryTests : RepositoryTestBase
     [Test]
     public async Task GetStudentByUserIdAsync_StudentAndLecturer_ReturnsBothRoles()
     {
-        (int studentId, int userId) = await CreateStudentInDb(status: StudentAccountStatus.Active);
+        (int studentId, int userId) = await CreateStudentInDb(isApproved: true);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, FALSE)", new { UserId = userId });
 
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
@@ -137,7 +132,6 @@ public class StudentRepositoryTests : RepositoryTestBase
         {
             Assert.That(result.Roles, Contains.Item(Role.Student));
             Assert.That(result.Roles, Contains.Item(Role.Lecturer));
-            Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.Active));
             Assert.That(result.StudentId, Is.EqualTo(studentId));
         }
     }
@@ -145,7 +139,7 @@ public class StudentRepositoryTests : RepositoryTestBase
     [Test]
     public async Task GetStudentByUserIdAsync_StudentAndAdmin_ReturnsThreeRoles()
     {
-        (int studentId, int userId) = await CreateStudentInDb(status: StudentAccountStatus.Disabled);
+        (int studentId, int userId) = await CreateStudentInDb(isDisabled: true);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, TRUE)", new { UserId = userId });
 
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
@@ -156,7 +150,6 @@ public class StudentRepositoryTests : RepositoryTestBase
             Assert.That(result.Roles, Contains.Item(Role.Student));
             Assert.That(result.Roles, Contains.Item(Role.Lecturer));
             Assert.That(result.Roles, Contains.Item(Role.Admin));
-            Assert.That(result.AccountStatus, Is.EqualTo(StudentAccountStatus.Disabled));
             Assert.That(result.StudentId, Is.EqualTo(studentId));
         }
     }
@@ -173,10 +166,10 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task GetStudentsByStatusAsync_ReturnsMatchingStudentsWithSubjects()
+    public async Task GetStudentsByApprovalStatusAsync_ReturnsMatchingStudentsWithSubjects()
     {
-        (int pendingStudentId, int pendingUserId) = await CreateStudentInDb("Pending", "pending@test.com", "hash");
-        (int activeStudentId, int activeUserId) = await CreateStudentInDb("Active", "active@test.com", "hash", StudentAccountStatus.Active);
+        (int pendingStudentId, int pendingUserId) = await CreateStudentInDb("Pending", "pending@test.com", "hash", isApproved: false);
+        (int activeStudentId, int activeUserId) = await CreateStudentInDb("Active", "active@test.com", "hash", isApproved: true);
 
         int mathSubjectId = await CreateSubjectInDb("Math");
         int physicsSubjectId = await CreateSubjectInDb("Physics");
@@ -186,57 +179,36 @@ public class StudentRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = physicsSubjectId });
 
 
-        Student[] result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.PendingApproval))
+        Student[] result = (await _repository.GetStudentsByApprovalStatusAsync(false))
                                              .ToArray();
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result[0].UserId, Is.EqualTo(pendingUserId));
-            Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.PendingApproval));
+            Assert.That(result[0].IsApproved, Is.EqualTo(false));
             Assert.That(result[0].Subjects, Has.Count.EqualTo(1));
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
         }
 
-        result = (await _repository.GetStudentsByStatusAsync(StudentAccountStatus.Active))
+        result = (await _repository.GetStudentsByApprovalStatusAsync(true))
                                              .ToArray();
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result[0].UserId, Is.EqualTo(activeUserId));
-            Assert.That(result[0].AccountStatus, Is.EqualTo(StudentAccountStatus.Active));
+            Assert.That(result[0].IsApproved, Is.EqualTo(true));
             Assert.That(result[0].Subjects, Has.Count.EqualTo(2));
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == mathSubjectId && s.Name == "Math"), Is.True);
             Assert.That(result[0].Subjects.Any(s => s.SubjectId == physicsSubjectId && s.Name == "Physics"), Is.True);
         }
     }
 
-    [Test]
-    public async Task GetStudentByUserIdAsync_UnknownStatus_ThrowsException()
-    {
-        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @Hash)", new { Name = UserName, Email = UserEmail, Hash = UserPasswordHash });
-        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
 
-        try
-        {
-            // Alter table to allow invalid string and insert invalid status
-            await Connection.ExecuteAsync("ALTER TABLE Student MODIFY COLUMN account_status VARCHAR(255)");
-            await Connection.ExecuteAsync("INSERT INTO Student (user_id, account_status) VALUES (@UserId, 'invalid_status')", new { UserId = userId });
-
-            InvalidOperationException? ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await _repository.GetStudentByUserIdAsync(userId));
-            Assert.That(ex.Message, Does.Contain("Unknown account status: invalid_status"));
-        }
-        finally
-        {
-            // Restore schema and delete the invalid row first to ensure clean schema reversion
-            await Connection.ExecuteAsync("DELETE FROM Student WHERE user_id = @UserId", new { UserId = userId });
-            await Connection.ExecuteAsync("ALTER TABLE Student MODIFY COLUMN account_status ENUM('pending_approval', 'active', 'disabled') NOT NULL DEFAULT 'pending_approval'");
-        }
-    }
 
     [Test]
-    public async Task UpdateStudentAsync_UpdatesAccountStatusAndAddsSubjects()
+    public async Task UpdateStudentAsync_UpdatesApprovalStatusAndAddsSubjects()
     {
         (int studentId, int userId) = await CreateStudentInDb();
         int subject1Id = await CreateSubjectInDb("Math");
@@ -245,7 +217,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
-        student.AccountStatus = StudentAccountStatus.Active;
+        student.IsApproved = true;
         student.Subjects = new List<Subject>
         {
             new() { SubjectId = subject1Id, Name = "Math" },
@@ -255,7 +227,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
 
         dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
         Assert.That(studentSubjects, Has.Length.EqualTo(2));
@@ -267,7 +239,7 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task UpdateStudentAsync_UpdatesAccountStatusAndRemovesSubjects()
+    public async Task UpdateStudentAsync_UpdatesApprovalStatusAndRemovesSubjects()
     {
         (int studentId, int userId) = await CreateStudentInDb();
         int subject1Id = await CreateSubjectInDb("Math");
@@ -279,7 +251,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
-        student.AccountStatus = StudentAccountStatus.Active;
+        student.IsApproved = true;
         student.Subjects = new List<Subject>
         {
             new() { SubjectId = subject1Id, Name = "Math" }
@@ -288,7 +260,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
 
         dynamic[] studentSubjects = (await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId })).ToArray();
         using (Assert.EnterMultipleScope())
@@ -299,7 +271,7 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task UpdateStudentAsync_UpdatesAccountStatusAndNoSubjects()
+    public async Task UpdateStudentAsync_UpdatesApprovalStatusAndNoSubjects()
     {
         (int studentId, int userId) = await CreateStudentInDb();
         int subject1Id = await CreateSubjectInDb("Math");
@@ -309,13 +281,13 @@ public class StudentRepositoryTests : RepositoryTestBase
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
-        student.AccountStatus = StudentAccountStatus.Active;
+        student.IsApproved = true;
         student.Subjects = new List<Subject>();
 
         await _repository.UpdateStudentAsync(student);
 
         dynamic dbStudent = await Connection.QuerySingleAsync<dynamic>("SELECT * FROM Student WHERE user_id = @UserId", new { userId });
-        Assert.That(dbStudent.account_status, Is.EqualTo("active"));
+        Assert.That(dbStudent.is_approved, Is.EqualTo(true));
 
         IEnumerable<dynamic> studentSubjects = await Connection.QueryAsync<dynamic>("SELECT * FROM StudentSubject WHERE student_id = @StudentId", new { StudentId = studentId });
         Assert.That(studentSubjects, Is.Empty);
