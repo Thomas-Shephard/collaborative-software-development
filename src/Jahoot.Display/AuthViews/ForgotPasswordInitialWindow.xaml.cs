@@ -38,7 +38,6 @@ public partial class ForgotPasswordInitialWindow : Window
             {
                 var resetWindow = ActivatorUtilities.CreateInstance<ForgotPasswordFinaliseWindow>(_serviceProvider);
                 resetWindow.PreFillEmail(email);
-                resetWindow.Owner = this;
 
                 // Close this window and show the next one
                 resetWindow.Show();
