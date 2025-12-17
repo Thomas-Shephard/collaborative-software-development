@@ -54,7 +54,12 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
 
     private void CreateLecturer_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Create Lecturer feature is not yet implemented.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        var form = new LecturerFormWindow(_lecturerService);
+        form.Owner = Window.GetWindow(this);
+        if (form.ShowDialog() == true)
+        {
+            LoadLecturers();
+        }
     }
 
     private void EditLecturer_Click(object sender, RoutedEventArgs e)
@@ -62,7 +67,12 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
 
-        MessageBox.Show($"Edit feature for {lecturer.Name} is not yet implemented.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        var form = new LecturerFormWindow(_lecturerService, lecturer);
+        form.Owner = Window.GetWindow(this);
+        if (form.ShowDialog() == true)
+        {
+            LoadLecturers();
+        }
     }
 
     private void DisableLecturer_Click(object sender, RoutedEventArgs e)
