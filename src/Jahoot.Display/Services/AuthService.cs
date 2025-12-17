@@ -69,6 +69,41 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
         }
     }
 
+    public async Task<Result> ForgotPassword(string email)
+    {
+        var model = new ForgotPasswordRequestModel { Email = email };
+        var response = await _httpClient.PostAsJsonAsync("api/auth/forgot-password", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new Result { Success = true, ErrorMessage = string.Empty };
+        }
+        else
+        {
+            return await ParseErrorResponse(response, "Failed to request password reset.");
+        }
+    }
+
+    public async Task<Result> ResetPassword(string email, string token, string newPassword)
+    {
+        var model = new ResetPasswordRequestModel 
+        { 
+            Email = email, 
+            Token = token, 
+            NewPassword = newPassword 
+        };
+        var response = await _httpClient.PostAsJsonAsync("api/auth/reset-password", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new Result { Success = true, ErrorMessage = string.Empty };
+        }
+        else
+        {
+            return await ParseErrorResponse(response, "Failed to reset password.");
+        }
+    }
+
     private static async Task<Result> ParseErrorResponse(HttpResponseMessage response, string defaultMessage)
     {
         var errorContent = await response.Content.ReadAsStringAsync();
