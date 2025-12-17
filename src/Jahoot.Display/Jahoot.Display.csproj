@@ -4,14 +4,26 @@
     <TargetFramework>$(TargetFramework)-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <AssemblyName>Jahoot</AssemblyName>
   </PropertyGroup>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
     </ItemGroup>
 
+    <ItemGroup Condition="'$(Configuration)'=='Debug'">
+        <EmbeddedResource Include="appsettings.Development.json" LogicalName="appsettings.json" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)'=='Release'">
+        <EmbeddedResource Include="appsettings.Production.json" LogicalName="appsettings.json" />
+    </ItemGroup>
+
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
     </ItemGroup>
 
 </Project>
