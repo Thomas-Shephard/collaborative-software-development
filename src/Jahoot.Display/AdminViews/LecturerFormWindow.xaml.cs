@@ -34,7 +34,7 @@ public partial class LecturerFormWindow : Window
             Title = "Create New Lecturer";
             PasswordRow.Visibility = Visibility.Visible;
             ResetPasswordRow.Visibility = Visibility.Collapsed;
-            IsAdminCheckBox.IsChecked = false; // Disable by default
+            IsAdminCheckBox.IsChecked = false; // Unchecked (non-admin) by default
         }
     }
 

@@ -26,14 +26,22 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
+        IsVisibleChanged += ManageLecturersView_IsVisibleChanged;
     }
 
-    public async Task Initialize(ILecturerService lecturerService)
+    public void Initialize(ILecturerService lecturerService)
     {
         _lecturerService = lecturerService;
-        await LoadLecturers();
+        // Lecturers will be loaded when the view becomes visible.
     }
 
+    private void ManageLecturersView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible && _lecturerService != null && (Lecturers == null || Lecturers.Count == 0))
+        {
+            LoadLecturers();
+        }
+    }
     private async Task LoadLecturers()
     {
         try

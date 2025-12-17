@@ -68,14 +68,11 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Password" Style="{StaticResource FormLabel}"/>
-                <Button x:Name="ResetPasswordButton" Grid.Column="1" Content="Reset Password" Click="ResetPassword_Click" 
-                        HorizontalAlignment="Left" Padding="10,5" Background="#EEE" Foreground="#333" BorderThickness="0">
-                     <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="4"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                <Button x:Name="ResetPasswordButton"
+                        Grid.Column="1"
+                        Content="Reset Password"
+                        Click="ResetPassword_Click"
+                        Style="{StaticResource FormSaveButton}"/>
             </Grid>
 
             <TextBlock x:Name="ErrorText" Grid.Row="5" Foreground="#C62828" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
