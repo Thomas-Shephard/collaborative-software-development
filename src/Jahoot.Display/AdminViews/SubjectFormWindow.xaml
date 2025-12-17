@@ -6,13 +6,6 @@
         Background="White"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True">
-    <Window.Resources>
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-    </Window.Resources>
-    
     <Border Padding="20">
         <Grid>
             <Grid.RowDefinitions>
@@ -30,8 +23,8 @@
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Subject Name" VerticalAlignment="Center" Foreground="Gray"/>
-                <TextBox x:Name="NameTextBox" Grid.Column="1" BorderBrush="#DDD" BorderThickness="1"/>
+                <TextBlock Text="Subject Name" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="NameTextBox" Grid.Column="1" Style="{StaticResource FormTextBox}"/>
             </Grid>
 
             <Grid Grid.Row="2" Margin="0,0,0,10">
@@ -39,7 +32,7 @@
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Status" VerticalAlignment="Center" Foreground="Gray"/>
+                <TextBlock Text="Status" Style="{StaticResource FormLabel}"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <CheckBox x:Name="ActiveCheckBox" Content="Active" VerticalContentAlignment="Center"/>
                 </StackPanel>
@@ -48,14 +41,8 @@
             <TextBlock x:Name="ErrorText" Grid.Row="3" Foreground="#C62828" TextWrapping="Wrap" Margin="0,0,0,10" Visibility="Collapsed"/>
 
             <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button Content="Cancel" Click="Cancel_Click" Width="80" Height="30" Background="Transparent" BorderThickness="0" Foreground="Gray" Margin="0,0,10,0"/>
-                <Button Content="Save" Click="Save_Click" Width="80" Height="30" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="4"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource FormCancelButton}"/>
+                <Button Content="Save" Click="Save_Click" Style="{StaticResource FormSaveButton}"/>
             </StackPanel>
         </Grid>
     </Border>

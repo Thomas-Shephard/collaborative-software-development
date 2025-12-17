@@ -50,10 +50,8 @@
             <!-- Tab 1: Manage Subjects -->
             <admin:ManageSubjectsView x:Name="SubjectsView" Visibility="Collapsed"/>
 
-            <!-- Tab 2: Manage Users (Mock) -->
-             <Grid x:Name="UsersView" Visibility="Collapsed">
-                 <TextBlock Text="Manage Users - Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="Gray"/>
-             </Grid>
+            <!-- Tab 2: Manage Lecturers -->
+             <admin:ManageLecturersView x:Name="LecturersView" Visibility="Collapsed"/>
 
             <!-- Tab 3: Settings (Mock) -->
              <Grid x:Name="SettingsView" Visibility="Collapsed">

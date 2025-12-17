@@ -52,6 +52,7 @@
             services.AddSingleton<IHttpService, HttpService>();
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<ISubjectService, SubjectService>();
+            services.AddTransient<ILecturerService, LecturerService>();
             services.AddTransient<LoginPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
             services.AddTransient<Pages.AdminDashboard>();
