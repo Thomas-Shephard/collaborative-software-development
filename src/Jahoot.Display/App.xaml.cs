@@ -2,27 +2,52 @@
     using Microsoft.Extensions.DependencyInjection;
     using System.Net.Http;
     using System.Windows;
+    using Microsoft.Extensions.Configuration;
+    using System.IO;
+    using System.Reflection;
 
     namespace Jahoot.Display;
 
     public partial class App : Application
     {
         public IServiceProvider ServiceProvider { get; private set; }
-        private const string ClassBaseAddress = "http://localhost";
+        private IConfigurationRoot? _configuration;
 
         public App()
         {
             var serviceCollection = new ServiceCollection();
+            ConfigureAppConfiguration(serviceCollection);
             ConfigureServices(serviceCollection);
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private void ConfigureAppConfiguration(IServiceCollection services)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using Stream? stream = assembly.GetManifestResourceStream("appsettings.json");
+
+            if (stream is null)
+            {
+                throw new InvalidOperationException("Embedded appsettings.json not found.");
+            }
+
+            _configuration = new ConfigurationBuilder()
+                .AddJsonStream(stream)
+                .Build();
+
+            services.AddSingleton<IConfiguration>(_configuration);
+        }
+
+        private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
-            services.AddSingleton<HttpClient>(new HttpClient
+
+            string baseAddress = _configuration?.GetValue<string>("BaseAddress")
+                                 ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
+
+            services.AddSingleton(new HttpClient
             {
-                BaseAddress = new Uri(ClassBaseAddress)
+                BaseAddress = new Uri(baseAddress)
             });
             services.AddSingleton<IHttpService, HttpService>();
             services.AddTransient<IAuthService, AuthService>();
