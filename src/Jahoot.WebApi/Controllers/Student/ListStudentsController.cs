@@ -12,14 +12,9 @@ public class ListStudentsController(IStudentRepository studentRepository) : Cont
 {
     [HttpGet]
     [Authorize(Policy = nameof(Role.Lecturer))]
-    public async Task<IActionResult> GetStudents([FromQuery] StudentAccountStatus status)
+    public async Task<IActionResult> GetStudents([FromQuery] bool isApproved)
     {
-        if (!Enum.IsDefined(status))
-        {
-            return BadRequest($"Invalid student account status. Valid values are: {string.Join(", ", Enum.GetNames<StudentAccountStatus>())}");
-        }
-
-        IEnumerable<Core.Models.Student> students = await studentRepository.GetStudentsByStatusAsync(status);
+        IEnumerable<Core.Models.Student> students = await studentRepository.GetStudentsByApprovalStatusAsync(isApproved);
         return Ok(students);
     }
 }
