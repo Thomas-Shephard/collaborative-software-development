@@ -15,5 +15,17 @@ namespace Jahoot.Display.LecturerViews
         {
             // Future functionality
         }
+
+        protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            
+            // Press F5 to open test taking page for testing
+            if (e.Key == System.Windows.Input.Key.F5)
+            {
+                var testPage = new StudentViews.TestTakingPage();
+                testPage.Show();
+            }
+        }
     }
 }
