@@ -25,7 +25,8 @@ namespace Jahoot.Display.LecturerViews
                 CreatedAt = student.CreatedAt,
                 UpdatedAt = student.UpdatedAt,
                 PasswordHash = student.PasswordHash,
-                Roles = student.Roles
+                Roles = student.Roles,
+                Subjects = student.Subjects
             };
             DataContext = this;
         }

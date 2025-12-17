@@ -52,7 +52,7 @@ public class StudentTests
     public void Initials_ReturnsCorrectInitials_ForGivenName(string name, string expectedInitial)
     {
         // Arrange
-        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act
         var initials = student.Initials;
@@ -66,7 +66,7 @@ public class StudentTests
     public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string name)
     {
         // Arrange
-        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act
         var initials = student.Initials;
@@ -79,8 +79,8 @@ public class StudentTests
     public void Equals_ReturnsTrue_WhenComparingTwoStudentsWithTheSameId()
     {
         // Arrange
-        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
-        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
+        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act & Assert
         Assert.That(student1.Equals(student2), Is.True);
@@ -90,8 +90,8 @@ public class StudentTests
     public void Equals_ReturnsFalse_WhenComparingTwoStudentsWithDifferentIds()
     {
         // Arrange
-        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
-        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
+        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act & Assert
         Assert.That(student1.Equals(student2), Is.False);
@@ -101,7 +101,7 @@ public class StudentTests
     public void Equals_ReturnsFalse_WhenComparingWithNull()
     {
         // Arrange
-        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act & Assert
         Assert.That(student.Equals(null), Is.False);
@@ -111,7 +111,7 @@ public class StudentTests
     public void Equals_ReturnsFalse_WhenComparingWithDifferentType()
     {
         // Arrange
-        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
         var other = new object();
 
         // Act & Assert
@@ -122,8 +122,8 @@ public class StudentTests
     public void GetHashCode_ReturnsSameValue_ForTwoStudentsWithTheSameId()
     {
         // Arrange
-        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
-        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student1 = new Student { UserId = 1, Name = "Student 1", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
+        var student2 = new Student { UserId = 1, Name = "Student 2", AccountStatus = StudentAccountStatus.Disabled, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act & Assert
         Assert.That(student1.GetHashCode(), Is.EqualTo(student2.GetHashCode()));
@@ -133,8 +133,8 @@ public class StudentTests
     public void GetHashCode_ReturnsDifferentValue_ForTwoStudentsWithDifferentIds()
     {
         // Arrange
-        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
-        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
+        var student1 = new Student { UserId = 1, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
+        var student2 = new Student { UserId = 2, Name = "Student", AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>(), Subjects = new List<Subject>() };
 
         // Act & Assert
         Assert.That(student1.GetHashCode(), Is.Not.EqualTo(student2.GetHashCode()));
@@ -144,7 +144,7 @@ public class StudentTests
     public void SetProperty_WhenAccountStatusChanged_RaisesPropertyChangedEvent()
     {
         // Arrange
-        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active };
+        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active, Subjects = new List<Subject>() };
         string? raisedPropertyName = null;
         student.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
 
@@ -159,7 +159,7 @@ public class StudentTests
     public void SetProperty_WhenAccountStatusUnchanged_DoesNotRaisePropertyChangedEvent()
     {
         // Arrange
-        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active };
+        var student = new Student { Name = "Initial Name", Email = "initial@test.com", PasswordHash = "initial_hash", Roles = new List<Role>(), AccountStatus = StudentAccountStatus.Active, Subjects = new List<Subject>() };
         string? raisedPropertyName = null;
         student.PropertyChanged += (sender, args) => { raisedPropertyName = args.PropertyName; };
 
