@@ -35,6 +35,7 @@ public class UpdateLecturerController(ILecturerRepository lecturerRepository, IU
         lecturer.Name = request.Name;
         lecturer.Email = request.Email;
         lecturer.IsAdmin = request.IsAdmin;
+        lecturer.IsDisabled = request.IsDisabled;
 
         await userRepository.UpdateUserAsync(lecturer);
         await lecturerRepository.UpdateLecturerAsync(lecturer);
