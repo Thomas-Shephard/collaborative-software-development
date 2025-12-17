@@ -111,7 +111,7 @@ namespace Jahoot.Display.ViewModels
             {
                 new TabItem { Header = "Overview" },
                 new TabItem { Header = "Manage Subjects" },
-                new TabItem { Header = "Manage Users" },
+                new TabItem { Header = "Manage Lecturers" },
                 new TabItem { Header = "Settings" }
             };
         }

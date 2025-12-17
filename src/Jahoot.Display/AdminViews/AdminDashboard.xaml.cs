@@ -6,11 +6,12 @@ namespace Jahoot.Display.Pages
 {
     public partial class AdminDashboard : Window
     {
-        public AdminDashboard(ISubjectService subjectService)
+        public AdminDashboard(ISubjectService subjectService, ILecturerService lecturerService)
         {
             InitializeComponent();
             this.DataContext = new AdminDashboardViewModel();
             SubjectsView.Initialize(subjectService);
+            LecturersView.Initialize(lecturerService);
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
@@ -18,7 +19,7 @@ namespace Jahoot.Display.Pages
             if (this.DataContext is AdminDashboardViewModel vm)
             {
                 // Ensure UI elements are initialized
-                if (OverviewContent == null || SubjectsView == null || UsersView == null || SettingsView == null)
+                if (OverviewContent == null || SubjectsView == null || LecturersView == null || SettingsView == null)
                     return;
 
                 int index = vm.SelectedTabIndex;
@@ -31,7 +32,7 @@ namespace Jahoot.Display.Pages
         {
              OverviewContent.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
              SubjectsView.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
-             UsersView.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+             LecturersView.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
              SettingsView.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
