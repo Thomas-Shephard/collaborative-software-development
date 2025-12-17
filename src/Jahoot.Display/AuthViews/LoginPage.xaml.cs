@@ -1,22 +1,24 @@
-﻿using Jahoot.Core.Models;
-using Jahoot.Display.Services;
+﻿using Jahoot.Display.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display;
 public partial class LoginPage : Window
 {
     private readonly IAuthService _authService;
     private readonly LecturerViews.LecturerDashboard _lecturerDashboard;
+    private readonly IServiceProvider _serviceProvider;
 
-    public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard)
+    public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _authService = authService;
         _lecturerDashboard = lecturerDashboard;
+        _serviceProvider = serviceProvider;
     }
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -134,7 +136,9 @@ public partial class LoginPage : Window
 
     private void ForgotPassword_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("forgot password clicked");
+        var forgotPasswordWindow = ActivatorUtilities.CreateInstance<ForgotPasswordInitialWindow>(_serviceProvider);
+        forgotPasswordWindow.Owner = this;
+        forgotPasswordWindow.ShowDialog();
     }
 
     private void SignInPasswordBox_KeyDown(object sender, KeyEventArgs e)
