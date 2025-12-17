@@ -11,10 +11,9 @@ public class LecturerRepositoryTests : RepositoryTestBase
     private Mock<IUserRepository> _mockUserRepository;
 
     [SetUp]
-    public new async Task Setup()
+    public new void Setup()
     {
-        await base.Setup();
-        _mockUserRepository = new Mock<IUserRepository>(); 
+        _mockUserRepository = new Mock<IUserRepository>();
         _repository = new LecturerRepository(Connection, _mockUserRepository.Object);
     }
 

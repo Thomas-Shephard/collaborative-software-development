@@ -48,12 +48,12 @@ public class LoginController(IUserRepository userRepository, ILoginAttemptServic
 
         if (user!.Roles.Count == 0)
         {
-            return StatusCode(403, "Contact their lecturer/admin for access");
+            return StatusCode(403, "Your account is not yet approved. Please contact your lecturer or administrator for access.");
         }
 
         DateTime loginTime = DateTime.UtcNow;
 
-        user!.LastLogin = loginTime;
+        user.LastLogin = loginTime;
         await userRepository.UpdateUserAsync(user);
 
         string tokenString = tokenService.GenerateToken(user);

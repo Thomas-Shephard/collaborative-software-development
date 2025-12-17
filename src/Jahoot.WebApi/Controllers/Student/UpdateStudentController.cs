@@ -76,6 +76,5 @@ public class UpdateStudentController(IStudentRepository studentRepository, IUser
         }
 
         return Ok();
-
     }
 }

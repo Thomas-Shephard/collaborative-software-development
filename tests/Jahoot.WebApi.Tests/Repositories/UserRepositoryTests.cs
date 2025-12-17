@@ -323,7 +323,7 @@ public class UserRepositoryTests : RepositoryTestBase
             IsDisabled = false
         };
         int userId = await InsertUser(user);
-        await InsertStudent(userId, false); // Not approved
+        await InsertStudent(userId); // Not approved
 
         List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
 

@@ -129,7 +129,7 @@ public class StudentRepository(IDbConnection connection, IUserRepository userRep
 
         try
         {
-            const string updateStudentQuery = "UPDATE Student SET is_approved = @IsApproved WHERE student_id = @StudentId; UPDATE User SET is_disabled = @IsDisabled WHERE user_id = @UserId;";
+            const string updateStudentQuery = "UPDATE Student SET is_approved = @IsApproved WHERE student_id = @StudentId";
             await connection.ExecuteAsync(updateStudentQuery, student, transaction);
 
             const string deleteSubjectsQuery = "DELETE FROM StudentSubject WHERE student_id = @StudentId";
