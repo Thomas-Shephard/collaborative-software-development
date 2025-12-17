@@ -16,6 +16,7 @@ public class StudentTests
         const string userName = "John Doe";
         const string userPasswordHash = "hashed_password";
         List<Role> userRoles = [ Role.Student ];
+        List<Subject> userSubjects = [ new() { Name = "Subject",  SubjectId = 1 } ];
 
         Student student = new()
         {
@@ -25,7 +26,8 @@ public class StudentTests
             Email = userEmail,
             Name = userName,
             PasswordHash = userPasswordHash,
-            Roles = userRoles
+            Roles = userRoles,
+            Subjects = userSubjects
         };
 
         using (Assert.EnterMultipleScope())
@@ -37,6 +39,7 @@ public class StudentTests
             Assert.That(student.Name, Is.EqualTo(userName));
             Assert.That(student.PasswordHash, Is.EqualTo(userPasswordHash));
             Assert.That(student.Roles, Is.EquivalentTo(userRoles));
+            Assert.That(student.Subjects, Is.EquivalentTo(userSubjects));
         }
     }
 

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Jahoot.Core.Attributes;
 
 namespace Jahoot.Core.Models.Requests;
 
@@ -14,4 +15,8 @@ public class UpdateStudentRequestModel
 
     [Required]
     public required StudentAccountStatus AccountStatus { get; init; }
+
+    [Required]
+    [EnsureUniqueElements]
+    public required IReadOnlyList<int> SubjectIds { get; init; }
 }

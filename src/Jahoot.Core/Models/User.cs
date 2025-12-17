@@ -21,7 +21,7 @@ public class User : INotifyPropertyChanged
         set => SetProperty(ref _name, value);
     }
     [JsonIgnore]
-    public required string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
 
     private DateTime? _lastLogin;
