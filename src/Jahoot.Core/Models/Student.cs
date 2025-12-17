@@ -9,8 +9,6 @@ public class Student : User
         get => _accountStatus;
         set => SetProperty(ref _accountStatus, value);
     }
-
-    // New Initials property
     public string Initials
     {
         get
@@ -19,7 +17,14 @@ public class Student : User
             {
                 return string.Empty;
             }
-            return Name.Trim()[0].ToString().ToUpper();
+
+            var names = Name.Trim().Split(' ');
+            if (names.Length > 1)
+            {
+                return (names[0][0].ToString() + names[^1][0].ToString()).ToUpper();
+            }
+
+            return names[0][0].ToString().ToUpper();
         }
     }
 

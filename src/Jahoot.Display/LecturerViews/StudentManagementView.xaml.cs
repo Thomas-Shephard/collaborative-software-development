@@ -97,15 +97,10 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToReject)
             {
-                Debug.WriteLine($"Attempting to reject student: {studentToReject.Name} (ID: {studentToReject.UserId})");
                 var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToReject.UserId);
                 if (studentInCollection != null)
                 {
                     Students.Remove(studentInCollection);
-                }
-                else
-                {
-                    Debug.WriteLine($"Student with ID {studentToReject.UserId} not found in collection.");
                 }
             }
         }
@@ -114,15 +109,10 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToDelete)
             {
-                Debug.WriteLine($"Attempting to delete student: {studentToDelete.Name} (ID: {studentToDelete.UserId})");
                 var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToDelete.UserId);
                 if (studentInCollection != null)
                 {
                     Students.Remove(studentInCollection);
-                }
-                else
-                {
-                    Debug.WriteLine($"Student with ID {studentToDelete.UserId} not found in collection.");
                 }
             }
         }

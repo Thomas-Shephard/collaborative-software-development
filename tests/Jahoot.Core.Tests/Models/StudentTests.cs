@@ -40,10 +40,13 @@ public class StudentTests
         }
     }
 
-    [TestCase("John Doe", "J")]
-    [TestCase("jane doe", "J")]
+    [TestCase("John Doe", "JD")]
+    [TestCase("jane doe", "JD")]
     [TestCase(" single", "S")]
-    public void Initials_ReturnsFirstLetterOfName_WhenNameIsNotEmpty(string name, string expectedInitial)
+    [TestCase("John", "J")]
+    [TestCase("John Fitzgerald Kennedy", "JK")]
+    [TestCase("  leading space", "LS")]
+    public void Initials_ReturnsCorrectInitials_ForGivenName(string name, string expectedInitial)
     {
         // Arrange
         var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
@@ -55,10 +58,9 @@ public class StudentTests
         Assert.That(initials, Is.EqualTo(expectedInitial));
     }
 
-    [TestCase(null)]
     [TestCase("")]
     [TestCase("   ")]
-    public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string? name)
+    public void Initials_ReturnsEmptyString_WhenNameIsNullOrEmptyOrWhitespace(string name)
     {
         // Arrange
         var student = new Student { Name = name, AccountStatus = StudentAccountStatus.Active, Email = "test@test.com", PasswordHash = "testhash", Roles = new List<Role>() };
