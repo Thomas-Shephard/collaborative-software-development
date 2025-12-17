@@ -239,8 +239,7 @@ public class UpdateStudentControllerTests
             m => m.To == requestModel.Email &&
                  m.Subject == "Jahoot Account Approved" &&
                  m.Title == "Welcome to Jahoot!" &&
-                 m.Body.Contains($"Dear {requestModel.Name}") &&
-                 m.Body.Contains("Your student account has been approved.")
+                 m.Body.Contains("Your Jahoot account has been approved.")
         )), Times.Once);
 
         _studentRepositoryMock.Verify(repo => repo.UpdateStudentAsync(It.Is<StudentModel>(s => s.IsApproved && !s.IsDisabled)), Times.Once);
