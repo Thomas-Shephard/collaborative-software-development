@@ -33,6 +33,11 @@ public class Student : User
         return HashCode.Combine(UserId);
     }
     
-    public required StudentAccountStatus AccountStatus { get; set; }
+    private StudentAccountStatus _accountStatus;
+    public required StudentAccountStatus AccountStatus
+    {
+        get => _accountStatus;
+        set => SetProperty(ref _accountStatus, value);
+    }
     public required IReadOnlyList<Subject> Subjects { get; set; }
 }
