@@ -156,24 +156,57 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border VerticalAlignment="Center" CornerRadius="12" Padding="8,4">
-                                        <TextBlock Text="{Binding AccountStatus}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock FontWeight="SemiBold" FontSize="12">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Unknown"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsApproved}" Value="True"/>
+                                                                <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Text" Value="Active"/>
+                                                        </MultiDataTrigger>
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                            <Setter Property="Text" Value="Disabled"/>
+                                                        </DataTrigger>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsApproved}" Value="False"/>
+                                                                <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Text" Value="Pending Approval"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Setter Property="Background" Value="#E5E7EB"/>
                                                 <Setter Property="TextBlock.Foreground" Value="#374151"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Active}">
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsApproved}" Value="True"/>
+                                                            <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
                                                         <Setter Property="Background" Value="#D1FAE5"/>
                                                         <Setter Property="TextBlock.Foreground" Value="#065F46"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Disabled}">
+                                                    </MultiDataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDisabled}" Value="True">
                                                         <Setter Property="Background" Value="#FEE2E2"/>
                                                         <Setter Property="TextBlock.Foreground" Value="#991B1B"/>
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.PendingApproval}">
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsApproved}" Value="False"/>
+                                                            <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
                                                         <Setter Property="Background" Value="#FEF3C7"/>
                                                         <Setter Property="TextBlock.Foreground" Value="#92400E"/>
-                                                    </DataTrigger>
+                                                    </MultiDataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
@@ -192,9 +225,13 @@
                                                 <Style TargetType="StackPanel">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Active}">
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsApproved}" Value="True"/>
+                                                                <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
                                                             <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
+                                                        </MultiDataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </StackPanel.Style>
@@ -219,7 +256,7 @@
                                                 <Style TargetType="StackPanel">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.Disabled}">
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -246,9 +283,13 @@
                                                 <Style TargetType="StackPanel">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AccountStatus}" Value="{x:Static models:StudentAccountStatus.PendingApproval}">
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsApproved}" Value="False"/>
+                                                                <Condition Binding="{Binding IsDisabled}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
                                                             <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
+                                                        </MultiDataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </StackPanel.Style>

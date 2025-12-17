@@ -3,7 +3,13 @@ namespace Jahoot.Core.Models;
 public class Student : User
 {
     public int StudentId { get; init; }
-    public bool IsApproved { get; set; }
+
+    private bool _isApproved;
+    public bool IsApproved
+    {
+        get => _isApproved;
+        set => SetProperty(ref _isApproved, value);
+    }
     public string Initials
     {
         get

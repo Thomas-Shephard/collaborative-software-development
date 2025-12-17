@@ -23,7 +23,12 @@ public class User : INotifyPropertyChanged
     [JsonIgnore]
     public string? PasswordHash { get; set; }
     public required IReadOnlyList<Role> Roles { get; init; }
-    public bool IsDisabled { get; set; }
+    private bool _isDisabled;
+    public bool IsDisabled
+    {
+        get => _isDisabled;
+        set => SetProperty(ref _isDisabled, value);
+    }
 
     private DateTime? _lastLogin;
     public DateTime? LastLogin
