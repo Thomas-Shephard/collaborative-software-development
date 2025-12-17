@@ -26,9 +26,14 @@ public class RoleAuthorizationHandler(IServiceScopeFactory serviceScopeFactory) 
         using IServiceScope scope = serviceScopeFactory.CreateScope();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-        List<Role> userRoles = await userRepository.GetRolesByUserIdAsync(userId);
+        User? user = await userRepository.GetUserByIdAsync(userId);
 
-        if (userRoles.Contains(requirement.Role))
+        if (user is null || user.IsDisabled)
+        {
+            return;
+        }
+
+        if (user.Roles.Contains(requirement.Role))
         {
             context.Succeed(requirement);
         }

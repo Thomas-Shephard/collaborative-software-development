@@ -53,7 +53,7 @@ public class LecturerRepository(IDbConnection connection, IUserRepository userRe
                                      WHERE lecturer.user_id = @UserId
                                      """;
 
-        LecturerData? lecturerData = await connection.QuerySingleOrDefaultAsync(lecturerQuery, new { UserId = userId });
+        LecturerData? lecturerData = await connection.QuerySingleOrDefaultAsync<LecturerData>(lecturerQuery, new { UserId = userId });
 
         if (lecturerData is null)
         {

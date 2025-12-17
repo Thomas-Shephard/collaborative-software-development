@@ -12,14 +12,14 @@ public class StudentRepositoryTests : RepositoryTestBase
     private const string UserPasswordHash = "hashed_password";
 
     private StudentRepository _repository;
-    private IUserRepository _mockUserRepository;
+    private Mock<IUserRepository> _mockUserRepository;
 
     [SetUp]
     public new async Task Setup()
     {
         await base.Setup();
-        _mockUserRepository = new Mock<IUserRepository>().Object;
-        _repository = new StudentRepository(Connection, _mockUserRepository);
+        _mockUserRepository = new Mock<IUserRepository>();
+        _repository = new StudentRepository(Connection, _mockUserRepository.Object);
     }
 
     private async Task<(int studentId, int userId)> CreateStudentInDb(string name = UserName, string email = UserEmail, string passwordHash = UserPasswordHash, bool isApproved = false, bool isDisabled = false)
@@ -84,6 +84,9 @@ public class StudentRepositoryTests : RepositoryTestBase
     {
         (int studentId, int userId) = await CreateStudentInDb();
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student]);
+
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
         Assert.That(result, Is.Not.Null);
@@ -108,6 +111,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject2Id });
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student]);
+
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
         Assert.That(result, Is.Not.Null);
@@ -125,6 +131,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         (int studentId, int userId) = await CreateStudentInDb(isApproved: true);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, FALSE)", new { UserId = userId });
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student, Role.Lecturer]);
+
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
         Assert.That(result, Is.Not.Null);
@@ -141,6 +150,9 @@ public class StudentRepositoryTests : RepositoryTestBase
     {
         (int studentId, int userId) = await CreateStudentInDb(isDisabled: true);
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, TRUE)", new { UserId = userId });
+
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student, Role.Lecturer, Role.Admin]);
 
         Student? result = await _repository.GetStudentByUserIdAsync(userId);
 
@@ -178,6 +190,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = mathSubjectId });
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = activeStudentId, SubjectId = physicsSubjectId });
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(It.IsAny<int>()))
+            .ReturnsAsync([Role.Student]);
 
         Student[] result = (await _repository.GetStudentsByApprovalStatusAsync(false))
                                              .ToArray();
@@ -214,6 +228,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         int subject1Id = await CreateSubjectInDb("Math");
         int subject2Id = await CreateSubjectInDb("Science");
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student]);
+
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
@@ -248,6 +265,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject2Id });
 
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student]);
+
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
 
@@ -277,6 +297,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         int subject1Id = await CreateSubjectInDb("Math");
 
         await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
+
+        _mockUserRepository.Setup(x => x.GetRolesByUserIdAsync(userId))
+            .ReturnsAsync([Role.Student]);
 
         Student? student = await _repository.GetStudentByUserIdAsync(userId);
         Assert.That(student, Is.Not.Null);
