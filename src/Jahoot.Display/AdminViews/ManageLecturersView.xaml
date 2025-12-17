@@ -62,7 +62,7 @@
                                         <Button Click="DisableLecturer_Click" CommandParameter="{Binding}" 
                                                 Background="Transparent" BorderThickness="0" Cursor="Hand"
                                                 HorizontalAlignment="Center" Padding="4" ToolTip="Disable Lecturer" Margin="0,0,5,0">
-                                            <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.84 19.36,15.53 18.29,16.88L5.12,3.71C6.47,2.64 8.16,2 12,4M4,12C4,10.16 4.64,8.47 5.71,7.12L18.88,20.29C17.53,21.36 15.84,22 12,22A8,8 0 0,1 4,12Z" 
+                                            <Path Data="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M12,4C9.91,4 8.03,4.81 6.64,6.13L17.87,17.36C19.19,15.97 20,14.09 20,12C20,7.59 16.41,4 12,4M4,12C4,14.09 4.81,15.97 6.13,17.36L17.36,6.13C15.97,4.81 14.09,4 12,4C7.59,4 4,7.59 4,12Z" 
                                                   Fill="#FFA500" 
                                                   Stretch="Uniform" Width="16" Height="16"/>
                                         </Button>

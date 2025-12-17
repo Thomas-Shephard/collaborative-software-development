@@ -70,7 +70,12 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
 
-        MessageBox.Show($"Disable feature for {lecturer.Name} is not yet implemented.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        var result = MessageBox.Show($"Are you sure you want to disable this account?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (result == MessageBoxResult.Yes)
+        {
+            // Pending Thomas's work to disable a lecturer
+            MessageBox.Show($"Disable feature does not exist yet", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 
     private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
@@ -78,7 +83,7 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
 
-        var result = MessageBox.Show($"Are you sure you want to delete {lecturer.Name}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        var result = MessageBox.Show($"Warning: This action is permanent. Are you sure you want to delete this account?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result == MessageBoxResult.Yes)
         {
              try
