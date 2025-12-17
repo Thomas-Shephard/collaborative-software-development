@@ -45,7 +45,7 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
 
     public async Task<Student?> GetStudentByUserIdAsync(int userId)
     {
-        const string query = """
+        const string studentQuery = """
                              SELECT user.*, student.*, lecturer.is_admin
                              FROM Student student
                                       JOIN User user ON student.user_id = user.user_id
@@ -53,9 +53,25 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
                              WHERE student.user_id = @UserId
                              """;
 
-        IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(query, MapStudent, new { UserId = userId }, splitOn: "is_admin");
+        Student? student = (await connection.QueryAsync<StudentData, bool?, Student>(studentQuery, MapStudent, new { UserId = userId }, splitOn: "is_admin"))
+            .SingleOrDefault();
 
-        return students.SingleOrDefault();
+        if (student is null)
+        {
+            return null;
+        }
+
+        const string subjectQuery = """
+                                    SELECT subject.*
+                                    FROM Subject subject
+                                             JOIN StudentSubject student_subject ON subject.subject_id = student_subject.subject_id
+                                    WHERE student_subject.student_id = @StudentId
+                                    """;
+
+        IEnumerable<Subject> subjects = await connection.QueryAsync<Subject>(subjectQuery, new { student.StudentId });
+        student.Subjects = subjects.ToList();
+
+        return student;
     }
 
     public async Task<IEnumerable<Student>> GetStudentsByStatusAsync(StudentAccountStatus status)
@@ -68,7 +84,7 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
         };
 
-        const string query = """
+        const string studentQuery = """
                              SELECT user.*, student.*, lecturer.is_admin
                              FROM Student student
                                       JOIN User user ON student.user_id = user.user_id
@@ -76,22 +92,71 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
                              WHERE student.account_status = @Status
                              """;
 
-        return await connection.QueryAsync<StudentData, bool?, Student>(query, MapStudent, new { Status = statusString }, splitOn: "is_admin");
+        IEnumerable<Student> students = await connection.QueryAsync<StudentData, bool?, Student>(studentQuery, MapStudent, new { Status = statusString }, splitOn: "is_admin");
+        List<Student> studentList = students.ToList();
+
+        if (studentList.Count == 0)
+        {
+            return studentList;
+        }
+
+        const string subjectQuery = """
+                                    SELECT student_subject.student_id, subject.*
+                                    FROM Subject subject
+                                             JOIN StudentSubject student_subject ON subject.subject_id = student_subject.subject_id
+                                    WHERE student_subject.student_id IN @StudentIds
+                                    """;
+
+        IEnumerable<(int StudentId, Subject Subject)> subjects = await connection.QueryAsync<int, Subject, (int StudentId, Subject Subject)>(
+            subjectQuery,
+            (studentId, subject) => (studentId, subject),
+            new { StudentIds = studentList.Select(s => s.StudentId) },
+            splitOn: "subject_id");
+
+        Dictionary<int, List<Subject>> subjectsByStudent = subjects.GroupBy(x => x.StudentId)
+                                                                   .ToDictionary(g => g.Key, g => g.Select(x => x.Subject).ToList());
+
+        foreach (Student student in studentList.Where(student => subjectsByStudent.ContainsKey(student.StudentId)))
+        {
+            student.Subjects = subjectsByStudent[student.StudentId];
+        }
+
+        return studentList;
     }
 
     public async Task UpdateStudentAsync(Student student)
     {
-        string statusString = student.AccountStatus switch
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        try
         {
-            StudentAccountStatus.PendingApproval => "pending_approval",
-            StudentAccountStatus.Active => "active",
-            StudentAccountStatus.Disabled => "disabled",
-            _ => throw new ArgumentOutOfRangeException(nameof(student), student.AccountStatus, null)
-        };
+            string statusString = student.AccountStatus switch
+            {
+                StudentAccountStatus.PendingApproval => "pending_approval",
+                StudentAccountStatus.Active => "active",
+                StudentAccountStatus.Disabled => "disabled",
+                _ => throw new ArgumentOutOfRangeException(nameof(student), student.AccountStatus, null)
+            };
 
-        const string query = "UPDATE Student SET account_status = @AccountStatus WHERE student_id = @StudentId";
+            const string updateStudentQuery = "UPDATE Student SET account_status = @AccountStatus WHERE student_id = @StudentId";
+            await connection.ExecuteAsync(updateStudentQuery, new { AccountStatus = statusString, student.StudentId }, transaction);
 
-        await connection.ExecuteAsync(query, new { AccountStatus = statusString, student.StudentId });
+            const string deleteSubjectsQuery = "DELETE FROM StudentSubject WHERE student_id = @StudentId";
+            await connection.ExecuteAsync(deleteSubjectsQuery, new { student.StudentId }, transaction);
+
+            if (student.Subjects.Any())
+            {
+                const string insertSubjectsQuery = "INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)";
+                await connection.ExecuteAsync(insertSubjectsQuery, student.Subjects.Select(s => new { student.StudentId, s.SubjectId }), transaction);
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     private static Student MapStudent(StudentData studentData, bool? isAdmin)
@@ -129,7 +194,8 @@ public class StudentRepository(IDbConnection connection) : IStudentRepository
             CreatedAt = studentData.CreatedAt,
             UpdatedAt = studentData.UpdatedAt,
             StudentId = studentData.StudentId,
-            AccountStatus = status
+            AccountStatus = status,
+            Subjects = []
         };
     }
 }

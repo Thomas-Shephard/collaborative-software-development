@@ -21,7 +21,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = "John Doe",
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = [ 1 ]
         };
 
         List<ValidationResult> results = ValidateModel(model);
@@ -36,7 +37,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = null!,
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = []
         };
 
         List<ValidationResult> results = ValidateModel(model);
@@ -52,7 +54,8 @@ public class UpdateStudentRequestModelTests
         {
             Name = new string('A', 71), // MaxLength is 70
             Email = "john.doe@example.com",
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = [ 1, 2, 3 ]
         };
 
         List<ValidationResult> results = ValidateModel(model);
@@ -71,12 +74,34 @@ public class UpdateStudentRequestModelTests
         {
             Name = "John Doe",
             Email = email!,
-            AccountStatus = StudentAccountStatus.Active
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = []
         };
 
         List<ValidationResult> results = ValidateModel(model);
 
         Assert.That(results, Has.Count.EqualTo(1));
         Assert.That(results[0].MemberNames, Contains.Item(nameof(UpdateStudentRequestModel.Email)));
+    }
+
+    [Test]
+    public void Validate_DuplicateSubjectIds_ReturnsError()
+    {
+        UpdateStudentRequestModel model = new()
+        {
+            Name = "John Doe",
+            Email = "john.doe@example.com",
+            AccountStatus = StudentAccountStatus.Active,
+            SubjectIds = [1, 1]
+        };
+
+        List<ValidationResult> results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results[0].MemberNames, Contains.Item(nameof(UpdateStudentRequestModel.SubjectIds)));
+            Assert.That(results[0].ErrorMessage, Does.Contain("must not contain duplicate elements"));
+        }
     }
 }

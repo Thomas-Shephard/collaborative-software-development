@@ -50,7 +50,8 @@ public class ListStudentsControllerTests
                 PasswordHash = "hash1",
                 Roles = new List<Role> { Role.Student },
                 StudentId = 101,
-                AccountStatus = StudentAccountStatus.PendingApproval
+                AccountStatus = StudentAccountStatus.PendingApproval,
+                Subjects = []
             },
 
             new()
@@ -61,7 +62,8 @@ public class ListStudentsControllerTests
                 PasswordHash = "hash2",
                 Roles = new List<Role> { Role.Student },
                 StudentId = 102,
-                AccountStatus = StudentAccountStatus.PendingApproval
+                AccountStatus = StudentAccountStatus.PendingApproval,
+                Subjects = []
             }
         ];
 
@@ -79,10 +81,10 @@ public class ListStudentsControllerTests
         Assert.That(passwordHashProperty, Is.Not.Null);
         Assert.That(passwordHashProperty!.GetCustomAttribute<JsonIgnoreAttribute>(), Is.Not.Null, "PasswordHash should be decorated with [JsonIgnore]");
 
-        IEnumerable<StudentModel>? returnedStudents = okResult.Value as IEnumerable<StudentModel>;
+        StudentModel[]? returnedStudents = (okResult.Value as IEnumerable<StudentModel>)?.ToArray();
         Assert.That(returnedStudents, Is.Not.Null);
-        Assert.That(returnedStudents!.Count(), Is.EqualTo(2));
-        
+        Assert.That(returnedStudents, Has.Length.EqualTo(2));
+
         _studentRepositoryMock.Verify(repo => repo.GetStudentsByStatusAsync(status), Times.Once);
     }
 

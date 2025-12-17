@@ -9,7 +9,7 @@ namespace Jahoot.WebApi.Controllers.Student;
 [Route("api/student/{userId:int}")]
 [ApiController]
 [Tags("Student")]
-public class UpdateStudentController(IStudentRepository studentRepository, IUserRepository userRepository) : ControllerBase
+public class UpdateStudentController(IStudentRepository studentRepository, IUserRepository userRepository, ISubjectRepository subjectRepository) : ControllerBase
 {
     [HttpPut]
     [Authorize(Policy = nameof(Role.Lecturer))]
@@ -32,9 +32,23 @@ public class UpdateStudentController(IStudentRepository studentRepository, IUser
             return Conflict("A user with this email address already exists.");
         }
 
+        List<Jahoot.Core.Models.Subject> subjects = [];
+        List<Core.Models.Subject> retrievedSubjects = (await subjectRepository.GetSubjectsByIdsAsync(requestModel.SubjectIds)).ToList();
+
+        if (retrievedSubjects.Count != requestModel.SubjectIds.Count)
+        {
+            HashSet<int> retrievedIds = retrievedSubjects.Select(s => s.SubjectId).ToHashSet();
+            IEnumerable<int> missingIds = requestModel.SubjectIds.Where(id => !retrievedIds.Contains(id));
+            return BadRequest($"Subject with IDs {string.Join(", ", missingIds)} not found.");
+        }
+
+        Dictionary<int, Core.Models.Subject> subjectMap = retrievedSubjects.ToDictionary(s => s.SubjectId);
+        subjects.AddRange(requestModel.SubjectIds.Select(id => subjectMap[id]));
+
         student.AccountStatus = requestModel.AccountStatus;
         student.Name = requestModel.Name;
         student.Email = requestModel.Email;
+        student.Subjects = subjects.AsReadOnly();
 
         await userRepository.UpdateUserAsync(student);
         await studentRepository.UpdateStudentAsync(student);

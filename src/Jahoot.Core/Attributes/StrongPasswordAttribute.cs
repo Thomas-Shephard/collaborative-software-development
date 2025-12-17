@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Jahoot.Core.Attributes;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public class StrongPasswordAttribute : ValidationAttribute
 {
     public StrongPasswordAttribute()
