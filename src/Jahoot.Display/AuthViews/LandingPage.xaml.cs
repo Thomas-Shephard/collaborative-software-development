@@ -1,4 +1,4 @@
-﻿using Jahoot.Display.Services;
+using Jahoot.Display.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
 using System.Windows.Input;
@@ -7,13 +7,13 @@ using Jahoot.Core.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display;
-public partial class LoginPage : Window
+public partial class LandingPage : Window
 {
     private readonly IAuthService _authService;
     private readonly LecturerViews.LecturerDashboard _lecturerDashboard;
     private readonly IServiceProvider _serviceProvider;
 
-    public LoginPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard, IServiceProvider serviceProvider)
+    public LandingPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _authService = authService;
@@ -23,12 +23,12 @@ public partial class LoginPage : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        LoginErrorBanner.Visibility = Visibility.Collapsed;
+        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.IsSuccess = false;
 
         if (!new EmailAddressAttribute().IsValid(SignInEmailTextBox.Text))
         {
-            LoginErrorText.Text = "Please enter a valid email address.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = "Please enter a valid email address.";
             return;
         }
 
@@ -49,58 +49,70 @@ public partial class LoginPage : Window
             }
             else
             {
-                LoginErrorText.Text = result.ErrorMessage;
-                LoginErrorBanner.Visibility = Visibility.Visible;
+                if (result.ErrorMessage?.Contains("approved") == true)
+                {
+                     FeedbackBox.Message = "Your account hasn't been approved yet.";
+                }
+                else
+                {
+                     FeedbackBox.Message = result.ErrorMessage ?? "Login failed.";
+                }
             }
         }
         catch 
         {
-            LoginErrorText.Text = $"An error occurred.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = $"An error occurred.";
         }
     }
 
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
-        LoginErrorBanner.Visibility = Visibility.Collapsed;
+        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.IsSuccess = false;
 
         var name = RegisterFullNameTextBox.Text;
         var email = RegisterEmailTextBox.Text;
         var password = RegisterPasswordBox.Password;
         var confirmPassword = RegisterConfirmPasswordBox.Password;
 
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 70)
+        if (string.IsNullOrWhiteSpace(name) || name.Length < 2 || name.Length > 70)
         {
-            LoginErrorText.Text = name.Length > 70 ? "Full Name cannot exceed 70 characters." : "Full Name is required.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                FeedbackBox.Message = "Full Name is required.";
+            }
+            else if (name.Length < 2)
+            {
+                 FeedbackBox.Message = "Your full name should be at least two characters.";
+            }
+            else
+            {
+                 FeedbackBox.Message = "Full Name cannot exceed 70 characters.";
+            }
             return;
         }
 
         if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
         {
-            LoginErrorText.Text = "Please enter a valid email address.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = "Please enter a valid email address.";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(password))
         {
-            LoginErrorText.Text = "Password is required.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = "Password is required.";
             return;
         }
 
         var strongPasswordAttribute = new StrongPasswordAttribute();
         if (!strongPasswordAttribute.IsValid(password))
         {
-            LoginErrorText.Text = strongPasswordAttribute.ErrorMessage;
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = strongPasswordAttribute.ErrorMessage ?? "Password does not meet requirements.";
             return;
         }
         if (password != confirmPassword)
         {
-            LoginErrorText.Text = "Passwords do not match.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = "Passwords do not match.";
             return;
         }
 
@@ -115,7 +127,9 @@ public partial class LoginPage : Window
 
             if (result.Success)
             {
-                MessageBox.Show("Registration successful! Please sign in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                FeedbackBox.IsSuccess = true;
+                FeedbackBox.Message = "Your account is now pending registration by your lecturer.";
+                
                 RegisterFullNameTextBox.Clear();
                 RegisterEmailTextBox.Clear();
                 RegisterPasswordBox.Clear();
@@ -123,14 +137,12 @@ public partial class LoginPage : Window
             }
             else
             {
-                LoginErrorText.Text = result.ErrorMessage;
-                LoginErrorBanner.Visibility = Visibility.Visible;
+                FeedbackBox.Message = result.ErrorMessage ?? "Registration failed.";
             }
         }
         catch
         {
-            LoginErrorText.Text = $"An error occurred.";
-            LoginErrorBanner.Visibility = Visibility.Visible;
+            FeedbackBox.Message = $"An error occurred.";
         }
     }
 
@@ -141,11 +153,19 @@ public partial class LoginPage : Window
         forgotPasswordWindow.ShowDialog();
     }
 
-    private void SignInPasswordBox_KeyDown(object sender, KeyEventArgs e)
+    private void SignInForm_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter)
+        if (e.Key == Key.Enter)
         {
             LoginButton_Click(sender, e);
+        }
+    }
+
+    private void RegisterForm_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            RegisterButton_Click(sender, e);
         }
     }
 }

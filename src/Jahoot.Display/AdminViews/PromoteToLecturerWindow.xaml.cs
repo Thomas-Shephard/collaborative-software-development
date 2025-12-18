@@ -4,14 +4,15 @@ using Jahoot.Display.Services;
 using System.Windows;
 using Jahoot.Core.Attributes;
 using System.ComponentModel.DataAnnotations;
+using System.Windows.Input;
 
 namespace Jahoot.Display.AdminViews;
 
-public partial class AssignLecturerRoleWindow : Window
+public partial class PromoteToLecturerWindow : Window
 {
     private readonly ILecturerService _lecturerService;
 
-    public AssignLecturerRoleWindow(ILecturerService lecturerService)
+    public PromoteToLecturerWindow(ILecturerService lecturerService)
     {
         InitializeComponent();
         _lecturerService = lecturerService;
@@ -25,14 +26,15 @@ public partial class AssignLecturerRoleWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        ErrorText.Visibility = Visibility.Collapsed;
+        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.IsSuccess = false;
         var email = EmailTextBox.Text.Trim();
         var isAdmin = IsAdminCheckBox.IsChecked.GetValueOrDefault();
 
         if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
         {
-            ShowError("Please enter a valid email address.");
-            return;
+             FeedbackBox.Message = "Please enter a valid email address.";
+             return;
         }
 
         var request = new AssignLecturerRoleRequestModel
@@ -50,13 +52,15 @@ public partial class AssignLecturerRoleWindow : Window
         }
         else
         {
-            ShowError(result.ErrorMessage ?? "An error occurred.");
+             FeedbackBox.Message = result.ErrorMessage ?? "An error occurred.";
         }
     }
 
-    private void ShowError(string message)
+    private void Form_KeyDown(object sender, KeyEventArgs e)
     {
-        ErrorText.Text = message;
-        ErrorText.Visibility = Visibility.Visible;
+        if (e.Key == Key.Enter)
+        {
+            Save_Click(sender, e);
+        }
     }
 }

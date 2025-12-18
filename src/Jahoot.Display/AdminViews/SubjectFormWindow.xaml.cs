@@ -2,6 +2,7 @@ using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Display.Services;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Jahoot.Display.AdminViews;
 
@@ -38,13 +39,13 @@ public partial class SubjectFormWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        ErrorText.Visibility = Visibility.Collapsed;
+        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.IsSuccess = false;
         var name = NameTextBox.Text.Trim();
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            ErrorText.Text = "Name is required.";
-            ErrorText.Visibility = Visibility.Visible;
+            FeedbackBox.Message = "Name is required.";
             return;
         }
 
@@ -59,8 +60,15 @@ public partial class SubjectFormWindow : Window
         }
         else
         {
-            ErrorText.Text = result.ErrorMessage ?? "An error occurred.";
-            ErrorText.Visibility = Visibility.Visible;
+            FeedbackBox.Message = result.ErrorMessage ?? "An error occurred.";
+        }
+    }
+
+    private void Form_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            Save_Click(sender, e);
         }
     }
 }
