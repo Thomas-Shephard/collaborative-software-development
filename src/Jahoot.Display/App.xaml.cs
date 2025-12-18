@@ -1,11 +1,11 @@
 using Jahoot.Display.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Windows;
+using Jahoot.Display.ViewModels;
 
 namespace Jahoot.Display;
 
@@ -48,14 +48,7 @@ public partial class App : Application
 
         services.AddSingleton<HttpClient>(sp => new HttpClient
         {
-            services.AddSingleton<ISecureStorageService, SecureStorageService>();
-
-            string baseAddress = _configuration?.GetValue<string>("BaseAddress")
-                                 ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
-
-            services.AddSingleton(new HttpClient
-            {
-                BaseAddress = new Uri(baseAddress)
+            BaseAddress = new Uri(baseAddress)
             });
             services.AddSingleton<IHttpService, HttpService>();
             services.AddTransient<IAuthService, AuthService>();
