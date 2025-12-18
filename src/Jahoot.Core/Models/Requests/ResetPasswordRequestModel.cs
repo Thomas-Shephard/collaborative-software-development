@@ -3,7 +3,7 @@ using Jahoot.Core.Attributes;
 
 namespace Jahoot.Core.Models.Requests;
 
-public class ResetPasswordRequestModel
+public class ResetPasswordRequestModel : IEmailRequest
 {
     [Required]
     [EmailAddress]
