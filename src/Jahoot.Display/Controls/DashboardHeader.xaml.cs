@@ -1,7 +1,12 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Jahoot.Core.Models;
+using Jahoot.Display.Services;
 
 namespace Jahoot.Display.Controls
 {
@@ -56,31 +61,42 @@ namespace Jahoot.Display.Controls
             try
             {
                 var currentWindow = Window.GetWindow(this);
-                if (currentWindow == null || !currentWindow.IsLoaded) return;
+                if (currentWindow == null || !currentWindow.IsLoaded)
+                {
+                    Debug.WriteLine($"[DashboardHeader] Cannot change role: Window is null or not loaded. Role: {newRole}");
+                    return;
+                }
 
                 var app = Application.Current as App;
-                if (app?.ServiceProvider == null) return;
-                
-                // Determine which dashboard to navigate to
-                Window? newDashboard = newRole switch
+                if (app?.ServiceProvider == null)
                 {
-                    "Student" when currentWindow is not StudentViews.StudentDashboard 
-                        => app.ServiceProvider.GetRequiredService<StudentViews.StudentDashboard>(),
-                    "Lecturer" when currentWindow is not LecturerViews.LecturerDashboard 
-                        => app.ServiceProvider.GetRequiredService<LecturerViews.LecturerDashboard>(),
-                    _ => null
-                };
+                    Debug.WriteLine("[DashboardHeader] Cannot change role: ServiceProvider is null");
+                    return;
+                }
 
-                if (newDashboard != null)
+                var navigationService = app.ServiceProvider.GetRequiredService<IDashboardNavigationService>();
+                
+                bool success = navigationService.NavigateToDashboard(newRole, currentWindow);
+                
+                if (!success)
                 {
-                    newDashboard.Show();
-                    currentWindow.Close();
+                    Debug.WriteLine($"[DashboardHeader] Navigation to {newRole} dashboard failed");
                 }
             }
-            catch
+            catch (InvalidOperationException ex)
             {
-                // Silently fail if role switching doesn't work
-                // This prevents crashes during initialization
+                Debug.WriteLine($"[DashboardHeader] Service resolution failed: {ex.Message}");
+                Trace.TraceError($"DashboardHeader role change failed - DI issue: {ex}");
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.WriteLine($"[DashboardHeader] Invalid navigation parameter: {ex.Message}");
+                Trace.TraceError($"DashboardHeader role change failed - Invalid argument: {ex}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[DashboardHeader] Unexpected error during role change: {ex.Message}");
+                Trace.TraceError($"DashboardHeader role change failed - Unexpected error: {ex}");
             }
         }
 

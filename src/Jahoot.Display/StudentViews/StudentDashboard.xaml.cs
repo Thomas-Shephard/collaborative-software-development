@@ -1,9 +1,9 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using Jahoot.Display.Models;
 
 namespace Jahoot.Display.StudentViews
 {
@@ -198,15 +198,5 @@ namespace Jahoot.Display.StudentViews
                 new TabItem { Header = "Calendar" }
             };
         }
-    }
-
-    public class TestItem
-    {
-        public required string Icon { get; set; }
-        public required string TestName { get; set; }
-        public required string SubjectName { get; set; }
-        public required string DateInfo { get; set; }
-        public required string StatusOrScore { get; set; }
-        public required string StatusLabel { get; set; }
     }
 }

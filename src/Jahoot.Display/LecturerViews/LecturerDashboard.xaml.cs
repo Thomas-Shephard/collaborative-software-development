@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using Jahoot.Display.Models;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -143,21 +144,5 @@ namespace Jahoot.Display.LecturerViews
                 new TabItem { Header = "Leaderboard" }
             };
         }
-    }
-
-    public class RecentActivityItem
-    {
-        public required string StudentInitials { get; set; }
-        public required string DescriptionPrefix { get; set; }
-        public required string TestName { get; set; }
-        public required string TimeAgo { get; set; }
-        public required string Result { get; set; }
-    }
-
-    public class PerformanceSubject
-    {
-        public required string SubjectName { get; set; }
-        public required string ScoreText { get; set; }
-        public required double ScoreValue { get; set; }
     }
 }

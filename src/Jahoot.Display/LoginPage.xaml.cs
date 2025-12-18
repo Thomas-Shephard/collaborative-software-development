@@ -39,11 +39,17 @@ public partial class LoginPage : Window
 
             if (result.Success)
             {
-                // Get the app and create the dashboard when needed
                 var app = (App)Application.Current;
-                var lecturerDashboard = app.ServiceProvider.GetRequiredService<LecturerViews.LecturerDashboard>();
-                lecturerDashboard.Show();
-                this.Close();
+                var navigationService = app.ServiceProvider.GetRequiredService<IDashboardNavigationService>();
+                
+                // Use centralized navigation service with role-based logic
+                bool navigationSuccess = navigationService.NavigateToDashboardByRoles(result.UserRoles, this);
+                
+                if (!navigationSuccess)
+                {
+                    LoginErrorText.Text = "Unable to navigate to dashboard. Please try again.";
+                    LoginErrorBanner.Visibility = Visibility.Visible;
+                }
             }
             else
             {
