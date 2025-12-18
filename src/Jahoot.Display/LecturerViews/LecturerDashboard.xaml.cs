@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -30,10 +31,33 @@ namespace Jahoot.Display.LecturerViews
 
                 UserControl? view = Activator.CreateInstance(viewType) as UserControl;
                 if (view == null) return;
-
-                if (view is not StudentManagementView)
+                
+                // Determine the corresponding ViewModel type
+                Type? viewModelType = null;
+                if (viewType == typeof(LecturerOverviewView))
                 {
-                    view.DataContext = viewModel;
+                    // Assuming LecturerOverviewViewModel is created and registered
+                    viewModelType = typeof(LecturerOverviewViewModel);
+                }
+                else if (viewType == typeof(StudentManagementView))
+                {
+                    viewModelType = typeof(StudentManagementViewModel);
+                }
+                else if (viewType == typeof(TestManagementView))
+                {
+                    viewModelType = typeof(TestManagementViewModel);
+                }
+                // Add more conditions for other views as needed
+
+                if (viewModelType != null)
+                {
+                    view.DataContext = ((App)Application.Current).ServiceProvider.GetRequiredService(viewModelType);
+                }
+                else
+                {
+                    // Fallback or error handling if no ViewModel is found for the ViewType
+                    // For now, keep existing behavior for unmapped views, but this should ideally not happen
+                    view.DataContext = viewModel; 
                 }
                 
                 viewModel.CurrentView = view;

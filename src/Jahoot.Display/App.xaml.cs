@@ -59,6 +59,7 @@
             services.AddTransient<LecturerViews.LecturerDashboard>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<LecturerViews.TestManagementViewModel>();
+            services.AddTransient<LecturerViews.LecturerOverviewViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }
 

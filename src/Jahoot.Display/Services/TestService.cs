@@ -22,7 +22,17 @@ namespace Jahoot.Display.Services
             {
                 uri += $"?subjectId={subjectId.Value}";
             }
-            return await _httpService.GetAsync<IEnumerable<Test>>(uri) ?? [];
+            System.Diagnostics.Debug.WriteLine($"TestService: Calling GET {uri}");
+            var result = await _httpService.GetAsync<IEnumerable<Test>>(uri);
+            if (result == null)
+            {
+                System.Diagnostics.Debug.WriteLine("TestService: GetAsync returned null.");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"TestService: GetAsync returned {result.Count()} tests.");
+            }
+            return result ?? [];
         }
 
         public async Task<Result> CreateTest(Test test)

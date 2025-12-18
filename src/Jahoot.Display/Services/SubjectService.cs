@@ -16,6 +16,11 @@ public class SubjectService(IHttpService httpService) : ISubjectService
         return await httpService.GetAsync<IEnumerable<Subject>>(url) ?? [];
     }
 
+    public async Task<IEnumerable<Subject>> GetSubjects()
+    {
+        return await GetAllSubjectsAsync(true);
+    }
+
     public async Task<Result> CreateSubjectAsync(CreateSubjectRequestModel request)
     {
         return await httpService.PostAsync("api/subject", request);

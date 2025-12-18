@@ -8,4 +8,5 @@ public interface ISubjectService
     Task<IEnumerable<Subject>> GetAllSubjectsAsync(bool? isActive = null);
     Task<Result> CreateSubjectAsync(CreateSubjectRequestModel request);
     Task<Result> UpdateSubjectAsync(int id, UpdateSubjectRequestModel request);
+    Task<IEnumerable<Subject>> GetSubjects();
 }
