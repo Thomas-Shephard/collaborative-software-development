@@ -2,7 +2,9 @@ using System.Security.Cryptography;
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Utils;
+using Jahoot.WebApi.Attributes;
 using Jahoot.WebApi.Repositories;
+using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Services.Background;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,17 +13,21 @@ namespace Jahoot.WebApi.Controllers.Auth;
 [ApiController]
 [Route("api/auth/forgot-password")]
 [Tags("Auth")]
-public class ForgotPasswordController(IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IEmailQueue emailQueue) : ControllerBase
+public class ForgotPasswordController(IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IEmailQueue emailQueue, ISecurityLockoutService securityLockoutService) : ControllerBase
 {
     private const string SuccessMessage = "If the email exists, a password reset token has been sent.";
 
     [HttpPost]
+    [SecurityLockout(AlwaysRecord = true)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestModel requestModel)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+
+        string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        await securityLockoutService.ResetAttempts($"IP:{ipAddress}", $"Email:{requestModel.Email}");
 
         User? user = await userRepository.GetUserByEmailAsync(requestModel.Email);
 
