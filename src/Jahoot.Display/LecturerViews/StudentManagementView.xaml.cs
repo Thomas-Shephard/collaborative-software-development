@@ -65,14 +65,24 @@ namespace Jahoot.Display.LecturerViews
         {
             try
             {
-                var approvedStudents = await _studentService.GetStudents(true);
-                var unapprovedStudents = await _studentService.GetStudents(false);
+                var approvedTask = _studentService.GetStudents(true);
+                var unapprovedTask = _studentService.GetStudents(false);
+                await Task.WhenAll(approvedTask, unapprovedTask);
+                var approvedStudents = approvedTask.Result;
+                var unapprovedStudents = unapprovedTask.Result;
+
                 var allStudents = approvedStudents.Concat(unapprovedStudents);
                 Students = new ObservableCollection<Student>(allStudents);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading students: {ex.Message}");
+                MessageBox.Show(
+                    "An error occurred while loading students. Please try again or contact support if the problem persists." +
+                    Environment.NewLine + Environment.NewLine +
+                    $"Details: {ex.Message}",
+                    "Error Loading Students",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

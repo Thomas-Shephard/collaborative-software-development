@@ -1,6 +1,6 @@
-using Jahoot.Core.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display.Services
@@ -19,7 +19,7 @@ namespace Jahoot.Display.Services
             return await _httpService.GetAsync<IEnumerable<Student>>($"api/student/list?isApproved={isApproved}") ?? [];
         }
 
-        public async Task UpdateStudent(int userId, Student student)
+        public async Task<Result> UpdateStudent(int userId, Student student)
         {
             var request = new UpdateStudentRequestModel
             {
@@ -29,12 +29,22 @@ namespace Jahoot.Display.Services
                 IsDisabled = student.IsDisabled,
                 SubjectIds = student.Subjects.ToList().ConvertAll(s => s.SubjectId)
             };
-            await _httpService.PutAsync($"api/student/{userId}", request);
+            var result = await _httpService.PutAsync($"api/student/{userId}", request);
+            if (result is Result operationResult && !operationResult.Success)
+            {
+                throw new InvalidOperationException(operationResult.ErrorMessage ?? "Failed to update student.");
+            }
+            return result;
         }
 
-        public async Task DeleteStudent(int userId)
+        public async Task<Result> DeleteStudent(int userId)
         {
-            await _httpService.DeleteAsync($"api/student/{userId}");
+            var result = await _httpService.DeleteAsync($"api/student/{userId}");
+            if (result is Result operationResult && !operationResult.Success)
+            {
+                throw new InvalidOperationException(operationResult.ErrorMessage ?? "Failed to delete student.");
+            }
+            return result;
         }
     }
 }

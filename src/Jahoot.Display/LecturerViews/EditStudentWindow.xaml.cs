@@ -41,7 +41,7 @@ namespace Jahoot.Display.LecturerViews
                 _originalStudent.Email = StudentCopy.Email;
                 _originalStudent.IsApproved = StudentCopy.IsApproved;
                 _originalStudent.IsDisabled = StudentCopy.IsDisabled;
-                _originalStudent.Subjects = StudentCopy.Subjects; // Assuming Subjects are also editable
+                _originalStudent.Subjects = StudentCopy.Subjects;
 
                 DialogResult = true;
                 Close();
