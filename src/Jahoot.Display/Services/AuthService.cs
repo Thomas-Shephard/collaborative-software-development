@@ -63,11 +63,9 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
     {
         try
         {
-            // Use JwtSecurityTokenHandler to safely parse the token
             var jwtToken = _tokenHandler.ReadJwtToken(token);
             var roles = new List<Role>();
             
-            // JWT role claims use "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" as the key
             const string roleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
             
             var roleClaims = jwtToken.Claims.Where(c => c.Type == roleClaimType);
@@ -82,14 +80,14 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
             
             return roles;
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            // Token format is invalid
+            System.Diagnostics.Trace.TraceError($"JWT token format is invalid: {ex.GetType().Name}");
             return new List<Role>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Any other parsing error
+            System.Diagnostics.Trace.TraceError($"Error parsing JWT token for roles: {ex.GetType().Name}");
             return new List<Role>();
         }
     }
