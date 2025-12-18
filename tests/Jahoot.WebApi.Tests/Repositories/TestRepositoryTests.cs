@@ -556,6 +556,7 @@ public class TestRepositoryTests : RepositoryTestBase
             Assert.That(result[0].StudentName, Is.EqualTo("Student"));
             Assert.That(result[0].ScorePercentage, Is.EqualTo(70.0));
             Assert.That(result[0].TotalPoints, Is.EqualTo(180));
+            Assert.That(result[0].CompletedDate, Is.EqualTo(DateTime.Now).Within(1).Minutes);
         }
     }
 
@@ -588,7 +589,12 @@ public class TestRepositoryTests : RepositoryTestBase
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result[0].TestId, Is.EqualTo(recentTestId));
+            Assert.That(result[0].TestName, Is.EqualTo("Recent Test"));
+            Assert.That(result[0].SubjectName, Is.EqualTo("History"));
             Assert.That(result[0].StudentName, Is.EqualTo("Recent Student"));
+            Assert.That(result[0].ScorePercentage, Is.EqualTo(80.0));
+            Assert.That(result[0].TotalPoints, Is.EqualTo(200));
+            Assert.That(result[0].CompletedDate, Is.EqualTo(DateTime.Now).Within(1).Minutes);
         }
     }
 

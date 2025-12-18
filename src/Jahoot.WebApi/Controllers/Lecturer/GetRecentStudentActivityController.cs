@@ -13,9 +13,10 @@ public class GetRecentStudentActivityController(ITestRepository testRepository) 
 {
     [HttpGet]
     [Authorize(Policy = nameof(Role.Lecturer))]
-    public async Task<IActionResult> GetRecentActivity()
+    public async Task<IActionResult> GetRecentActivity([FromQuery] int? days)
     {
-        IEnumerable<CompletedTestResponse> recentTests = await testRepository.GetRecentCompletedTestsAsync(7);
+        int windowInDays = days.GetValueOrDefault(7);
+        IEnumerable<CompletedTestResponse> recentTests = await testRepository.GetRecentCompletedTestsAsync(windowInDays);
         return Ok(recentTests);
     }
 }

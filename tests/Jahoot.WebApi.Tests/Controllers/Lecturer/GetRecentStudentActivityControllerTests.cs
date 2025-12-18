@@ -19,7 +19,7 @@ public class GetRecentStudentActivityControllerTests
     }
 
     [Test]
-    public async Task GetRecentActivity_ReturnsOkWithTests()
+    public async Task GetRecentActivity_ReturnsOkWithTests_DefaultDays()
     {
         List<CompletedTestResponse> recentTests =
         [
@@ -29,7 +29,21 @@ public class GetRecentStudentActivityControllerTests
 
         _testRepositoryMock.Setup(repo => repo.GetRecentCompletedTestsAsync(7)).ReturnsAsync(recentTests);
 
-        IActionResult result = await _controller.GetRecentActivity();
+        IActionResult result = await _controller.GetRecentActivity(null);
+
+        Assert.That(result, Is.TypeOf<OkObjectResult>());
+        OkObjectResult? okResult = result as OkObjectResult;
+        Assert.That(okResult!.Value, Is.EqualTo(recentTests));
+    }
+
+    [Test]
+    public async Task GetRecentActivity_WithDaysParameter_ReturnsOkWithTests()
+    {
+        List<CompletedTestResponse> recentTests = [new() { TestName = "Test 1", SubjectName = "Sub 1", StudentName = "Student" }];
+        int days = 14;
+        _testRepositoryMock.Setup(repo => repo.GetRecentCompletedTestsAsync(days)).ReturnsAsync(recentTests);
+
+        IActionResult result = await _controller.GetRecentActivity(days);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult? okResult = result as OkObjectResult;
@@ -41,7 +55,7 @@ public class GetRecentStudentActivityControllerTests
     {
         _testRepositoryMock.Setup(repo => repo.GetRecentCompletedTestsAsync(7)).ReturnsAsync([]);
 
-        IActionResult result = await _controller.GetRecentActivity();
+        IActionResult result = await _controller.GetRecentActivity(null);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         OkObjectResult? okResult = result as OkObjectResult;
