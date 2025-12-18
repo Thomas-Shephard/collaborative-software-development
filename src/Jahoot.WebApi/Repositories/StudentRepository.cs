@@ -121,6 +121,18 @@ public class StudentRepository(IDbConnection connection, IUserRepository userRep
         return studentList;
     }
 
+    public async Task<bool> IsUserEnrolledInSubjectAsync(int userId, int subjectId)
+    {
+        const string query = """
+                             SELECT COUNT(1)
+                             FROM StudentSubject student_subject
+                                      JOIN Student student ON student_subject.student_id = student.student_id
+                             WHERE student.user_id = @UserId AND student_subject.subject_id = @SubjectId
+                             """;
+        int count = await connection.ExecuteScalarAsync<int>(query, new { UserId = userId, SubjectId = subjectId });
+        return count > 0;
+    }
+
     public async Task UpdateStudentAsync(Student student)
     {
         using IDbTransaction transaction = connection.BeginTransaction();
