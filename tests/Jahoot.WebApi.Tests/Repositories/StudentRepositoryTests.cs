@@ -56,6 +56,16 @@ public class StudentRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task CreateStudentAsync_MixedCaseEmail_CreatesUserWithLowercaseEmail()
+    {
+        const string mixedCaseEmail = "MiXeD@ExAmPlE.cOm";
+        await _repository.CreateStudentAsync(UserName, mixedCaseEmail, UserPasswordHash);
+
+        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = 'mixed@example.com'");
+        Assert.That(user.Email, Is.EqualTo("mixed@example.com"));
+    }
+
+    [Test]
     public async Task CreateStudentAsync_ClosedConnection_OpensConnectionAndCreatesStudent()
     {
         await Connection.CloseAsync();
