@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Threading.Tasks;
@@ -92,10 +93,14 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                student.IsApproved = true;
-                student.IsDisabled = false;
-                await _studentService.UpdateStudent(student.UserId, student);
-                await LoadStudents();
+                var result = MessageBox.Show($"Are you sure you want to approve {student.Name}?", "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    student.IsApproved = true;
+                    student.IsDisabled = false;
+                    await _studentService.UpdateStudent(student.UserId, student);
+                    await LoadStudents();
+                }
             }
         }
 
@@ -103,24 +108,18 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToReject)
             {
-                // The API prevents unapproving an already approved student.
-                // To maintain the existing local behaviour of removing "rejected" students,
-                // we will delete the student if they are not already approved.
-                // If they are approved, we might consider disabling them instead,
-                // but for now, matching the current local logic (removal)
-                // for unapproved students means deletion.
                 if (!studentToReject.IsApproved)
                 {
-                    await _studentService.DeleteStudent(studentToReject.UserId);
-                    await LoadStudents();
+                    var result = MessageBox.Show($"Are you sure you want to reject {studentToReject.Name}?", "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        await _studentService.DeleteStudent(studentToReject.UserId);
+                        await LoadStudents();
+                    }
                 }
                 else
                 {
-                    // If an approved student is "rejected", perhaps disable them?
-                    // Or show a message that approved students cannot be unapproved.
-                    Debug.WriteLine($"Approved student {studentToReject.Name} cannot be unapproved.");
-                    // For now, doing nothing for approved students that are "rejected"
-                    // to avoid unintended data loss or API errors.
+                    MessageBox.Show($"Approved student {studentToReject.Name} cannot be unapproved.", "Cannot Reject", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
@@ -129,8 +128,12 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToDelete)
             {
-                await _studentService.DeleteStudent(studentToDelete.UserId);
-                await LoadStudents();
+                var result = MessageBox.Show($"Are you sure you want to delete {studentToDelete.Name}?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _studentService.DeleteStudent(studentToDelete.UserId);
+                    await LoadStudents();
+                }
             }
         }
 
@@ -138,9 +141,13 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                student.IsDisabled = false;
-                await _studentService.UpdateStudent(student.UserId, student);
-                await LoadStudents();
+                var result = MessageBox.Show($"Are you sure you want to enable {student.Name}?", "Confirm Enable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    student.IsDisabled = false;
+                    await _studentService.UpdateStudent(student.UserId, student);
+                    await LoadStudents();
+                }
             }
         }
 
@@ -148,9 +155,13 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                student.IsDisabled = true;
-                await _studentService.UpdateStudent(student.UserId, student);
-                await LoadStudents();
+                var result = MessageBox.Show($"Are you sure you want to disable {student.Name}?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    student.IsDisabled = true;
+                    await _studentService.UpdateStudent(student.UserId, student);
+                    await LoadStudents();
+                }
             }
         }
     }

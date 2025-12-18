@@ -34,20 +34,28 @@ namespace Jahoot.Display.LecturerViews
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            _originalStudent.Name = StudentCopy.Name;
-            _originalStudent.Email = StudentCopy.Email;
-            _originalStudent.IsApproved = StudentCopy.IsApproved;
-            _originalStudent.IsDisabled = StudentCopy.IsDisabled;
-            _originalStudent.Subjects = StudentCopy.Subjects; // Assuming Subjects are also editable
+            var result = MessageBox.Show("Are you sure you want to save these changes?", "Confirm Save", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                _originalStudent.Name = StudentCopy.Name;
+                _originalStudent.Email = StudentCopy.Email;
+                _originalStudent.IsApproved = StudentCopy.IsApproved;
+                _originalStudent.IsDisabled = StudentCopy.IsDisabled;
+                _originalStudent.Subjects = StudentCopy.Subjects; // Assuming Subjects are also editable
 
-            DialogResult = true;
-            Close();
+                DialogResult = true;
+                Close();
+            }
         }
 
         private void DiscardButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
-            Close();
+            var result = MessageBox.Show("Are you sure you want to discard these changes?", "Confirm Discard", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                DialogResult = false;
+                Close();
+            }
         }
     }
 }
