@@ -2,6 +2,7 @@ using Jahoot.Core.Models;
 using Jahoot.Display.Services;
 using Jahoot.Display.ViewModels; // Added for BaseViewModel
 using Jahoot.Display.Utilities; // Added for RelayCommand
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ namespace Jahoot.Display.LecturerViews
     public class TestManagementViewModel : BaseViewModel
     {
         private readonly ITestService _testService;
+        private readonly ISubjectService _subjectService;
 
         private ObservableCollection<Test> _tests = new ObservableCollection<Test>();
         public ObservableCollection<Test> Tests
@@ -31,15 +33,18 @@ namespace Jahoot.Display.LecturerViews
         public ICommand ViewTestCommand { get; }
         public ICommand EditTestCommand { get; }
         public ICommand DeleteTestCommand { get; }
+        public ICommand CreateTestCommand { get; }
 
-        public TestManagementViewModel(ITestService testService)
+        public TestManagementViewModel(ITestService testService, ISubjectService subjectService)
         {
             _testService = testService;
+            _subjectService = subjectService;
 
             LoadTestsCommand = new RelayCommand(async _ => await LoadTests());
             ViewTestCommand = new RelayCommand(ViewTest);
             EditTestCommand = new RelayCommand(EditTest);
             DeleteTestCommand = new RelayCommand(DeleteTest);
+            CreateTestCommand = new RelayCommand(async _ => await CreateTest());
 
             LoadTestsCommand.Execute(null);
         }
@@ -94,6 +99,29 @@ namespace Jahoot.Display.LecturerViews
                 {
                     MessageBox.Show($"An error occurred while deleting the test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        private async Task CreateTest()
+        {
+            var createTestViewModel = ((App)Application.Current).ServiceProvider.GetService<CreateTestViewModel>();
+            if (createTestViewModel != null)
+            {
+                var createTestWindow = new CreateTestWindow
+                {
+                    DataContext = createTestViewModel
+                };
+
+                createTestWindow.Owner = Application.Current.MainWindow;
+                createTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                createTestWindow.ShowDialog();
+
+                // Refresh tests after the CreateTestWindow is closed
+                await LoadTests();
+            }
+            else
+            {
+                MessageBox.Show("Failed to initialise CreateTestViewModel.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
