@@ -42,7 +42,7 @@ public class GetSubjectLeaderboardControllerTests
     }
 
     [Test]
-    public async Task GetLeaderboard_ReturnsBadRequest_WhenSubjectDoesNotExist()
+    public async Task GetLeaderboard_ReturnsNotFound_WhenSubjectDoesNotExist()
     {
         const int subjectId = 99;
         _subjectRepositoryMock.Setup(repo => repo.GetSubjectByIdAsync(subjectId))
@@ -50,13 +50,13 @@ public class GetSubjectLeaderboardControllerTests
 
         IActionResult result = await _controller.GetLeaderboard(subjectId);
 
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        BadRequestObjectResult? badRequestResult = result as BadRequestObjectResult;
-        Assert.That(badRequestResult!.Value, Is.EqualTo("No subject with that id exists."));
+        Assert.That(result, Is.TypeOf<NotFoundObjectResult>());
+        NotFoundObjectResult? notFoundResult = result as NotFoundObjectResult;
+        Assert.That(notFoundResult!.Value, Is.EqualTo("No subject with that id exists."));
     }
 
     [Test]
-    public async Task GetLeaderboard_ReturnsBadRequest_WhenSubjectIsDisabled()
+    public async Task GetLeaderboard_ReturnsForbidden_WhenSubjectIsDisabled()
     {
         const int subjectId = 2;
         Core.Models.Subject subject = new() { SubjectId = subjectId, Name = "DisabledMath", IsActive = false };
@@ -66,8 +66,12 @@ public class GetSubjectLeaderboardControllerTests
 
         IActionResult result = await _controller.GetLeaderboard(subjectId);
 
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        BadRequestObjectResult? badRequestResult = result as BadRequestObjectResult;
-        Assert.That(badRequestResult!.Value, Is.EqualTo("The subject is disabled."));
+        Assert.That(result, Is.TypeOf<ObjectResult>());
+        ObjectResult? objectResult = result as ObjectResult;
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(objectResult!.StatusCode, Is.EqualTo(403));
+            Assert.That(objectResult.Value, Is.EqualTo("The subject is disabled."));
+        }
     }
 }

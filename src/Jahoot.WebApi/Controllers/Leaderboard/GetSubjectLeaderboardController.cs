@@ -17,12 +17,12 @@ public class GetSubjectLeaderboardController(ISubjectRepository subjectRepositor
         Core.Models.Subject? subject = await subjectRepository.GetSubjectByIdAsync(subjectId);
         if (subject is null)
         {
-            return BadRequest("No subject with that id exists.");
+            return NotFound("No subject with that id exists.");
         }
 
         if (!subject.IsActive)
         {
-            return BadRequest("The subject is disabled.");
+            return StatusCode(403, "The subject is disabled.");
         }
 
         IEnumerable<LeaderboardEntry> leaderboard = await subjectRepository.GetLeaderboardForSubjectAsync(subjectId);
