@@ -43,7 +43,7 @@ jobs:
                 uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
                 if: github.event_name == 'release' && github.event.action == 'published'
                 with:
-                    files: publish_wpf/Jahoot.exe
+                    files: ./publish_wpf/Jahoot.exe
 
     build-and-test-web-api:
         name: Build and Test Web API
