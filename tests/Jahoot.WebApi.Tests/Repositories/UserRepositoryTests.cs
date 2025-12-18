@@ -25,9 +25,9 @@ public class UserRepositoryTests : RepositoryTestBase
         await Connection.ExecuteAsync("INSERT INTO Lecturer (user_id, is_admin) VALUES (@UserId, @IsAdmin)", new { UserId = userId, IsAdmin = isAdmin });
     }
 
-    private async Task InsertStudent(int userId)
+    private async Task InsertStudent(int userId, bool isApproved = false)
     {
-        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id, is_approved) VALUES (@UserId, @IsApproved)", new { UserId = userId, IsApproved = isApproved });
     }
 
     [Test]
@@ -41,7 +41,8 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = null,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
         await InsertUser(user);
 
@@ -66,10 +67,11 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = null,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
         int userId = await InsertUser(user);
-        await InsertStudent(userId);
+        await InsertStudent(userId, true);
 
         User? result = await _userRepository.GetUserByEmailAsync("student@example.com");
 
@@ -92,7 +94,8 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = null,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
         int userId = await InsertUser(user);
         await InsertLecturer(userId, false); // Not an admin lecturer
@@ -118,7 +121,8 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = null,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
         int userId = await InsertUser(user);
         await InsertLecturer(userId, true); // Admin lecturer
@@ -144,10 +148,11 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = null,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
         int userId = await InsertUser(user);
-        await InsertStudent(userId);
+        await InsertStudent(userId, true);
         await InsertLecturer(userId, false); // Not an admin lecturer
 
         User? result = await _userRepository.GetUserByEmailAsync("studentlecturer@example.com");
@@ -178,7 +183,8 @@ public class UserRepositoryTests : RepositoryTestBase
             PasswordHash = "original_hash",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            Roles = []
+            Roles = [],
+            IsDisabled = false
         };
 
         int userId = await InsertUser(originalUser);
@@ -192,7 +198,8 @@ public class UserRepositoryTests : RepositoryTestBase
             CreatedAt = originalUser.CreatedAt,
             UpdatedAt = DateTime.UtcNow,
             LastLogin = DateTime.UtcNow,
-            Roles = []
+            Roles = [],
+            IsDisabled = true
         };
 
         await _userRepository.UpdateUserAsync(updatedUser);
@@ -206,6 +213,176 @@ public class UserRepositoryTests : RepositoryTestBase
             Assert.That(result.Name, Is.EqualTo(updatedUser.Name));
             Assert.That(result.PasswordHash, Is.EqualTo(updatedUser.PasswordHash));
             Assert.That(result.LastLogin, Is.EqualTo(updatedUser.LastLogin).Within(TimeSpan.FromSeconds(1)));
+            Assert.That(result.IsDisabled, Is.EqualTo(updatedUser.IsDisabled));
+        }
+    }
+
+    [Test]
+    public async Task GetUserByEmailAsync_UserIsDisabled_ReturnsUserWithoutRoles()
+    {
+        User user = new()
+        {
+            Email = "disabled@example.com",
+            Name = "Disabled User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLogin = null,
+            Roles = [],
+            IsDisabled = true
+        };
+        int userId = await InsertUser(user);
+        await Connection.ExecuteAsync("UPDATE User SET is_disabled = TRUE WHERE user_id = @UserId", new { UserId = userId });
+        await InsertStudent(userId, true); // Approved student, but user is disabled
+
+        User? result = await _userRepository.GetUserByEmailAsync("disabled@example.com");
+
+        Assert.That(result, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Email, Is.EqualTo(user.Email));
+            Assert.That(result.Roles, Is.Empty); // No roles because user is disabled
+            Assert.That(result.IsDisabled, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsStudent_ReturnsStudentRole()
+    {
+        User user = new()
+        {
+            Email = "student_role@example.com",
+            Name = "Student Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId, true);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Student]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsLecturer_ReturnsLecturerRole()
+    {
+        User user = new()
+        {
+            Email = "lecturer_role@example.com",
+            Name = "Lecturer Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, false);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Lecturer]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsAdmin_ReturnsAdminAndLecturerRoles()
+    {
+        User user = new()
+        {
+            Email = "admin_role@example.com",
+            Name = "Admin Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertLecturer(userId, true);
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.EquivalentTo([Role.Lecturer, Role.Admin]));
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_StudentNotApproved_ReturnsEmpty()
+    {
+        User user = new()
+        {
+            Email = "unapproved@example.com",
+            Name = "Unapproved Student",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(user);
+        await InsertStudent(userId); // Not approved
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdAsync_UserIsDisabled_ReturnsEmpty()
+    {
+        User user = new()
+        {
+            Email = "disabled_role@example.com",
+            Name = "Disabled Role",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = true
+        };
+        int userId = await InsertUser(user);
+        await Connection.ExecuteAsync("UPDATE User SET is_disabled = TRUE WHERE user_id = @UserId", new { UserId = userId });
+        await InsertStudent(userId, true); // Approved student, but disabled user
+
+        List<Role> roles = await _userRepository.GetRolesByUserIdAsync(userId);
+
+        Assert.That(roles, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRolesByUserIdsAsync_MultipleUsers_ReturnsExpectedRoles()
+    {
+        DateTime now = DateTime.UtcNow;
+        int userId1 = await InsertUser(new User { Email = "u1@test.com", Name = "U1", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertLecturer(userId1, true);
+
+        int userId2 = await InsertUser(new User { Email = "u2@test.com", Name = "U2", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertStudent(userId2, true);
+
+        int userId3 = await InsertUser(new User { Email = "u3@test.com", Name = "U3", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await InsertLecturer(userId3, false);
+
+        int userId4 = await InsertUser(new User { Email = "u4@test.com", Name = "U4", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+        await Connection.ExecuteAsync("UPDATE User SET is_disabled = TRUE WHERE user_id = @UserId", new { UserId = userId4 });
+        await InsertStudent(userId4, true);
+
+        int userId5 = await InsertUser(new User { Email = "u5@test.com", Name = "U5", PasswordHash = "h", Roles = [], CreatedAt = now, UpdatedAt = now });
+
+        int[] userIds = [userId1, userId2, userId3, userId4, userId5];
+
+        Dictionary<int, List<Role>> result = await _userRepository.GetRolesByUserIdsAsync(userIds);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(5));
+            Assert.That(result[userId1], Is.EquivalentTo([Role.Lecturer, Role.Admin]));
+            Assert.That(result[userId2], Is.EquivalentTo([Role.Student]));
+            Assert.That(result[userId3], Is.EquivalentTo([Role.Lecturer]));
+            Assert.That(result[userId4], Is.Empty);
+            Assert.That(result[userId5], Is.Empty);
         }
     }
 }

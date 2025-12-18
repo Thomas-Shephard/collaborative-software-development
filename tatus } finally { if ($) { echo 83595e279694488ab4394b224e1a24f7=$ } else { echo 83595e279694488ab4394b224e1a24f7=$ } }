@@ -1,0 +1,116 @@
+[1mdiff --cc src/Jahoot.Display/App.xaml.cs[m
+[1mindex 295f0a6,1d88b39..0000000[m
+[1m--- a/src/Jahoot.Display/App.xaml.cs[m
+[1m+++ b/src/Jahoot.Display/App.xaml.cs[m
+[36m@@@ -1,42 -1,67 +1,109 @@@[m
+[32m++<<<<<<< HEAD[m
+[32m +using Jahoot.Display.Services;[m
+[32m +using Microsoft.Extensions.DependencyInjection;[m
+[32m +using System.Net.Http;[m
+[32m +using System.Windows;[m
+[32m++=======[m
+[32m+     using Jahoot.Display.Services;[m
+[32m+     using Microsoft.Extensions.DependencyInjection;[m
+[32m+     using System.Net.Http;[m
+[32m+     using System.Windows;[m
+[32m+     using Microsoft.Extensions.Configuration;[m
+[32m+     using System.IO;[m
+[32m+     using System.Reflection;[m
+[32m++>>>>>>> origin/main[m
+  [m
+[31m -    namespace Jahoot.Display;[m
+[32m +namespace Jahoot.Display;[m
+  [m
+[31m -    public partial class App : Application[m
+[32m +public partial class App : Application[m
+[32m +{[m
+[32m +    public IServiceProvider ServiceProvider { get; private set; }[m
+[32m +[m
+[32m +    public App()[m
+      {[m
+[32m++<<<<<<< HEAD[m
+[32m +        var serviceCollection = new ServiceCollection();[m
+[32m +        ConfigureServices(serviceCollection);[m
+[32m +        ServiceProvider = serviceCollection.BuildServiceProvider();[m
+[32m++=======[m
+[32m+         public IServiceProvider ServiceProvider { get; private set; }[m
+[32m+         private IConfigurationRoot? _configuration;[m
+[32m+ [m
+[32m+         public App()[m
+[32m+         {[m
+[32m+             var serviceCollection = new ServiceCollection();[m
+[32m+             ConfigureAppConfiguration(serviceCollection);[m
+[32m+             ConfigureServices(serviceCollection);[m
+[32m+             ServiceProvider = serviceCollection.BuildServiceProvider();[m
+[32m+         }[m
+[32m+ [m
+[32m+         private void ConfigureAppConfiguration(IServiceCollection services)[m
+[32m+         {[m
+[32m+             Assembly assembly = Assembly.GetExecutingAssembly();[m
+[32m+             using Stream? stream = assembly.GetManifestResourceStream("appsettings.json");[m
+[32m+ [m
+[32m+             if (stream is null)[m
+[32m+             {[m
+[32m+                 throw new InvalidOperationException("Embedded appsettings.json not found.");[m
+[32m+             }[m
+[32m+ [m
+[32m+             _configuration = new ConfigurationBuilder()[m
+[32m+                 .AddJsonStream(stream)[m
+[32m+                 .Build();[m
+[32m+ [m
+[32m+             services.AddSingleton<IConfiguration>(_configuration);[m
+[32m+         }[m
+[32m+ [m
+[32m+         private void ConfigureServices(IServiceCollection services)[m
+[32m+         {[m
+[32m+             services.AddSingleton<ISecureStorageService, SecureStorageService>();[m
+[32m+ [m
+[32m+             string baseAddress = _configuration?.GetValue<string>("BaseAddress")[m
+[32m+                                  ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");[m
+[32m+ [m
+[32m+             services.AddSingleton(new HttpClient[m
+[32m+             {[m
+[32m+                 BaseAddress = new Uri(baseAddress)[m
+[32m+             });[m
+[32m+             services.AddSingleton<IHttpService, HttpService>();[m
+[32m+             services.AddTransient<IAuthService, AuthService>();[m
+[32m+             services.AddTransient<ISubjectService, SubjectService>();[m
+[32m+             services.AddTransient<ILecturerService, LecturerService>();[m
+[32m+             services.AddTransient<LoginPage>();[m
+[32m+             services.AddTransient<LecturerViews.LecturerDashboard>();[m
+[32m+             services.AddTransient<Pages.AdminDashboard>();[m
+[32m+         }[m
+[32m+ [m
+[32m+         protected override void OnStartup(StartupEventArgs e)[m
+[32m+         {[m
+[32m+             base.OnStartup(e);[m
+[32m+             var loginPage = ServiceProvider.GetRequiredService<LoginPage>();[m
+[32m+             loginPage.Show();[m
+[32m+         }[m
+[32m++>>>>>>> origin/main[m
+[32m +    }[m
+[32m +[m
+[32m +    private void ConfigureServices(IServiceCollection services)[m
+[32m +    {[m
+[32m +        services.AddSingleton<ISecureStorageService, SecureStorageService>();[m
+[32m +        services.AddSingleton<HttpClient>(new HttpClient[m
+[32m +        {[m
+[32m +            BaseAddress = new Uri("http://localhost")[m
+[32m +        });[m
+[32m +        services.AddTransient<IAuthService, AuthService>();[m
+[32m +        [m
+[32m +        // Register dashboard navigation service as singleton to maintain cache[m
+[32m +        services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();[m
+[32m +        [m
+[32m +        services.AddTransient<LoginPage>();[m
+[32m +        services.AddTransient<LecturerViews.LecturerDashboard>();[m
+[32m +        services.AddTransient<StudentViews.StudentDashboard>();[m
+[32m +    }[m
+[32m +[m
+[32m +    protected override void OnStartup(StartupEventArgs e)[m
+[32m +    {[m
+[32m +        base.OnStartup(e);[m
+[32m +        var loginPage = ServiceProvider.GetRequiredService<LoginPage>();[m
+[32m +        loginPage.Show();[m
+      }[m
+[32m +}[m

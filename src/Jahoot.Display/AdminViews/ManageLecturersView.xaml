@@ -1,0 +1,179 @@
+<UserControl x:Class="Jahoot.Display.AdminViews.ManageLecturersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:Jahoot.Display.Controls"
+             xmlns:local="clr-namespace:Jahoot.Display.AdminViews"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
+        <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
+    </UserControl.Resources>
+    
+    <Grid Background="{StaticResource LightBackgroundColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main Content Area -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Manage Lecturers" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="View and manage lecturer accounts" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="Refresh" Click="Refresh_Click" Margin="0,0,10,0" Padding="10,5" Background="Transparent" BorderBrush="#DDD" BorderThickness="1"/>
+                        <Button Content="+ Create New Lecturer" Click="CreateLecturer_Click" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Lecturers}" 
+                          Style="{StaticResource ManagementDataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="" Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Click="EditLecturer_Click" CommandParameter="{Binding}" 
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                HorizontalAlignment="Center" Padding="4" ToolTip="Edit Lecturer" Margin="0,0,5,0">
+                                            <Path Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z" 
+                                                  Fill="#007ACC" 
+                                                  Stretch="Uniform" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Click="DisableLecturer_Click" CommandParameter="{Binding}" 
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                HorizontalAlignment="Center" Padding="4" Margin="0,0,5,0">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="ToolTip" Value="Disable Lecturer"/>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                                    <Path x:Name="IconPath" 
+                                                                          Data="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" 
+                                                                          Fill="#FFA500" 
+                                                                          Stretch="Uniform" Width="16" Height="16"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                            <Setter Property="ToolTip" Value="Enable Lecturer"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                                            <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" 
+                                                                                  Fill="#FFA500" 
+                                                                                  Stretch="Uniform" Width="16" Height="16"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Click="DeleteLecturer_Click" CommandParameter="{Binding}" 
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                HorizontalAlignment="Center" Padding="4" ToolTip="Delete Lecturer">
+                                            <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" 
+                                                  Fill="#C62828" 
+                                                  Stretch="Uniform" Width="16" Height="16"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="Name" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Border Background="#E0E0E0" CornerRadius="4" Padding="4,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAdmin}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="Admin" FontSize="10" Foreground="#333" FontWeight="SemiBold"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="Email" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Email}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <DataGridTemplateColumn Header="Status" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#E8F5E9"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                        <Setter Property="Background" Value="#FFEBEE"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock FontWeight="SemiBold" FontSize="12">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Active"/>
+                                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                            <Setter Property="Text" Value="Disabled"/>
+                                                            <Setter Property="Foreground" Value="#C62828"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

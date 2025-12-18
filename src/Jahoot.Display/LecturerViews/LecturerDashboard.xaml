@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:util="clr-namespace:Jahoot.Display.Utilities"
         xmlns:controls="clr-namespace:Jahoot.Display.Controls"
+        xmlns:admin="clr-namespace:Jahoot.Display.AdminViews"
         Title="Lecturer Dashboard"
         Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
@@ -25,9 +26,9 @@
                                   AvailableRoles="{Binding AvailableRoles}"
                                   SelectedRole="{Binding SelectedRole}"
                                   UserInitials="{Binding LecturerInitials}"
-                                  SubHeaderText="Manage students, tests, and monitor progress"/>
+                                  SubHeaderText="{Binding HeaderDescription}"/>
 
-        <Grid Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
+        <Grid x:Name="StatsGrid" Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -45,16 +46,9 @@
                                    x:Name="MainTabs"
                                    ItemsSource="{Binding TabItems}"
                                    SelectedIndex="{Binding SelectedTabIndex}"
-                                   SelectionChanged="MainTabs_SelectionChanged"/>
+                                   SelectionChanged="MainTabs_SelectionChanged"
+                                   TabWidthConverterParameter="5"/>
 
-        <Grid Grid.Row="3" Margin="20,10,20,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <controls:RecentActivityView Grid.Column="0" ItemsSource="{Binding RecentActivityItems}"/>
-            <controls:SubjectPerformanceView Grid.Column="1" ItemsSource="{Binding PerformanceSubjects}"/>
-        </Grid>
+        <ContentControl Grid.Row="3" Content="{Binding CurrentView}" Margin="20,10,20,20" />
     </Grid>
 </Window>

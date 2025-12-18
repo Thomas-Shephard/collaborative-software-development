@@ -12,61 +12,147 @@ public class UserRepository(IDbConnection connection) : IUserRepository
         public required string Email { get; init; }
         public required string Name { get; init; }
         public required string PasswordHash { get; init; }
+        public bool IsDisabled { get; init; }
         public DateTime? LastLogin { get; init; }
         public DateTime CreatedAt { get; init; }
         public DateTime UpdatedAt { get; init; }
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
+    private const string BaseSelectQuery = "SELECT * FROM User user";
+
+    public async Task<User?> GetUserByEmailAsync(string email, IDbTransaction? transaction = null)
+    {
+        const string query = $"{BaseSelectQuery} WHERE user.email = @Email";
+        return await GetUserInternalAsync(query, new { Email = email }, transaction);
+    }
+
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        const string query = $"{BaseSelectQuery} WHERE user.user_id = @UserId";
+        return await GetUserInternalAsync(query, new { UserId = userId });
+    }
+
+    public async Task<List<Role>> GetRolesByUserIdAsync(int userId, IDbTransaction? transaction = null)
     {
         const string query = """
-                             SELECT user.*, lecturer.is_admin,student.student_id
+                             SELECT user.is_disabled, lecturer.is_admin, student.is_approved AS is_student_approved
                              FROM User user
                                       LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
                                       LEFT JOIN Student student ON user.user_id = student.user_id
-                             WHERE user.email = @Email
+                             WHERE user.user_id = @UserId
                              """;
 
-        IEnumerable<User> users = await connection.QueryAsync<UserData, bool?, int?, User>(
-            query,
-            (userData, isAdmin, studentId) =>
-            {
-                List<Role> roles = [];
+        dynamic? result = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new { UserId = userId });
 
-                if (isAdmin.HasValue)
+        if (result is null || result.is_disabled)
+        {
+            return [];
+        }
+
+        List<Role> roles = [];
+
+        bool? lecturerIsAdmin = result?.is_admin;
+        bool? studentIsApproved = result?.is_student_approved;
+
+        if (lecturerIsAdmin.HasValue)
+        {
+            roles.Add(Role.Lecturer);
+            if (lecturerIsAdmin.Value)
+            {
+                roles.Add(Role.Admin);
+            }
+        }
+
+        if (studentIsApproved.HasValue && studentIsApproved.Value)
+        {
+            roles.Add(Role.Student);
+        }
+
+        return roles;
+    }
+
+    public async Task<Dictionary<int, List<Role>>> GetRolesByUserIdsAsync(IEnumerable<int> userIds, IDbTransaction? transaction = null)
+    {
+        const string query = """
+                             SELECT user.user_id, user.is_disabled, lecturer.is_admin, student.is_approved AS is_student_approved
+                             FROM User user
+                                      LEFT JOIN Lecturer lecturer ON user.user_id = lecturer.user_id
+                                      LEFT JOIN Student student ON user.user_id = student.user_id
+                             WHERE user.user_id IN @UserIds
+                             """;
+
+        IEnumerable<dynamic> results = await connection.QueryAsync<dynamic>(query, new { UserIds = userIds }, transaction);
+
+        Dictionary<int, List<Role>> rolesByUserId = [];
+
+        foreach (dynamic result in results)
+        {
+            int userId = (int)result.user_id;
+            List<Role> roles = [];
+
+            if (!result.is_disabled)
+            {
+                bool? lecturerIsAdmin = result.is_admin;
+                bool? studentIsApproved = result.is_student_approved;
+
+                if (lecturerIsAdmin.HasValue)
                 {
                     roles.Add(Role.Lecturer);
-                    if (isAdmin.Value)
+                    if (lecturerIsAdmin.Value)
                     {
                         roles.Add(Role.Admin);
                     }
                 }
 
-                if (studentId.HasValue)
+                if (studentIsApproved.HasValue && studentIsApproved.Value)
                 {
                     roles.Add(Role.Student);
                 }
+            }
+            
+            rolesByUserId[userId] = roles;
+        }
 
-                return new User
-                {
-                    UserId = userData.UserId,
-                    Email = userData.Email,
-                    Name = userData.Name,
-                    PasswordHash = userData.PasswordHash,
-                    Roles = roles,
-                    LastLogin = userData.LastLogin,
-                    CreatedAt = userData.CreatedAt,
-                    UpdatedAt = userData.UpdatedAt
-                };
-            },
-            new { Email = email },
-            splitOn: "is_admin,student_id");
-
-        return users.SingleOrDefault();
+        return rolesByUserId;
     }
 
-    public async Task UpdateUserAsync(User user)
+    public async Task UpdateUserAsync(User user, IDbTransaction? transaction = null)
     {
-        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin WHERE user_id = @UserId", user);
+        await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin, is_disabled = @IsDisabled WHERE user_id = @UserId", user, transaction);
+    }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        await connection.ExecuteAsync("DELETE FROM User WHERE user_id = @UserId", new { UserId = userId });
+    }
+
+    private async Task<User?> GetUserInternalAsync(string query, object parameters, IDbTransaction? transaction = null)
+    {
+        UserData? userData = await connection.QuerySingleOrDefaultAsync<UserData>(query, parameters, transaction);
+
+        if (userData is null)
+        {
+            return null;
+        }
+
+        List<Role> roles = await GetRolesByUserIdAsync(userData.UserId, transaction);
+
+        return MapUser(userData, roles);
+    }
+
+    private static User MapUser(UserData userData, List<Role> roles)
+    {
+        return new User
+        {
+            UserId = userData.UserId,
+            Email = userData.Email,
+            Name = userData.Name,
+            PasswordHash = userData.PasswordHash,
+            IsDisabled = userData.IsDisabled,
+            Roles = roles,
+            LastLogin = userData.LastLogin,
+            CreatedAt = userData.CreatedAt,
+            UpdatedAt = userData.UpdatedAt
+        };
     }
 }

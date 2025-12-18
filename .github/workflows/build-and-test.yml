@@ -5,13 +5,15 @@ on:
         branches: [ main ]
     pull_request:
         branches: [ main ]
+    release:
+        types: [ published ]
 
 env:
     DOTNET_VERSION: '10.0'
 
 jobs:
-    build-wpf-app:
-        name: Build WPF App
+    build-and-publish-wpf-app:
+        name: Build and Publish WPF App
         runs-on: windows-latest
         steps:
             -   name: Checkout
@@ -20,8 +22,25 @@ jobs:
                 uses: actions/setup-dotnet@v5
                 with:
                     dotnet-version: ${{ env.DOTNET_VERSION }}
-            -   name: Build
-                run: dotnet build src/Jahoot.Display/Jahoot.Display.csproj --configuration Release
+                    cache: true
+                    cache-dependency-path: |
+                        **/*.csproj
+                        **/Directory.Build.props
+            -   name: Publish Jahoot.Display
+                run: |
+                    dotnet publish src/Jahoot.Display/Jahoot.Display.csproj `
+                      --configuration Release `
+                      --runtime win-x64 `
+                      --self-contained false `
+                      -p:PublishSingleFile=true `
+                      -p:IncludeNativeLibrariesForSelfExtract=true `
+                      -p:UseAppHost=true `
+                      --output .\publish_wpf
+            -   name: Upload Jahoot.Display to GitHub Release
+                uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
+                if: github.event_name == 'release' && github.event.action == 'published'
+                with:
+                    files: .\publish_wpf\Jahoot.exe
 
     build-and-test-web-api:
         name: Build and Test Web API
@@ -33,8 +52,12 @@ jobs:
                 uses: actions/setup-dotnet@v5
                 with:
                     dotnet-version: ${{ env.DOTNET_VERSION }}
+                    cache: true
+                    cache-dependency-path: |
+                        **/*.csproj
+                        **/Directory.Build.props
             -   name: Test
-                run: dotnet test backend.slnx --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+                run: dotnet test backend.slnx --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage --settings coverlet.runsettings
             -   name: Install Coverage Checker
                 run: dotnet tool install --global CoverageChecker.CommandLine
             -   name: Check Coverage
@@ -46,3 +69,5 @@ jobs:
                 with:
                     file: ./src/Jahoot.WebApi/Dockerfile
                     push: false
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max
