@@ -101,7 +101,7 @@ public partial class LecturerFormWindow : Window
                 Name = name,
                 Email = email,
                 IsAdmin = isAdmin,
-                IsDisabled = false //TODO: Implement
+                IsDisabled = _lecturer.IsDisabled
             };
 
             result = await _lecturerService.UpdateLecturerAsync(_lecturer.UserId, request);

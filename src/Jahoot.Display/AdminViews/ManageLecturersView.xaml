@@ -61,10 +61,40 @@
                                         </Button>
                                         <Button Click="DisableLecturer_Click" CommandParameter="{Binding}" 
                                                 Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                                HorizontalAlignment="Center" Padding="4" ToolTip="Disable Lecturer" Margin="0,0,5,0">
-                                            <Path Data="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M12,4C9.91,4 8.03,4.81 6.64,6.13L17.87,17.36C19.19,15.97 20,14.09 20,12C20,7.59 16.41,4 12,4M4,12C4,14.09 4.81,15.97 6.13,17.36L17.36,6.13C15.97,4.81 14.09,4 12,4C7.59,4 4,7.59 4,12Z" 
-                                                  Fill="#FFA500" 
-                                                  Stretch="Uniform" Width="16" Height="16"/>
+                                                HorizontalAlignment="Center" Padding="4" Margin="0,0,5,0">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="ToolTip" Value="Disable Lecturer"/>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                                    <Path x:Name="IconPath" 
+                                                                          Data="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" 
+                                                                          Fill="#FFA500" 
+                                                                          Stretch="Uniform" Width="16" Height="16"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                            <Setter Property="ToolTip" Value="Enable Lecturer"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                                            <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" 
+                                                                                  Fill="#FFA500" 
+                                                                                  Stretch="Uniform" Width="16" Height="16"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
                                         </Button>
                                         <Button Click="DeleteLecturer_Click" CommandParameter="{Binding}" 
                                                 Background="Transparent" BorderThickness="0" Cursor="Hand"
@@ -112,9 +142,31 @@
                         <DataGridTemplateColumn Header="Status" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <!-- Placeholder status -->
-                                    <Border CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#E8F5E9">
-                                        <TextBlock Text="Active" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="12"/>
+                                    <Border CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#E8F5E9"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                        <Setter Property="Background" Value="#FFEBEE"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock FontWeight="SemiBold" FontSize="12">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Active"/>
+                                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDisabled}" Value="True">
+                                                            <Setter Property="Text" Value="Disabled"/>
+                                                            <Setter Property="Foreground" Value="#C62828"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
