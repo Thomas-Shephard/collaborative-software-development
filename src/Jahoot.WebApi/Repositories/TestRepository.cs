@@ -216,7 +216,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
         };
     }
 
-    private class TestResultStatsDto
+    private sealed class TestResultStatsDto
     {
         public DateTime Date { get; init; }
         public decimal ScorePercentage { get; init; }
