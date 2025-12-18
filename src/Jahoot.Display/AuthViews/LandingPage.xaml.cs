@@ -128,7 +128,7 @@ public partial class LandingPage : Window
             if (result.Success)
             {
                 FeedbackBox.IsSuccess = true;
-                FeedbackBox.Message = "Your account is now pending registration by your lecturer.";
+                FeedbackBox.Message = "Your account is now pending approval by your lecturer.";
                 
                 RegisterFullNameTextBox.Clear();
                 RegisterEmailTextBox.Clear();
