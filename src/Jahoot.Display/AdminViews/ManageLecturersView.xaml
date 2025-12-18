@@ -18,6 +18,19 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Stats Row -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <controls:StatCard Grid.Column="0" Title="Total Lecturers" Value="{Binding TotalLecturers}" Icon="👨‍🏫" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="1" Title="Active Lecturers" Value="{Binding ActiveLecturers}" Icon="✅" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="2" Title="Disabled Lecturers" Value="{Binding InactiveLecturers}" Icon="🚫"/>
+        </Grid>
+
         <!-- Main Content Area -->
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,0">
             <Grid>

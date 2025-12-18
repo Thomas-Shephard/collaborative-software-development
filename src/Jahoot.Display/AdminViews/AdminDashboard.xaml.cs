@@ -24,7 +24,7 @@ namespace Jahoot.Display.Pages
             if (this.DataContext is AdminDashboardViewModel vm)
             {
                 // Ensure UI elements are initialized
-                if (OverviewContent == null || SubjectsView == null || LecturersView == null || SettingsView == null)
+                if (SubjectsView == null || LecturersView == null)
                     return;
 
                 int index = vm.SelectedTabIndex;
@@ -35,10 +35,8 @@ namespace Jahoot.Display.Pages
         
         private void UpdateVisibility(int index)
         {
-             OverviewContent.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
-             SubjectsView.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
-             LecturersView.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
-             SettingsView.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+             SubjectsView.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+             LecturersView.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }
