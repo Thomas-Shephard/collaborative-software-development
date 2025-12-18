@@ -6,6 +6,21 @@ namespace Jahoot.Display.Controls
 {
     public partial class UserFeedbackBox : UserControl
     {
+        private static readonly SolidColorBrush SuccessBackgroundBrush = CreateFrozenBrush("#D4EDDA");
+        private static readonly SolidColorBrush SuccessBorderBrush = CreateFrozenBrush("#C3E6CB");
+        private static readonly SolidColorBrush SuccessTextBrush = CreateFrozenBrush("#155724");
+
+        private static readonly SolidColorBrush ErrorBackgroundBrush = CreateFrozenBrush("#F8D7DA");
+        private static readonly SolidColorBrush ErrorBorderBrush = CreateFrozenBrush("#F5C6CB");
+        private static readonly SolidColorBrush ErrorTextBrush = CreateFrozenBrush("#721C24");
+
+        private static SolidColorBrush CreateFrozenBrush(string hex)
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            return brush;
+        }
+
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register("Message", typeof(string), typeof(UserFeedbackBox), new PropertyMetadata(string.Empty, OnMessageChanged));
 
@@ -48,19 +63,19 @@ namespace Jahoot.Display.Controls
             if (IsSuccess)
             {
                 // Success Styles
-                ContainerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4EDDA"));
-                ContainerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#C3E6CB"));
-                MessageText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#155724"));
-                IconText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#155724"));
+                ContainerBorder.Background = SuccessBackgroundBrush;
+                ContainerBorder.BorderBrush = SuccessBorderBrush;
+                MessageText.Foreground = SuccessTextBrush;
+                IconText.Foreground = SuccessTextBrush;
                 IconText.Text = "✓";
             }
             else
             {
                 // Error Styles
-                ContainerBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8D7DA"));
-                ContainerBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5C6CB"));
-                MessageText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#721C24"));
-                IconText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#721C24"));
+                ContainerBorder.Background = ErrorBackgroundBrush;
+                ContainerBorder.BorderBrush = ErrorBorderBrush;
+                MessageText.Foreground = ErrorTextBrush;
+                IconText.Foreground = ErrorTextBrush;
                 IconText.Text = "⚠";
             }
         }
