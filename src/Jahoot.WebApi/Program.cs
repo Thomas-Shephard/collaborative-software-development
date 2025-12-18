@@ -1,6 +1,7 @@
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Text;
 using Dapper;
 using Jahoot.WebApi.Extensions;
@@ -32,11 +33,21 @@ public static class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
+        ProxySettings proxySettings = builder.Services.AddAndConfigureFromEnv<ProxySettings>(builder.Configuration, "PROXY");
+
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
+
+            foreach (string ip in proxySettings.TrustedProxies.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (IPAddress.TryParse(ip.Trim(), out IPAddress? address))
+                {
+                    options.KnownProxies.Add(address);
+                }
+            }
         });
 
         DatabaseSettings dbSettings = builder.Services.AddAndConfigureFromEnv<DatabaseSettings>(builder.Configuration, "DB");
@@ -75,12 +86,12 @@ public static class Program
         builder.Services.AddHostedService<EmailBackgroundService>();
 
         JwtSettings jwtSettings = builder.Services.AddAndConfigureFromEnv<JwtSettings>(builder.Configuration, "JWT");
-        LoginAttemptSettings loginAttemptSettings = builder.Services.AddAndConfigure<LoginAttemptSettings>(builder.Configuration, "LoginAttemptSettings");
+        SecurityLockoutSettings securityLockoutSettings = builder.Services.AddAndConfigure<SecurityLockoutSettings>(builder.Configuration, "SecurityLockoutSettings");
         TokenDenySettings tokenDenySettings = builder.Services.AddAndConfigure<TokenDenySettings>(builder.Configuration, "TokenDenySettings");
         builder.Services.AddAndConfigure<ScoringSettings>(builder.Configuration, "ScoringSettings");
 
         builder.Services.AddSingleton<ITokenDenyService>(sp => new TokenDenyService(tokenDenySettings, TimeProvider.System, sp.GetRequiredService<IServiceScopeFactory>()));
-        builder.Services.AddSingleton<ILoginAttemptService>(_ => new LoginAttemptService(loginAttemptSettings, TimeProvider.System));
+        builder.Services.AddSingleton<ISecurityLockoutService>(_ => new SecurityLockoutService(securityLockoutSettings, TimeProvider.System));
         builder.Services.AddSingleton<ITokenService, TokenService>();
         builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
 
@@ -121,10 +132,10 @@ public static class Program
 
         WebApplication app = builder.Build();
 
+        app.UseForwardedHeaders();
         app.MapOpenApi();
         app.MapScalarApiReference("/scalar");
         app.UseHttpsRedirection();
-        app.UseForwardedHeaders();
 
         app.UseStaticFiles();
 

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Jahoot.Core.Models.Requests;
 
-public class ForgotPasswordRequestModel
+public class ForgotPasswordRequestModel : IEmailRequest
 {
     [Required]
     [EmailAddress]
