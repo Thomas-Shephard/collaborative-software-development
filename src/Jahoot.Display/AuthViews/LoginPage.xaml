@@ -114,7 +114,7 @@
                                     <PasswordBox x:Name="SignInPasswordBox" Padding="10" KeyDown="SignInPasswordBox_KeyDown"/>
 
                                     <Grid Margin="0,20,0,0">
-                                        <CheckBox Content="Remember me" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <CheckBox x:Name="RememberMeCheckBox" Content="Remember me (for up to 7 days)" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                         <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <Hyperlink Click="ForgotPassword_Click">
                                             <TextBlock Text="Forgot password?"/>

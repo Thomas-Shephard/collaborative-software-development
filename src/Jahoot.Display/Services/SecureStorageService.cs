@@ -7,6 +7,7 @@ namespace Jahoot.Display.Services;
 public class SecureStorageService : ISecureStorageService
 {
     private readonly string _tokenPath;
+    private string? _cachedToken;
     
     public SecureStorageService()
     {
@@ -14,30 +15,55 @@ public class SecureStorageService : ISecureStorageService
         Directory.CreateDirectory(Path.GetDirectoryName(_tokenPath)!);
     }
     
-    public void SaveToken(string token)
+    public void SaveToken(string token, bool persist)
     {
-        var encryptedData = ProtectedData.Protect(Encoding.UTF8.GetBytes(token), null, DataProtectionScope.CurrentUser);
-        File.WriteAllBytes(_tokenPath, encryptedData);
+        _cachedToken = token;
+
+        if (persist)
+        {
+            var encryptedData = ProtectedData.Protect(Encoding.UTF8.GetBytes(token), null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(_tokenPath, encryptedData);
+        }
+        else
+        {
+            if (File.Exists(_tokenPath))
+            {
+                File.Delete(_tokenPath);
+            }
+        }
     }
     
     public string? GetToken()
     {
+        if (_cachedToken != null)
+        {
+            return _cachedToken;
+        }
+
         if (!File.Exists(_tokenPath))
         {
             return null;
         }
         
-        var encryptedData = File.ReadAllBytes(_tokenPath);
-        var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
-        return Encoding.UTF8.GetString(decryptedData);
+        try
+        {
+            var encryptedData = File.ReadAllBytes(_tokenPath);
+            var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
+            _cachedToken = Encoding.UTF8.GetString(decryptedData);
+            return _cachedToken;
+        }
+        catch
+        {
+            return null;
+        }
     }
     
     public void DeleteToken()
     {
+        _cachedToken = null;
         if (File.Exists(_tokenPath))
         {
             File.Delete(_tokenPath);
         }
     }
 }
-

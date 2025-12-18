@@ -58,10 +58,21 @@
             services.AddTransient<Pages.AdminDashboard>();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            var loginPage = ServiceProvider.GetRequiredService<LoginPage>();
-            loginPage.Show();
+
+            // attempts to auto-login the user
+            var authService = ServiceProvider.GetRequiredService<IAuthService>();
+            if (await authService.TryAutoLogin())
+            {
+                var dashboard = ServiceProvider.GetRequiredService<LecturerViews.LecturerDashboard>();
+                dashboard.Show();
+            }
+            else
+            {
+                var loginPage = ServiceProvider.GetRequiredService<LoginPage>();
+                loginPage.Show();
+            }
         }
     }

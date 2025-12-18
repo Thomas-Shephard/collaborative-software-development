@@ -40,7 +40,7 @@ public partial class LoginPage : Window
 
         try
         {
-            var result = await _authService.Login(loginRequest);
+            var result = await _authService.Login(loginRequest, RememberMeCheckBox.IsChecked ?? false);
 
             if (result.Success)
             {

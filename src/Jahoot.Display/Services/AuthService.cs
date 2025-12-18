@@ -12,7 +12,7 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
     private readonly HttpClient _httpClient = httpClient;
     private readonly ISecureStorageService _secureStorageService = secureStorageService;
 
-    public async Task<Result> Login(LoginRequestModel loginRequest)
+    public async Task<Result> Login(LoginRequestModel loginRequest, bool rememberMe)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
@@ -26,7 +26,7 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
                     var token = tokenElement.GetString();
                     if (token != null)
                     {
-                        _secureStorageService.SaveToken(token);
+                        _secureStorageService.SaveToken(token, rememberMe);
                         return new Result { Success = true, ErrorMessage = string.Empty };
                     }
                 }
@@ -42,6 +42,12 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
 
             return await ParseErrorResponse(response, "An unknown error occurred.");
         }
+    }
+
+    public Task<bool> TryAutoLogin()
+    {
+        var token = _secureStorageService.GetToken();
+        return Task.FromResult(!string.IsNullOrEmpty(token));
     }
 
     public async Task Logout()
