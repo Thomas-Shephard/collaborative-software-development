@@ -39,7 +39,7 @@ public partial class SubjectFormWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
         var name = NameTextBox.Text.Trim();
 

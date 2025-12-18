@@ -47,7 +47,7 @@ public partial class LecturerFormWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
         var name = NameTextBox.Text.Trim();
         var email = EmailTextBox.Text.Trim();
@@ -129,7 +129,7 @@ public partial class LecturerFormWindow : Window
 
     private async void ResetPassword_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
         if (_lecturer == null) return;
 

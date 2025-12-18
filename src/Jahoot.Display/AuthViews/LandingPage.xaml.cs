@@ -23,7 +23,7 @@ public partial class LandingPage : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
 
         if (!new EmailAddressAttribute().IsValid(SignInEmailTextBox.Text))
@@ -67,7 +67,7 @@ public partial class LandingPage : Window
 
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
 
         var name = RegisterFullNameTextBox.Text;

@@ -26,7 +26,7 @@ public partial class PromoteToLecturerWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        FeedbackBox.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
         FeedbackBox.IsSuccess = false;
         var email = EmailTextBox.Text.Trim();
         var isAdmin = IsAdminCheckBox.IsChecked.GetValueOrDefault();
