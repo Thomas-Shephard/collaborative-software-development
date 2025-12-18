@@ -24,7 +24,7 @@ public partial class LecturerFormWindow : Window
             NameTextBox.Text = _lecturer.Name;
             EmailTextBox.Text = _lecturer.Email;
             IsAdminCheckBox.IsChecked = _lecturer.IsAdmin;
-            
+
             // Switch to Edit Mode layout
             PasswordRow.Visibility = Visibility.Collapsed;
             ResetPasswordRow.Visibility = Visibility.Visible;
@@ -50,7 +50,7 @@ public partial class LecturerFormWindow : Window
         var name = NameTextBox.Text.Trim();
         var email = EmailTextBox.Text.Trim();
         var isAdmin = IsAdminCheckBox.IsChecked.GetValueOrDefault();
-        
+
         // Basic Validation
         if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
         {
@@ -75,7 +75,7 @@ public partial class LecturerFormWindow : Window
                 ShowError("Password is required.");
                 return;
             }
-            
+
             var strongPass = new StrongPasswordAttribute();
             if (!strongPass.IsValid(password))
             {
@@ -100,10 +100,11 @@ public partial class LecturerFormWindow : Window
             {
                 Name = name,
                 Email = email,
-                IsAdmin = isAdmin
+                IsAdmin = isAdmin,
+                IsDisabled = false //TODO: Implement
             };
 
-            result = await _lecturerService.UpdateLecturerAsync(_lecturer.UserId, request); 
+            result = await _lecturerService.UpdateLecturerAsync(_lecturer.UserId, request);
         }
 
         if (result.Success)
@@ -127,7 +128,7 @@ public partial class LecturerFormWindow : Window
     {
         if (_lecturer == null) return;
 
-        var result = MessageBox.Show($"Are you sure you want to reset the password for {_lecturer.Name}?\nThis will send a password reset email to {_lecturer.Email}.", 
+        var result = MessageBox.Show($"Are you sure you want to reset the password for {_lecturer.Name}?\nThis will send a password reset email to {_lecturer.Email}.",
             "Confirm Password Reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (result == MessageBoxResult.Yes)
