@@ -553,8 +553,42 @@ public class TestRepositoryTests : RepositoryTestBase
             Assert.That(result[0].TestId, Is.EqualTo(testId));
             Assert.That(result[0].TestName, Is.EqualTo("Test 1"));
             Assert.That(result[0].SubjectName, Is.EqualTo("Maths"));
+            Assert.That(result[0].StudentName, Is.EqualTo("Student"));
             Assert.That(result[0].ScorePercentage, Is.EqualTo(70.0));
             Assert.That(result[0].TotalPoints, Is.EqualTo(180));
+        }
+    }
+
+    [Test]
+    public async Task GetRecentCompletedTestsAsync_ReturnsTestsWithinSpecifiedDays()
+    {
+        int subjectId = await CreateSubject("History");
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Recent Test', 10)", new { SubId = subjectId });
+        int recentTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Old Test', 10)", new { SubId = subjectId });
+        int oldTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('recent@test.com', 'Recent Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Recent test (today)
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 8, 200, NOW())",
+            new { TestId = recentTestId, StudentId = studentId });
+
+        // Old test (10 days ago)
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 5, 100, DATE_SUB(NOW(), INTERVAL 10 DAY))",
+            new { TestId = oldTestId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetRecentCompletedTestsAsync(7)).ToList();
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0].TestId, Is.EqualTo(recentTestId));
+            Assert.That(result[0].StudentName, Is.EqualTo("Recent Student"));
         }
     }
 
