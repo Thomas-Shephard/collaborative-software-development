@@ -15,4 +15,6 @@ public interface ITestRepository
     Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsForStudentAsync(int studentId);
     Task<StudentStatisticsResponse> GetStudentStatisticsAsync(int studentId);
     Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTestsAsync(int days);
+    Task<bool> HasStudentCompletedTestAsync(int studentId, int testId);
+    Task SaveTestResultAsync(int studentId, int testId, int score, int questionsCorrect);
 }
