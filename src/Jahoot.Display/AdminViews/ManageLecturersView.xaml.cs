@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using Jahoot.Display.Extensions;
+using System.Runtime.CompilerServices;
 
 namespace Jahoot.Display.AdminViews;
 
@@ -20,7 +21,37 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         set
         {
             _lecturers = value;
-            OnPropertyChanged(nameof(Lecturers));
+            OnPropertyChanged();
+        }
+    }
+
+    public int TotalLecturers
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int ActiveLecturers
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int InactiveLecturers
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
         }
     }
 
@@ -39,17 +70,25 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
 
     private async void ManageLecturersView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (IsVisible && _lecturerService != null && (Lecturers == null || Lecturers.Count == 0))
+        if ((bool)e.NewValue && _lecturerService != null)
         {
             await LoadLecturers();
         }
     }
+
     private async Task LoadLecturers()
     {
+        if (_lecturerService == null) return;
+
         try
         {
-            var lecturers = await _lecturerService.GetAllLecturersAsync();
-            Lecturers.UpdateCollection(lecturers);
+            var allLecturers = (await _lecturerService.GetAllLecturersAsync()).ToList();
+
+            TotalLecturers = allLecturers.Count;
+            ActiveLecturers = allLecturers.Count(l => !l.IsDisabled);
+            InactiveLecturers = allLecturers.Count(l => l.IsDisabled);
+
+            Lecturers.UpdateCollection(allLecturers);
         }
         catch (Exception ex)
         {
@@ -132,32 +171,34 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         }
     }
             
-                private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
+    private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
+    {
+        var lecturer = (sender as Button)?.CommandParameter as Lecturer;
+        if (lecturer == null) return;
+
+        var result = MessageBox.Show($"Warning: This action is permanent. Are you sure you want to delete this account?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result == MessageBoxResult.Yes)
+        {
+                try
                 {
-                    var lecturer = (sender as Button)?.CommandParameter as Lecturer;
-                    if (lecturer == null) return;
-            
-                    var result = MessageBox.Show($"Warning: This action is permanent. Are you sure you want to delete this account?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                    if (result == MessageBoxResult.Yes)
+                    var deleteResult = await _lecturerService.DeleteLecturerAsync(lecturer.UserId);
+                    if (deleteResult.Success)
                     {
-                         try
-                         {
-                             var deleteResult = await _lecturerService.DeleteLecturerAsync(lecturer.UserId);
-                             if (deleteResult.Success)
-                             {
-                                 await LoadLecturers();
-                             }
-                             else
-                             {
-                                 MessageBox.Show($"Error deleting lecturer: {deleteResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                             }
-                         }
-                         catch (Exception ex)
-                         {
-                             MessageBox.Show($"Error deleting lecturer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                         }
+                        await LoadLecturers();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Error deleting lecturer: {deleteResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error deleting lecturer: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) 
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
