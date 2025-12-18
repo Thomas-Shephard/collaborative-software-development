@@ -1,6 +1,6 @@
 namespace Jahoot.WebApi.Settings;
 
-public class LoginAttemptSettings
+public class SecurityLockoutSettings
 {
     public required int MaxFailedAttempts
     {
