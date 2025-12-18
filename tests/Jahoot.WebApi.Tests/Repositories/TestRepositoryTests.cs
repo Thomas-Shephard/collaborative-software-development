@@ -607,4 +607,41 @@ public class TestRepositoryTests : RepositoryTestBase
             Assert.That(stats.ScoreHistory.Count(), Is.EqualTo(1));
         }
     }
+
+    [Test]
+    public async Task GetCompletedTestsForStudentAsync_IgnoresDisabledSubjects()
+    {
+        int activeSubjectId = await CreateSubject("Active Subject");
+        int disabledSubjectId = await CreateSubject("Disabled Subject");
+        await Connection.ExecuteAsync("UPDATE Subject SET is_active = 0 WHERE subject_id = @Id", new { Id = disabledSubjectId });
+
+        // Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Active Test', 10)", new { SubId = activeSubjectId });
+        int activeTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Disabled Test', 10)", new { SubId = disabledSubjectId });
+        int disabledTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Student
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('completed_disabled@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Results
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = activeTestId, StudentId = studentId });
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = disabledTestId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetCompletedTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result.Any(t => t.TestId == activeTestId), Is.True);
+            Assert.That(result.Any(t => t.TestId == disabledTestId), Is.False);
+        }
+    }
 }

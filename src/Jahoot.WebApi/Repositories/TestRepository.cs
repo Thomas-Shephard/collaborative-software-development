@@ -166,7 +166,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
                              FROM TestResult test_result
                                  JOIN Test test ON test_result.test_id = test.test_id
                                  JOIN Subject subject ON test.subject_id = subject.subject_id
-                             WHERE test_result.student_id = @StudentId
+                             WHERE test_result.student_id = @StudentId AND subject.is_active = TRUE
                              ORDER BY test_result.completion_date DESC
                              """;
 
@@ -175,11 +175,6 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
     public async Task<StudentStatisticsResponse> GetStudentStatisticsAsync(int studentId)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         const string query = """
                              SELECT
                                  test_result.completion_date AS Date,
