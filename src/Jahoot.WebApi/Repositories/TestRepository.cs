@@ -147,7 +147,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
                                  JOIN Subject subject ON test.subject_id = subject.subject_id
                                  JOIN StudentSubject student_subject ON subject.subject_id = student_subject.subject_id
                                  LEFT JOIN TestResult test_result ON test.test_id = test_result.test_id AND student_subject.student_id = test_result.student_id
-                             WHERE student_subject.student_id = @StudentId AND test_result.test_result_id IS NULL
+                             WHERE student_subject.student_id = @StudentId AND test_result.test_result_id IS NULL AND subject.is_active = TRUE
                              """;
 
         return await connection.QueryAsync<UpcomingTestResponse>(query, new { StudentId = studentId });
