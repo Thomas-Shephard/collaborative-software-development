@@ -54,8 +54,8 @@ public class CompletedTestsControllerTests
 
         List<CompletedTestResponse> completedTests =
         [
-            new() { TestName = "Test 1", SubjectName = "Subject 1" },
-            new() { TestName = "Test 2", SubjectName = "Subject 2" }
+            new() { TestName = "Test 1", SubjectName = "Subject 1", StudentName = "Test Student" },
+            new() { TestName = "Test 2", SubjectName = "Subject 2", StudentName = "Test Student" }
         ];
 
         _studentRepositoryMock.Setup(repo => repo.GetStudentByUserIdAsync(userId)).ReturnsAsync(student);
