@@ -9,35 +9,54 @@
         <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
         <DataTemplate x:Key="TestItemTemplate">
             <StackPanel>
-                <Grid Margin="0,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <Button Background="Transparent" 
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalContentAlignment="Stretch"
+                        Command="{Binding ItemClickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <Grid Margin="0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="40" Height="40" Background="#F0F0F0" CornerRadius="8" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Icon}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
-                    </Border>
+                        <Border Grid.Column="0" Width="40" Height="40" Background="#F0F0F0" CornerRadius="8" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Icon}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                        </Border>
 
-                    <StackPanel Grid.Column="1" Margin="15,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding TestName}" FontWeight="SemiBold" FontSize="16"/>
-                        <TextBlock Text="{Binding SubjectName}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
-                        <TextBlock Text="{Binding DateInfo}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
-                    </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="15,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TestName}" FontWeight="SemiBold" FontSize="16"/>
+                            <TextBlock Text="{Binding SubjectName}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                            <TextBlock Text="{Binding DateInfo}" FontSize="12" Foreground="{StaticResource SecondaryTextColor}"/>
+                        </StackPanel>
 
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding StatusOrScore}" 
-                                   FontWeight="SemiBold"  
-                                   FontSize="18"
-                                   HorizontalAlignment="Right"/>
-                        <TextBlock Text="{Binding StatusLabel}" 
-                                   FontSize="11" 
-                                   Foreground="{StaticResource SecondaryTextColor}"
-                                   HorizontalAlignment="Right"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
-                </Grid>
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding StatusOrScore}" 
+                                       FontWeight="SemiBold"  
+                                       FontSize="18"
+                                       HorizontalAlignment="Right"/>
+                            <TextBlock Text="{Binding StatusLabel}" 
+                                       FontSize="11" 
+                                       Foreground="{StaticResource SecondaryTextColor}"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Button>
                 <Separator Margin="0,10"/>
             </StackPanel>
         </DataTemplate>

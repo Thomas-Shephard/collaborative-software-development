@@ -83,6 +83,7 @@ namespace Jahoot.Display.ViewModels
                 _hasAnsweredCurrentQuestion = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(CanGoNext));
+                OnPropertyChanged(nameof(CanSubmit));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -92,6 +93,8 @@ namespace Jahoot.Display.ViewModels
         public bool CanGoNext => CurrentQuestionIndex < TotalQuestions - 1 && HasAnsweredCurrentQuestion;
 
         public bool IsLastQuestion => CurrentQuestionIndex == TotalQuestions - 1;
+
+        public bool CanSubmit => _selectedAnswers.Count == TotalQuestions;
 
         public string TimeRemaining
         {
@@ -105,6 +108,7 @@ namespace Jahoot.Display.ViewModels
 
         private List<Question> _questions = new();
         private Dictionary<int, int?> _selectedAnswers = new();
+        private readonly DateTime _testStartTime;
 
         public ICommand NextCommand { get; }
         public ICommand BackCommand { get; }
@@ -115,9 +119,10 @@ namespace Jahoot.Display.ViewModels
 
         public TestTakingViewModel()
         {
+            _testStartTime = DateTime.Now;
             NextCommand = new RelayCommand(GoToNext, () => CanGoNext);
             BackCommand = new RelayCommand(GoToBack, () => CanGoBack);
-            SubmitCommand = new RelayCommand(SubmitTest, () => HasAnsweredCurrentQuestion);
+            SubmitCommand = new RelayCommand(SubmitTest, () => CanSubmit);
         }
 
         /// <summary>
@@ -157,8 +162,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "6x + 5", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "3x² + 2", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -171,8 +176,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "x + C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "2x + C", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -185,8 +190,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "-1", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "0.5", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -199,8 +204,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "9", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "4", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -213,8 +218,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "3?", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "12?", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 }
             };
         }
@@ -234,8 +239,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Go", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Gd", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -248,8 +253,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Hydrogen Peroxide", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Acid", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -262,8 +267,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "14", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "1", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -276,8 +281,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "8", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "14", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -290,8 +295,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Nitrogen", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Hydrogen", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 }
             };
         }
@@ -311,8 +316,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Optimal Output Processing", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Organized Object Procedure", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -325,8 +330,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Array", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Linked List", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -339,8 +344,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(n²)", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "O(1)", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -353,8 +358,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "Selection Sort", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "Insertion Sort", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -367,8 +372,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Sorting data", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Looping through arrays", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 }
             };
         }
@@ -388,8 +393,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Option C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Option D", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -402,8 +407,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Option C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Option D", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -416,8 +421,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "Option C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "Option D", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -430,8 +435,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "Option C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "Option D", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 },
                 new Question
                 {
@@ -444,8 +449,8 @@ namespace Jahoot.Display.ViewModels
                         new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Option C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Option D", IsCorrect = false }
                     }.AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = _testStartTime,
+                    UpdatedAt = _testStartTime
                 }
             };
         }
@@ -501,6 +506,8 @@ namespace Jahoot.Display.ViewModels
                 _selectedAnswers.Remove(currentQuestion.QuestionId);
                 HasAnsweredCurrentQuestion = false;
             }
+            
+            OnPropertyChanged(nameof(CanSubmit));
         }
 
         private void GoToNext()
@@ -521,17 +528,17 @@ namespace Jahoot.Display.ViewModels
 
         private void SubmitTest()
         {
-            if (!HasAnsweredCurrentQuestion)
+            if (_selectedAnswers.Count < TotalQuestions)
             {
-                System.Windows.MessageBox.Show("Please answer the current question before submitting.", 
-                    "Answer Required", 
+                System.Windows.MessageBox.Show($"Please answer all questions before submitting. You have answered {_selectedAnswers.Count}/{TotalQuestions} questions.", 
+                    "Incomplete Test", 
                     System.Windows.MessageBoxButton.OK, 
                     System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             var result = System.Windows.MessageBox.Show(
-                $"Test '{TestName}' submitted!\n\nYou answered {_selectedAnswers.Count}/{TotalQuestions} questions.\n\nReturn to dashboard?", 
+                $"Test '{TestName}' submitted!\n\nYou answered all {TotalQuestions} questions.\n\nReturn to dashboard?", 
                 "Test Submitted", 
                 System.Windows.MessageBoxButton.YesNo, 
                 System.Windows.MessageBoxImage.Information);

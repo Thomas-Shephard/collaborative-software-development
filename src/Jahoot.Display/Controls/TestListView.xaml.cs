@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Jahoot.Display.Controls
 {
@@ -46,34 +45,6 @@ namespace Jahoot.Display.Controls
         public TestListView()
         {
             InitializeComponent();
-            
-            // Add event handler for mouse clicks
-            this.PreviewMouseLeftButtonDown += TestListView_PreviewMouseLeftButtonDown;
-        }
-
-        private void TestListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // Find the data context of the clicked element
-            var element = e.OriginalSource as DependencyObject;
-            
-            while (element != null)
-            {
-                if (element is FrameworkElement fe && fe.DataContext != null && fe.DataContext != this.DataContext)
-                {
-                    // Check if this is a test item (not the control itself)
-                    var dataContext = fe.DataContext;
-                    
-                    // Execute the ItemClickCommand with the clicked item
-                    if (ItemClickCommand?.CanExecute(dataContext) == true)
-                    {
-                        ItemClickCommand.Execute(dataContext);
-                        e.Handled = true;
-                        return;
-                    }
-                }
-                
-                element = VisualTreeHelper.GetParent(element);
-            }
         }
     }
 }

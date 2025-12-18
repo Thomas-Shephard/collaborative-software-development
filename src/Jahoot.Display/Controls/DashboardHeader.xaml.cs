@@ -50,11 +50,11 @@ namespace Jahoot.Display.Controls
         {
             if (d is DashboardHeader header && e.NewValue is string newRole && e.OldValue is string oldRole && newRole != oldRole)
             {
-                header.HandleRoleChange(newRole);
+                header.HandleRoleChange(newRole, oldRole);
             }
         }
 
-        private void HandleRoleChange(string newRole)
+        private void HandleRoleChange(string newRole, string oldRole)
         {
             if (string.IsNullOrWhiteSpace(newRole))
             {
@@ -83,7 +83,7 @@ namespace Jahoot.Display.Controls
                         MessageBoxButton.OK, 
                         MessageBoxImage.Warning);
                     
-                    SelectedRole = (string)GetValue(SelectedRoleProperty);
+                    SelectedRole = oldRole;
                     return;
                 }
 
