@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 
 namespace Jahoot.WebApi.Repositories;
 
@@ -10,4 +11,5 @@ public interface ITestRepository
     Task UpdateTestAsync(Test test);
     Task DeleteTestAsync(int testId);
     Task<bool> HasAttemptsAsync(int testId);
+    Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsForStudentAsync(int studentId);
 }

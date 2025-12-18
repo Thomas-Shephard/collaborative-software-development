@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 
 namespace Jahoot.WebApi.Repositories;
 
@@ -136,6 +137,20 @@ public class TestRepository(IDbConnection connection) : ITestRepository
         const string query = "SELECT COUNT(1) FROM TestResult WHERE test_id = @TestId";
         int count = await connection.ExecuteScalarAsync<int>(query, new { TestId = testId });
         return count > 0;
+    }
+
+    public async Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsForStudentAsync(int studentId)
+    {
+        const string query = """
+                             SELECT test.test_id, test.name, subject.name AS Subject, test.number_of_questions
+                             FROM Test test
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                                 JOIN StudentSubject student_subject ON subject.subject_id = student_subject.subject_id
+                                 LEFT JOIN TestResult test_result ON test.test_id = test_result.test_id AND student_subject.student_id = test_result.student_id
+                             WHERE student_subject.student_id = @StudentId AND test_result.test_result_id IS NULL
+                             """;
+
+        return await connection.QueryAsync<UpcomingTestResponse>(query, new { StudentId = studentId });
     }
 
     private async Task<Test?> GetTestInternalAsync(int testId)
