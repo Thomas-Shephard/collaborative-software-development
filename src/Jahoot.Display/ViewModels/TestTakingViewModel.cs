@@ -127,16 +127,16 @@ namespace Jahoot.Display.ViewModels
         }
 
         /// <summary>
-        /// Loads a mock test with 5 questions based on the test ID
+        /// Loads a mock test with 5 questions based on the subject category
         /// </summary>
-        public void LoadMockTest(int testId, string testName, string subjectName)
+        public void LoadMockTest(int subjectCategoryId, string testName, string subjectName)
         {
             TestName = testName;
             SubjectName = subjectName;
             _selectedAnswers.Clear();
             CurrentQuestionIndex = 0;
 
-            _questions = testId switch
+            _questions = subjectCategoryId switch
             {
                 1 => GetMathematicsQuestions(),
                 2 => GetChemistryQuestions(),
@@ -529,15 +529,6 @@ namespace Jahoot.Display.ViewModels
 
         private void SubmitTest()
         {
-            if (_selectedAnswers.Count < TotalQuestions)
-            {
-                System.Windows.MessageBox.Show($"Please answer all questions before submitting. You have answered {_selectedAnswers.Count}/{TotalQuestions} questions.", 
-                    "Incomplete Test", 
-                    System.Windows.MessageBoxButton.OK, 
-                    System.Windows.MessageBoxImage.Warning);
-                return;
-            }
-
             var result = System.Windows.MessageBox.Show(
                 $"Test '{TestName}' submitted!\n\nYou answered all {TotalQuestions} questions.\n\nReturn to dashboard?", 
                 "Test Submitted", 
@@ -546,7 +537,6 @@ namespace Jahoot.Display.ViewModels
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                // Raise event to close window and return to dashboard
                 TestSubmitted?.Invoke(this, EventArgs.Empty);
             }
         }

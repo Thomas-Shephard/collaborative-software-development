@@ -12,6 +12,7 @@ namespace Jahoot.Display.Services
     public class DashboardNavigationService : IDashboardNavigationService
     {
         private readonly Dictionary<string, Window> _dashboardCache = new();
+        private readonly Dictionary<Window, bool> _windowClosedFlags = new();
         private readonly IServiceProvider _serviceProvider;
 
         public DashboardNavigationService(IServiceProvider serviceProvider)
@@ -68,22 +69,23 @@ namespace Jahoot.Display.Services
             if (currentWindow == null || !currentWindow.IsLoaded)
                 return false;
 
-            // Get or create the dashboard for the specified role
             var dashboard = GetOrCreateDashboard(role, currentWindow);
             
             if (dashboard == null || dashboard == currentWindow)
                 return false;
 
-            // Handle window closed event to clean up cache
-            if (!_dashboardCache.ContainsValue(dashboard))
+            if (!_windowClosedFlags.ContainsKey(dashboard))
             {
-                dashboard.Closed += (s, e) => OnDashboardClosed(role);
+                _windowClosedFlags[dashboard] = false;
+                dashboard.Closed += (s, e) =>
+                {
+                    _windowClosedFlags[dashboard] = true;
+                    OnDashboardClosed(role);
+                };
             }
 
-            // Show the new dashboard and close the current one
             dashboard.Show();
             
-            // Remove the current window from cache if it's cached
             RemoveFromCacheByWindow(currentWindow);
             
             currentWindow.Close();
@@ -105,10 +107,11 @@ namespace Jahoot.Display.Services
                     _dashboardCache.Remove(role);
                 }
                 // Verify the cached window is still valid
-                else if (cachedDashboard != null && !cachedDashboard.IsLoaded)
+                else if (cachedDashboard != null && _windowClosedFlags.TryGetValue(cachedDashboard, out var isClosed) && isClosed)
                 {
                     // Window was closed externally, remove from cache
                     _dashboardCache.Remove(role);
+                    _windowClosedFlags.Remove(cachedDashboard);
                 }
                 else
                 {
@@ -122,6 +125,7 @@ namespace Jahoot.Display.Services
             if (dashboard != null)
             {
                 _dashboardCache[role] = dashboard;
+                _windowClosedFlags[dashboard] = false;
             }
 
             return dashboard;
@@ -146,7 +150,11 @@ namespace Jahoot.Display.Services
         /// </summary>
         private void OnDashboardClosed(string role)
         {
-            _dashboardCache.Remove(role);
+            if (_dashboardCache.TryGetValue(role, out var window))
+            {
+                _windowClosedFlags.Remove(window);
+                _dashboardCache.Remove(role);
+            }
         }
 
         /// <summary>
@@ -166,6 +174,7 @@ namespace Jahoot.Display.Services
 
             if (keyToRemove != null)
             {
+                _windowClosedFlags.Remove(window);
                 _dashboardCache.Remove(keyToRemove);
             }
         }
@@ -175,6 +184,7 @@ namespace Jahoot.Display.Services
         /// </summary>
         public void ClearCache()
         {
+            _windowClosedFlags.Clear();
             _dashboardCache.Clear();
         }
 

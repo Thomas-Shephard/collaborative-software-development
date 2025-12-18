@@ -1,6 +1,7 @@
 using Jahoot.Display.Services;
 using Jahoot.Core.Models;
 using Jahoot.Display.Controls;
+using Jahoot.Display.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -21,7 +22,6 @@ namespace Jahoot.Display.LecturerViews
         {
             InitializeComponent();
             
-            // Get user roles from service and filter available roles
             var app = Application.Current as App;
             var userRoleService = app?.ServiceProvider?.GetService<IUserRoleService>();
             
@@ -107,7 +107,6 @@ namespace Jahoot.Display.LecturerViews
 
         public LecturerDashboardViewModel()
         {
-            // Initialize with Lecturer role by default
             _availableRoles = new ObservableCollection<string> { "Lecturer" };
             
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
@@ -135,34 +134,6 @@ namespace Jahoot.Display.LecturerViews
             };
 
             CurrentView = new LecturerOverviewView { DataContext = this };
-        }
-    }
-
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object?> _execute;
-        private readonly Predicate<object?>? _canExecute;
-
-        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            return _canExecute == null || _canExecute(parameter);
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public void Execute(object? parameter)
-        {
-            _execute(parameter);
         }
     }
 }

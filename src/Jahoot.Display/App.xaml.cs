@@ -56,10 +56,8 @@ public partial class App : Application
         services.AddTransient<ILecturerService, LecturerService>();
         services.AddTransient<IStudentService, StudentService>();
         
-        // Register user role service as singleton to maintain state across the application
         services.AddSingleton<IUserRoleService, UserRoleService>();
         
-        // Register dashboard navigation service as singleton to maintain cache
         services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
         
         services.AddTransient<LandingPage>();
@@ -67,6 +65,8 @@ public partial class App : Application
         services.AddTransient<StudentViews.StudentDashboard>();
         services.AddTransient<StudentViews.TestTakingPage>();
         services.AddTransient<Pages.AdminDashboard>();
+        
+        services.AddTransient<LecturerViews.StudentManagementViewModel>();
     }
 
     protected override void OnStartup(StartupEventArgs e)
