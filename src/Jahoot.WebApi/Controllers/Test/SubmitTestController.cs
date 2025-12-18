@@ -64,11 +64,29 @@ public class SubmitTestController(ITestRepository testRepository, ISubjectReposi
             return StatusCode(403, "The subject is disabled.");
         }
 
+        (int score, int questionsCorrect) = CalculateScore(request.Answers, test, _scoringSettings);
+
+        await testRepository.SaveTestResultAsync(student.StudentId, testId, score, questionsCorrect);
+
+        return Ok(new CompletedTestResponse
+        {
+            TestId = test.TestId,
+            TestName = test.Name,
+            SubjectName = subject.Name,
+            StudentName = student.Name,
+            CompletedDate = DateTime.UtcNow,
+            ScorePercentage = test.NumberOfQuestions > 0 ? (double)questionsCorrect * 100 / test.NumberOfQuestions : 0,
+            TotalPoints = score
+        });
+    }
+
+    private static (int Score, int QuestionsCorrect) CalculateScore(IEnumerable<AnswerRequestModel> answers, Core.Models.Test test, ScoringSettings scoringSettings)
+    {
         int score = 0;
         int questionsCorrect = 0;
         HashSet<int> processedQuestionIds = [];
 
-        foreach (AnswerRequestModel answer in request.Answers)
+        foreach (AnswerRequestModel answer in answers)
         {
             if (!processedQuestionIds.Add(answer.QuestionId))
             {
@@ -84,26 +102,15 @@ public class SubmitTestController(ITestRepository testRepository, ISubjectReposi
 
             if (selectedOption.IsCorrect)
             {
-                score += _scoringSettings.PointsPerCorrectAnswer;
+                score += scoringSettings.PointsPerCorrectAnswer;
                 questionsCorrect++;
             }
             else
             {
-                score += _scoringSettings.PointsPerIncorrectAnswer;
+                score += scoringSettings.PointsPerIncorrectAnswer;
             }
         }
 
-        await testRepository.SaveTestResultAsync(student.StudentId, testId, score, questionsCorrect);
-
-        return Ok(new CompletedTestResponse
-        {
-            TestId = test.TestId,
-            TestName = test.Name,
-            SubjectName = subject.Name,
-            StudentName = student.Name,
-            CompletedDate = DateTime.UtcNow,
-            ScorePercentage = test.NumberOfQuestions > 0 ? (double)questionsCorrect * 100 / test.NumberOfQuestions : 0,
-            TotalPoints = score
-        });
+        return (score, questionsCorrect);
     }
 }

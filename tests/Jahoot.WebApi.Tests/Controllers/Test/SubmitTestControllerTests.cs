@@ -175,7 +175,7 @@ public class SubmitTestControllerTests
         OkObjectResult? okResult = result.Result as OkObjectResult;
         CompletedTestResponse? response = okResult?.Value as CompletedTestResponse;
 
-        Assert.That(response?.TotalPoints, Is.EqualTo(0));
+        Assert.That(response?.TotalPoints, Is.Zero);
         _testRepositoryMock.Verify(repo => repo.SaveTestResultAsync(studentId, testId, 0, 0), Times.Once);
     }
 
@@ -421,7 +421,7 @@ public class SubmitTestControllerTests
         OkObjectResult? okResult = result.Result as OkObjectResult;
         CompletedTestResponse? response = okResult?.Value as CompletedTestResponse;
 
-        Assert.That(response?.TotalPoints, Is.EqualTo(0));
+        Assert.That(response?.TotalPoints, Is.Zero);
         _testRepositoryMock.Verify(repo => repo.SaveTestResultAsync(studentId, testId, 0, 0), Times.Once);
     }
 
@@ -454,7 +454,7 @@ public class SubmitTestControllerTests
         OkObjectResult? okResult = result.Result as OkObjectResult;
         CompletedTestResponse? response = okResult?.Value as CompletedTestResponse;
 
-        Assert.That(response?.TotalPoints, Is.EqualTo(0));
+        Assert.That(response?.TotalPoints, Is.Zero);
         _testRepositoryMock.Verify(repo => repo.SaveTestResultAsync(studentId, testId, 0, 0), Times.Once);
     }
 
