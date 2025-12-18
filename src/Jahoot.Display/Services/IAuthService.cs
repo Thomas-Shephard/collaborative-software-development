@@ -1,12 +1,9 @@
+using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 
 namespace Jahoot.Display.Services;
 
-public class Result
-{
-    public bool Success { get; set; }
-    public string? ErrorMessage { get; set; }
-}
+
 
 public interface IAuthService
 {
