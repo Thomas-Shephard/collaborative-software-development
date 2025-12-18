@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using Jahoot.Core.Models.Requests;
 using Jahoot.Display.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -89,14 +90,37 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
         if (lecturer == null) return;
 
-        var result = MessageBox.Show($"Are you sure you want to disable this account?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        string action = lecturer.IsDisabled ? "enable" : "disable";
+        var result = MessageBox.Show($"Are you sure you want to {action} this account?", $"Confirm {char.ToUpper(action[0]) + action.Substring(1)}", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        
         if (result == MessageBoxResult.Yes)
         {
-                        // Pending Thomas's work to disable a lecturer
-                        MessageBox.Show($"Disable feature does not exist yet", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                        await LoadLecturers(); // Even if it's a placeholder, awaiting ensures UI consistency if we later implement async logic.
-                    }
+            try
+            {
+                var request = new UpdateLecturerRequestModel
+                {
+                    Name = lecturer.Name,
+                    Email = lecturer.Email,
+                    IsAdmin = lecturer.IsAdmin,
+                    IsDisabled = !lecturer.IsDisabled
+                };
+
+                var updateResult = await _lecturerService.UpdateLecturerAsync(lecturer.UserId, request);
+                if (updateResult.Success)
+                {
+                    await LoadLecturers();
                 }
+                else
+                {
+                    MessageBox.Show($"Error updating lecturer status: {updateResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch
+            {
+                MessageBox.Show($"Error updating lecturer status.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
             
                 private async void DeleteLecturer_Click(object sender, RoutedEventArgs e)
                 {
