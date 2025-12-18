@@ -20,7 +20,7 @@ public class TokenService(JwtSettings jwtSettings) : ITokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Name, user.Name),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            ..user.Roles.Select(role => new Claim(ClaimTypes.Role, role.ToString()))
+            ..(user.IsDisabled ? [] : user.Roles.Select(role => new Claim(ClaimTypes.Role, role.ToString())))
         ];
 
         DateTime now = DateTime.UtcNow;

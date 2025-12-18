@@ -1,0 +1,51 @@
+<Window x:Class="Jahoot.Display.AdminViews.PromoteToLecturerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Jahoot.Display.Controls"
+        Title="Promote to Lecturer" Width="450" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="White"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+    
+    <Border Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Promote Existing User to Lecturer" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+            <!-- Email -->
+            <Grid Grid.Row="1" Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Email" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="EmailTextBox" Grid.Column="1" Style="{StaticResource FormTextBox}" KeyDown="Form_KeyDown"/>
+            </Grid>
+            
+            <!-- Roles -->
+            <Grid Grid.Row="2" Margin="0,0,0,15">
+                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Role" Style="{StaticResource FormLabel}"/>
+                <CheckBox x:Name="IsAdminCheckBox" Grid.Column="1" Content="Administrator" VerticalContentAlignment="Center" KeyDown="Form_KeyDown"/>
+            </Grid>
+
+            <controls:UserFeedbackBox Grid.Row="3" x:Name="FeedbackBox" Margin="0,0,0,10"/>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource FormCancelButton}"/>
+                <Button Content="Promote" Click="Save_Click" Style="{StaticResource FormSaveButton}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

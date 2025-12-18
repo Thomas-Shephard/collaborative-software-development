@@ -1,5 +1,6 @@
 using Dapper;
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 using Jahoot.WebApi.Repositories;
 using MySqlConnector;
 
@@ -450,5 +451,272 @@ public class TestRepositoryTests : RepositoryTestBase
 
         int questionCount = await Connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Question WHERE text = 'Similar Q'");
         Assert.That(questionCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetUpcomingTestsForStudentAsync_ReturnsOnlyUncompletedTestsForAssignedSubjects()
+    {
+        // Create Subjects
+        int subject1Id = await CreateSubject("Subject 1");
+        int subject2Id = await CreateSubject("Subject 2");
+        int subject3Id = await CreateSubject("Subject 3");
+
+        // Create Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 1', 10)", new { SubId = subject1Id });
+        int test1Id = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 2', 5)", new { SubId = subject1Id });
+        int test2Id = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 3', 8)", new { SubId = subject2Id });
+        int test3Id = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 4', 12)", new { SubId = subject3Id });
+
+        // Create Student and assign to Subject 1 and Subject 2
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('upcoming@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject1Id });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = subject2Id });
+
+        // Mark Test 1 as completed
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct) VALUES (@TestId, @StudentId, 5)", new { TestId = test1Id, StudentId = studentId });
+
+        List<UpcomingTestResponse> result = (await _repository.GetUpcomingTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result.Any(t => t.TestId == test2Id && t is { Name: "Test 2", Subject: "Subject 1", NumberOfQuestions: 5 }), Is.True);
+            Assert.That(result.Any(t => t.TestId == test3Id && t is { Name: "Test 3", Subject: "Subject 2", NumberOfQuestions: 8 }), Is.True);
+        }
+    }
+
+    [Test]
+    public async Task GetUpcomingTestsForStudentAsync_FiltersOutDisabledSubjects()
+    {
+        // Create Subjects (one active, one disabled)
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Active Subject', 1)");
+        int activeSubjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Disabled Subject', 0)");
+        int disabledSubjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Active Test', 10)", new { SubId = activeSubjectId });
+        int activeTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Disabled Test', 5)", new { SubId = disabledSubjectId });
+
+        // Create Student and assign to both Subjects
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('filter@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = activeSubjectId });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = disabledSubjectId });
+
+        List<UpcomingTestResponse> result = (await _repository.GetUpcomingTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].TestId, Is.EqualTo(activeTestId));
+            Assert.That(result[0].Name, Is.EqualTo("Active Test"));
+        }
+    }
+
+    [Test]
+    public async Task GetCompletedTestsForStudentAsync_ReturnsCompletedTestsForStudent()
+    {
+        int subjectId = await CreateSubject("Maths");
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 1', 10)", new { SubId = subjectId });
+        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('completed@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // +30 for correct (7), -10 for incorrect (3) => 210 - 30 = 180
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 7, 180)", new { TestId = testId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetCompletedTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].TestId, Is.EqualTo(testId));
+            Assert.That(result[0].TestName, Is.EqualTo("Test 1"));
+            Assert.That(result[0].SubjectName, Is.EqualTo("Maths"));
+            Assert.That(result[0].StudentName, Is.EqualTo("Student"));
+            Assert.That(result[0].ScorePercentage, Is.EqualTo(70.0));
+            Assert.That(result[0].TotalPoints, Is.EqualTo(180));
+            Assert.That(result[0].CompletedDate, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+        }
+    }
+
+    [Test]
+    public async Task GetRecentCompletedTestsAsync_ReturnsTestsWithinSpecifiedDays()
+    {
+        int subjectId = await CreateSubject("History");
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Recent Test', 10)", new { SubId = subjectId });
+        int recentTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Old Test', 10)", new { SubId = subjectId });
+        int oldTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('recent@test.com', 'Recent Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Recent test (today)
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 8, 200, NOW())",
+            new { TestId = recentTestId, StudentId = studentId });
+
+        // Old test (10 days ago)
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 5, 100, DATE_SUB(NOW(), INTERVAL 10 DAY))",
+            new { TestId = oldTestId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetRecentCompletedTestsAsync(7)).ToList();
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0].TestId, Is.EqualTo(recentTestId));
+            Assert.That(result[0].TestName, Is.EqualTo("Recent Test"));
+            Assert.That(result[0].SubjectName, Is.EqualTo("History"));
+            Assert.That(result[0].StudentName, Is.EqualTo("Recent Student"));
+            Assert.That(result[0].ScorePercentage, Is.EqualTo(80.0));
+            Assert.That(result[0].TotalPoints, Is.EqualTo(200));
+            Assert.That(result[0].CompletedDate, Is.EqualTo(DateTime.Now).Within(1).Minutes);
+        }
+    }
+
+    [Test]
+    public async Task GetStudentStatisticsAsync_CalculatesCorrectly()
+    {
+        int subjectId = await CreateSubject("Stats Subject");
+
+        // Test 1: 10 questions.
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 1', 10)", new { SubId = subjectId });
+        int test1Id = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Test 2: 20 questions.
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 2', 20)", new { SubId = subjectId });
+        int test2Id = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Student
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('stats@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        DateTime date1 = new(2023, 1, 1, 12, 0, 0);
+        DateTime date2 = new(2023, 1, 2, 12, 0, 0);
+
+        // Result 1: 5/10 correct (50%), Score 100.
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 5, 100, @Date)",
+            new { TestId = test1Id, StudentId = studentId, Date = date1 });
+
+        // Result 2: 15/20 correct (75%), Score 200.
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score, completion_date) VALUES (@TestId, @StudentId, 15, 200, @Date)",
+            new { TestId = test2Id, StudentId = studentId, Date = date2 });
+
+        StudentStatisticsResponse stats = await _repository.GetStudentStatisticsAsync(studentId);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(stats.TotalPoints, Is.EqualTo(300)); // 100 + 200
+            Assert.That(stats.AverageScorePercentage, Is.EqualTo(62.5)); // (50 + 75) / 2
+            Assert.That(stats.ScoreHistory.Count(), Is.EqualTo(2));
+        }
+
+        ScoreHistoryItem[] history = stats.ScoreHistory.ToArray();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(history[0].Date, Is.EqualTo(date1));
+            Assert.That(history[0].ScorePercentage, Is.EqualTo(50.0));
+            Assert.That(history[1].Date, Is.EqualTo(date2));
+            Assert.That(history[1].ScorePercentage, Is.EqualTo(75.0));
+        }
+    }
+
+    [Test]
+    public async Task GetStudentStatisticsAsync_IgnoresDisabledSubjects()
+    {
+        int activeSubjectId = await CreateSubject("Active Subject");
+        int disabledSubjectId = await CreateSubject("Disabled Subject");
+        await Connection.ExecuteAsync("UPDATE Subject SET is_active = 0 WHERE subject_id = @Id", new { Id = disabledSubjectId });
+
+        // Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Active Test', 10)", new { SubId = activeSubjectId });
+        int activeTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Disabled Test', 10)", new { SubId = disabledSubjectId });
+        int disabledTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Student
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('disabled_filter@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Results
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = activeTestId, StudentId = studentId });
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = disabledTestId, StudentId = studentId });
+
+        StudentStatisticsResponse stats = await _repository.GetStudentStatisticsAsync(studentId);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(stats.TotalPoints, Is.EqualTo(100)); // Should ignore the 100 points from disabled test
+            Assert.That(stats.ScoreHistory.Count(), Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public async Task GetCompletedTestsForStudentAsync_IgnoresDisabledSubjects()
+    {
+        int activeSubjectId = await CreateSubject("Active Subject");
+        int disabledSubjectId = await CreateSubject("Disabled Subject");
+        await Connection.ExecuteAsync("UPDATE Subject SET is_active = 0 WHERE subject_id = @Id", new { Id = disabledSubjectId });
+
+        // Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Active Test', 10)", new { SubId = activeSubjectId });
+        int activeTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Disabled Test', 10)", new { SubId = disabledSubjectId });
+        int disabledTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Student
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('completed_disabled@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Results
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = activeTestId, StudentId = studentId });
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 10, 100)",
+            new { TestId = disabledTestId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetCompletedTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result.Any(t => t.TestId == activeTestId), Is.True);
+            Assert.That(result.Any(t => t.TestId == disabledTestId), Is.False);
+        }
     }
 }

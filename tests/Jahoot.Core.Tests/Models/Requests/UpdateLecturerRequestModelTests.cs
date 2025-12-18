@@ -12,7 +12,8 @@ public class UpdateLecturerRequestModelTests
         {
             Email = "lecturer@example.com",
             Name = "Dr. Lecturer",
-            IsAdmin = true
+            IsAdmin = true,
+            IsDisabled = false
         };
 
         ValidationContext context = new(model);
@@ -32,7 +33,8 @@ public class UpdateLecturerRequestModelTests
         {
             Email = email!,
             Name = "Dr. Lecturer",
-            IsAdmin = false
+            IsAdmin = false,
+            IsDisabled = false
         };
 
         ValidationContext context = new(model);
@@ -56,7 +58,8 @@ public class UpdateLecturerRequestModelTests
         {
             Email = "lecturer@example.com",
             Name = name!,
-            IsAdmin = false
+            IsAdmin = false,
+            IsDisabled = false
         };
 
         ValidationContext context = new(model);
@@ -77,7 +80,8 @@ public class UpdateLecturerRequestModelTests
         {
             Email = "lecturer@example.com",
             Name = new string('A', 71),
-            IsAdmin = false
+            IsAdmin = false,
+            IsDisabled = false
         };
 
         ValidationContext context = new(model);

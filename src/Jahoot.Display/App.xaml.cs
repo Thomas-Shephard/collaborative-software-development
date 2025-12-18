@@ -45,6 +45,18 @@ public partial class App : Application
         string baseAddress = _configuration?.GetValue<string>("BaseAddress")
                              ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
 
+            services.AddSingleton(new HttpClient
+            {
+                BaseAddress = new Uri(baseAddress)
+            });
+            services.AddSingleton<IHttpService, HttpService>();
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<ISubjectService, SubjectService>();
+            services.AddTransient<ILecturerService, LecturerService>();
+            services.AddTransient<LandingPage>();
+            services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<Pages.AdminDashboard>();
+        }
         services.AddSingleton(new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
@@ -58,6 +70,13 @@ public partial class App : Application
         services.AddTransient<StudentViews.TestTakingPage>();
     }
 
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
+            landingPage.Show();
+        }
+    }
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);

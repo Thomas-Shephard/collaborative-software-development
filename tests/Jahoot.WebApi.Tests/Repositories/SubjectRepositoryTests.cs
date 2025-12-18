@@ -1,5 +1,6 @@
 using Dapper;
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 using Jahoot.WebApi.Repositories;
 
 namespace Jahoot.WebApi.Tests.Repositories;
@@ -146,5 +147,127 @@ public class SubjectRepositoryTests : RepositoryTestBase
             Assert.That(updatedSubject.Name, Is.EqualTo("Advanced Biology"));
             Assert.That(updatedSubject.IsActive, Is.False);
         }
+    }
+    [Test]
+    public async Task GetLeaderboardForSubjectAsync_ReturnsTop5Students()
+    {
+        // Create Subject
+        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES ('LeaderboardSubject')");
+        int subjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Test
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubjectId, 'Test1', 10)", new { SubjectId = subjectId });
+        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Students and Results
+        // Create 6 students to verify limit 5
+        for (int i = 1; i <= 6; i++)
+        {
+            await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, 'hash')",
+                new { Name = $"Student{i}", Email = $"s{i}@test.com" });
+            int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+            await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+            int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+            // Score: Student1=10, Student2=20, ..., Student6=60
+            int score = i * 10;
+            await Connection.ExecuteAsync(
+                "INSERT INTO TestResult (test_id, student_id, completion_date, questions_correct, score) VALUES (@TestId, @StudentId, NOW(), 0, @Score)",
+                new { TestId = testId, StudentId = studentId, Score = score });
+        }
+
+        List<LeaderboardEntry> leaderboard = (await _repository.GetLeaderboardForSubjectAsync(subjectId)).ToList();
+
+        Assert.That(leaderboard, Has.Count.EqualTo(5));
+        using (Assert.EnterMultipleScope())
+        {
+
+            // Student6 should be first (Score 60)
+            Assert.That(leaderboard[0].StudentName, Is.EqualTo("Student6"));
+            Assert.That(leaderboard[0].TotalScore, Is.EqualTo(60));
+            Assert.That(leaderboard[0].Rank, Is.EqualTo(1));
+
+            // Student2 should be last in top 5 (Score 20)
+            Assert.That(leaderboard[4].StudentName, Is.EqualTo("Student2"));
+            Assert.That(leaderboard[4].TotalScore, Is.EqualTo(20));
+            Assert.That(leaderboard[4].Rank, Is.EqualTo(5));
+        }
+    }
+
+    [Test]
+    public async Task GetLeaderboardForSubjectAsync_ExcludesDisabledUsers()
+    {
+        // Create Subject
+        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES ('LeaderboardSubject2')");
+        int subjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Test
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubjectId, 'Test1', 10)", new { SubjectId = subjectId });
+        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Active Student
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash, is_disabled) VALUES ('ActiveUser', 'active@test.com', 'hash', FALSE)");
+        int activeUserId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = activeUserId });
+        int activeStudentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, completion_date, questions_correct, score) VALUES (@TestId, @StudentId, NOW(), 0, 100)",
+            new { TestId = testId, StudentId = activeStudentId });
+
+        // Create Disabled Student
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash, is_disabled) VALUES ('DisabledUser', 'disabled@test.com', 'hash', TRUE)");
+        int disabledUserId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = disabledUserId });
+        int disabledStudentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, completion_date, questions_correct, score) VALUES (@TestId, @StudentId, NOW(), 0, 200)",
+            new { TestId = testId, StudentId = disabledStudentId });
+
+        List<LeaderboardEntry> leaderboard = (await _repository.GetLeaderboardForSubjectAsync(subjectId)).ToList();
+
+        Assert.That(leaderboard, Has.Count.EqualTo(1));
+        Assert.That(leaderboard[0].StudentName, Is.EqualTo("ActiveUser"));
+    }
+
+    [Test]
+    public async Task GetLeaderboardForSubjectAsync_UsersWithSameName_ReturnsSeparateEntries()
+    {
+        // Create Subject
+        await Connection.ExecuteAsync("INSERT INTO Subject (name) VALUES ('SameNameSubject')");
+        int subjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Test
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubjectId, 'Test1', 10)", new { SubjectId = subjectId });
+        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        const string duplicateName = "John Doe";
+
+        // Create Student 1
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, 'john1@test.com', 'hash')",
+            new { Name = duplicateName });
+        int userId1 = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId1 });
+        int studentId1 = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, completion_date, questions_correct, score) VALUES (@TestId, @StudentId, NOW(), 0, 100)",
+            new { TestId = testId, StudentId = studentId1 });
+
+        // Create Student 2
+        await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES (@Name, 'john2@test.com', 'hash')",
+            new { Name = duplicateName });
+        int userId2 = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId2 });
+        int studentId2 = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, completion_date, questions_correct, score) VALUES (@TestId, @StudentId, NOW(), 0, 50)",
+            new { TestId = testId, StudentId = studentId2 });
+
+        List<LeaderboardEntry> leaderboard = (await _repository.GetLeaderboardForSubjectAsync(subjectId)).ToList();
+
+        // If grouped by name, there would be only 1 entry with score 150.
+        // If grouped by ID, there should be 2 entries with scores 100 and 50.
+        Assert.That(leaderboard, Has.Count.EqualTo(2));
+        Assert.That(leaderboard.Select(l => l.TotalScore), Is.EquivalentTo([100, 50]));
     }
 }

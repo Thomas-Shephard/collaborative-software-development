@@ -89,8 +89,8 @@ namespace Jahoot.Display.Controls
 
                 MessageBox.Show("You have been successfully signed out", "Signed Out", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                var loginPage = app.ServiceProvider.GetRequiredService<LoginPage>();
-                loginPage.Show();
+                var landingPage = app.ServiceProvider.GetRequiredService<LandingPage>();
+                landingPage.Show();
 
                 var currentWindow = Window.GetWindow(this);
                 currentWindow?.Close();

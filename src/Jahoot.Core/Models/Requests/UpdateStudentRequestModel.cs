@@ -14,7 +14,10 @@ public class UpdateStudentRequestModel
     public required string Email { get; init; }
 
     [Required]
-    public required StudentAccountStatus AccountStatus { get; init; }
+    public required bool IsApproved { get; init; }
+
+    [Required]
+    public required bool IsDisabled { get; init; }
 
     [Required]
     [EnsureUniqueElements]

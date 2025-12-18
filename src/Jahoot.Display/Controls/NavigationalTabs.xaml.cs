@@ -42,6 +42,15 @@ namespace Jahoot.Display.Controls
             set { SetValue(TabWidthConverterParameterProperty, value); }
         }
 
+        public static readonly DependencyProperty SelectedItemProperty =
+            DependencyProperty.Register("SelectedItem", typeof(object), typeof(NavigationalTabs), new PropertyMetadata(null));
+
+        public object SelectedItem
+        {
+            get { return GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
+        }
+
         public NavigationalTabs()
         {
             InitializeComponent();
@@ -50,6 +59,7 @@ namespace Jahoot.Display.Controls
         private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             this.SelectedIndex = MainTabs.SelectedIndex;
+            this.SelectedItem = MainTabs.SelectedItem;
             RaiseEvent(new RoutedEventArgs(SelectionChangedEvent, sender));
         }
     }

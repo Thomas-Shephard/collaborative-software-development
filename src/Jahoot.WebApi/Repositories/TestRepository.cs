@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 
 namespace Jahoot.WebApi.Repositories;
 
@@ -17,8 +18,8 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
         try
         {
-            const string createTestQuery = "INSERT INTO Test (subject_id, name) VALUES (@SubjectId, @Name); SELECT LAST_INSERT_ID();";
-            int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name }, transaction);
+            const string createTestQuery = "INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubjectId, @Name, @NumberOfQuestions); SELECT LAST_INSERT_ID();";
+            int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name, test.NumberOfQuestions }, transaction);
 
             HashSet<int> usedQuestionIds = [];
 
@@ -84,8 +85,8 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
         try
         {
-            const string updateTestQuery = "UPDATE Test SET name = @Name, subject_id = @SubjectId WHERE test_id = @TestId";
-            await connection.ExecuteAsync(updateTestQuery, new { test.Name, test.SubjectId, test.TestId }, transaction);
+            const string updateTestQuery = "UPDATE Test SET name = @Name, subject_id = @SubjectId, number_of_questions = @NumberOfQuestions WHERE test_id = @TestId";
+            await connection.ExecuteAsync(updateTestQuery, new { test.Name, test.SubjectId, test.NumberOfQuestions, test.TestId }, transaction);
 
             Question[] currentQuestions = (await GetQuestionsInternalAsync(test.TestId, transaction)).ToArray();
             int[] currentQuestionIds = currentQuestions.Select(question => question.QuestionId).ToArray();
@@ -138,6 +139,111 @@ public class TestRepository(IDbConnection connection) : ITestRepository
         return count > 0;
     }
 
+    public async Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsForStudentAsync(int studentId)
+    {
+        const string query = """
+                             SELECT test.test_id, test.name, subject.name AS Subject, test.number_of_questions
+                             FROM Test test
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                                 JOIN StudentSubject student_subject ON subject.subject_id = student_subject.subject_id
+                                 LEFT JOIN TestResult test_result ON test.test_id = test_result.test_id AND student_subject.student_id = test_result.student_id
+                             WHERE student_subject.student_id = @StudentId AND test_result.test_result_id IS NULL AND subject.is_active = TRUE
+                             """;
+
+        return await connection.QueryAsync<UpcomingTestResponse>(query, new { StudentId = studentId });
+    }
+
+    public async Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsForStudentAsync(int studentId)
+    {
+        const string query = """
+                             SELECT
+                                 test.test_id AS TestId,
+                                 test.name AS TestName,
+                                 subject.name AS SubjectName,
+                                 user.name AS StudentName,
+                                 test_result.completion_date AS CompletedDate,
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage,
+                                 test_result.score AS TotalPoints
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                                 JOIN Student student ON test_result.student_id = student.student_id
+                                 JOIN User user ON student.user_id = user.user_id
+                             WHERE test_result.student_id = @StudentId AND subject.is_active = TRUE
+                             ORDER BY test_result.completion_date DESC
+                             """;
+
+        return await connection.QueryAsync<CompletedTestResponse>(query, new { StudentId = studentId });
+    }
+
+    public async Task<StudentStatisticsResponse> GetStudentStatisticsAsync(int studentId)
+    {
+        const string query = """
+                             SELECT
+                                 test_result.completion_date AS Date,
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage,
+                                 test_result.score AS TotalPoints
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                             WHERE test_result.student_id = @StudentId AND subject.is_active = TRUE
+                             ORDER BY test_result.completion_date
+                             """;
+
+        List<TestResultStatsDto> results = (await connection.QueryAsync<TestResultStatsDto>(query, new { StudentId = studentId })).ToList();
+
+        if (results.Count == 0)
+        {
+            return new StudentStatisticsResponse();
+        }
+
+        int totalPoints = results.Sum(r => r.TotalPoints);
+        double averageScore = (double)results.Average(r => r.ScorePercentage);
+
+        List<ScoreHistoryItem> history = results.Select(r => new ScoreHistoryItem
+        {
+            Date = r.Date,
+            ScorePercentage = (double)r.ScorePercentage
+        }).ToList();
+
+        return new StudentStatisticsResponse
+        {
+            TotalPoints = totalPoints,
+            AverageScorePercentage = averageScore,
+            ScoreHistory = history
+        };
+    }
+
+    private sealed class TestResultStatsDto
+    {
+        public DateTime Date { get; init; }
+        public decimal ScorePercentage { get; init; }
+        public int TotalPoints { get; init; }
+    }
+
+    public async Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTestsAsync(int days)
+    {
+        const string query = """
+                             SELECT
+                                 test.test_id AS TestId,
+                                 test.name AS TestName,
+                                 subject.name AS SubjectName,
+                                 user.name AS StudentName,
+                                 test_result.completion_date AS CompletedDate,
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage,
+                                 test_result.score AS TotalPoints
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                                 JOIN Student student ON test_result.student_id = student.student_id
+                                 JOIN User user ON student.user_id = user.user_id
+                             WHERE test_result.completion_date >= DATE_SUB(NOW(), INTERVAL @Days DAY) AND subject.is_active = TRUE
+                             ORDER BY test_result.completion_date DESC
+                             """;
+
+        return await connection.QueryAsync<CompletedTestResponse>(query, new { Days = days });
+    }
+
     private async Task<Test?> GetTestInternalAsync(int testId)
     {
         const string query = "SELECT * FROM Test WHERE test_id = @TestId";
@@ -155,6 +261,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
             TestId = test.TestId,
             SubjectId = test.SubjectId,
             Name = test.Name,
+            NumberOfQuestions = test.NumberOfQuestions,
             CreatedAt = test.CreatedAt,
             UpdatedAt = test.UpdatedAt,
             Questions = questions.ToList().AsReadOnly()

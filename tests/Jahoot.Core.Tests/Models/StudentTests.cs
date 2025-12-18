@@ -9,7 +9,8 @@ public class StudentTests
     public void StudentProperties_CanBeAccessed()
     {
         const int studentId = 1;
-        const StudentAccountStatus studentAccountStatus = StudentAccountStatus.Active;
+        const bool isApproved = true;
+        const bool isDisabled = false;
         const int userId = 101;
         const string userEmail = "test@example.com";
         const string userName = "John Doe";
@@ -20,7 +21,8 @@ public class StudentTests
         Student student = new()
         {
             StudentId = studentId,
-            AccountStatus = studentAccountStatus,
+            IsApproved = isApproved,
+            IsDisabled = isDisabled,
             UserId = userId,
             Email = userEmail,
             Name = userName,
@@ -32,7 +34,8 @@ public class StudentTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(student.StudentId, Is.EqualTo(studentId));
-            Assert.That(student.AccountStatus, Is.EqualTo(studentAccountStatus));
+            Assert.That(student.IsApproved, Is.EqualTo(isApproved));
+            Assert.That(student.IsDisabled, Is.EqualTo(isDisabled));
             Assert.That(student.UserId, Is.EqualTo(userId));
             Assert.That(student.Email, Is.EqualTo(userEmail));
             Assert.That(student.Name, Is.EqualTo(userName));
