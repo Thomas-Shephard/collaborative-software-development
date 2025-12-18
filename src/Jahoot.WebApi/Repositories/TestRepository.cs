@@ -156,21 +156,66 @@ public class TestRepository(IDbConnection connection) : ITestRepository
     public async Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsForStudentAsync(int studentId)
     {
         const string query = """
-                             SELECT 
-                                 test.test_id AS TestId, 
-                                 test.name AS TestName, 
-                                 subject.name AS SubjectName, 
-                                 test_result.completion_date AS CompletedDate, 
-                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage, 
+                             SELECT
+                                 test.test_id AS TestId,
+                                 test.name AS TestName,
+                                 subject.name AS SubjectName,
+                                 test_result.completion_date AS CompletedDate,
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage,
                                  test_result.score AS TotalPoints
                              FROM TestResult test_result
                                  JOIN Test test ON test_result.test_id = test.test_id
                                  JOIN Subject subject ON test.subject_id = subject.subject_id
-                             WHERE test_result.student_id = @StudentId
+                             WHERE test_result.student_id = @StudentId AND subject.is_active = TRUE
                              ORDER BY test_result.completion_date DESC
                              """;
 
         return await connection.QueryAsync<CompletedTestResponse>(query, new { StudentId = studentId });
+    }
+
+    public async Task<StudentStatisticsResponse> GetStudentStatisticsAsync(int studentId)
+    {
+        const string query = """
+                             SELECT
+                                 test_result.completion_date AS Date,
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage,
+                                 test_result.score AS TotalPoints
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                             WHERE test_result.student_id = @StudentId AND subject.is_active = TRUE
+                             ORDER BY test_result.completion_date
+                             """;
+
+        List<TestResultStatsDto> results = (await connection.QueryAsync<TestResultStatsDto>(query, new { StudentId = studentId })).ToList();
+
+        if (results.Count == 0)
+        {
+            return new StudentStatisticsResponse();
+        }
+
+        int totalPoints = results.Sum(r => r.TotalPoints);
+        double averageScore = (double)results.Average(r => r.ScorePercentage);
+
+        List<ScoreHistoryItem> history = results.Select(r => new ScoreHistoryItem
+        {
+            Date = r.Date,
+            ScorePercentage = (double)r.ScorePercentage
+        }).ToList();
+
+        return new StudentStatisticsResponse
+        {
+            TotalPoints = totalPoints,
+            AverageScorePercentage = averageScore,
+            ScoreHistory = history
+        };
+    }
+
+    private sealed class TestResultStatsDto
+    {
+        public DateTime Date { get; init; }
+        public decimal ScorePercentage { get; init; }
+        public int TotalPoints { get; init; }
     }
 
     private async Task<Test?> GetTestInternalAsync(int testId)
