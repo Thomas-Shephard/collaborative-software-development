@@ -26,7 +26,7 @@ public class UpcomingTestsControllerTests
 
     private void SetupUser(object? userId)
     {
-        Claim[] claims = [new(JwtRegisteredClaimNames.Sub, userId?.ToString() ?? "")];
+        Claim[] claims = [new(ClaimTypes.NameIdentifier, userId?.ToString() ?? "")];
         ClaimsPrincipal user = new(new ClaimsIdentity(claims, "TestAuth"));
         _controller.ControllerContext = new ControllerContext
         {

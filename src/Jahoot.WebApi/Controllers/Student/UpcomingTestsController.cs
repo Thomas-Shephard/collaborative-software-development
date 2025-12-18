@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Models.Responses;
 using Jahoot.WebApi.Repositories;
@@ -16,7 +16,7 @@ public class UpcomingTestsController(IStudentRepository studentRepository, ITest
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UpcomingTestResponse>>> GetUpcomingTests()
     {
-        string? userIdString = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        string? userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(userIdString, out int userId))
         {
             return BadRequest();
