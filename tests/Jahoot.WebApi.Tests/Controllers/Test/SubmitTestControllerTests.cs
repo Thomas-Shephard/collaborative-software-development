@@ -389,7 +389,7 @@ public class SubmitTestControllerTests
         OkObjectResult? okResult = result.Result as OkObjectResult;
         CompletedTestResponse? response = okResult?.Value as CompletedTestResponse;
 
-        Assert.That(response?.ScorePercentage, Is.EqualTo(0.0));
+        Assert.That(response?.ScorePercentage, Is.Zero);
     }
 
     [Test]
