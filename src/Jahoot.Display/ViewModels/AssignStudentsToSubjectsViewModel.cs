@@ -111,6 +111,9 @@ namespace Jahoot.Display.ViewModels
                         var updatedStudent = new Student
                         {
                             UserId = student.UserId,
+                            Name = student.Name,
+                            Email = student.Email,
+                            Roles = student.Roles,
                             Subjects = currentSubjects
                         };
 
