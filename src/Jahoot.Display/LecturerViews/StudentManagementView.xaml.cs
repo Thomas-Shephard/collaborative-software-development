@@ -119,7 +119,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 else
                 {
-                    MessageBox.Show($"Approved student {studentToReject.Name} cannot be unapproved.", "Cannot Reject", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // User has requested this message box be removed.
                 }
             }
         }
