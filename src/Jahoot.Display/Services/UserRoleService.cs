@@ -50,23 +50,27 @@ public class UserRoleService : IUserRoleService
     {
         var dashboards = new List<string>();
 
-        foreach (var role in _userRoles)
+        // Admin has access to all dashboards
+        if (_userRoles.Contains(Role.Admin))
         {
-            switch (role)
-            {
-                case Role.Student:
-                    if (!dashboards.Contains("Student"))
-                        dashboards.Add("Student");
-                    break;
-                case Role.Lecturer:
-                    if (!dashboards.Contains("Lecturer"))
-                        dashboards.Add("Lecturer");
-                    break;
-                case Role.Admin:
-                    if (!dashboards.Contains("Admin"))
-                        dashboards.Add("Admin");
-                    break;
-            }
+            dashboards.Add("Admin");
+            dashboards.Add("Lecturer");
+            dashboards.Add("Student");
+            return dashboards;
+        }
+
+        // Lecturer has access to Lecturer and Student dashboards
+        if (_userRoles.Contains(Role.Lecturer))
+        {
+            dashboards.Add("Lecturer");
+            dashboards.Add("Student");
+            return dashboards;
+        }
+
+        // Student only has access to Student dashboard
+        if (_userRoles.Contains(Role.Student))
+        {
+            dashboards.Add("Student");
         }
 
         return dashboards;
@@ -76,9 +80,15 @@ public class UserRoleService : IUserRoleService
     {
         return dashboardName switch
         {
-            "Student" => _userRoles.Contains(Role.Student),
-            "Lecturer" => _userRoles.Contains(Role.Lecturer),
+            // Admin dashboard: only Admin role
             "Admin" => _userRoles.Contains(Role.Admin),
+            
+            // Lecturer dashboard: Admin or Lecturer roles
+            "Lecturer" => _userRoles.Contains(Role.Admin) || _userRoles.Contains(Role.Lecturer),
+            
+            // Student dashboard: Any role (Admin, Lecturer, or Student)
+            "Student" => _userRoles.Contains(Role.Admin) || _userRoles.Contains(Role.Lecturer) || _userRoles.Contains(Role.Student),
+            
             _ => false
         };
     }

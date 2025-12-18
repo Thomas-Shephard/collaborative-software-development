@@ -69,7 +69,7 @@ namespace Jahoot.Display.Services
                 return false;
 
             // Get or create the dashboard for the specified role
-            var dashboard = GetOrCreateDashboard(role);
+            var dashboard = GetOrCreateDashboard(role, currentWindow);
             
             if (dashboard == null || dashboard == currentWindow)
                 return false;
@@ -94,13 +94,18 @@ namespace Jahoot.Display.Services
         /// <summary>
         /// Gets an existing dashboard from cache or creates a new one.
         /// </summary>
-        private Window? GetOrCreateDashboard(string role)
+        private Window? GetOrCreateDashboard(string role, Window? currentWindow = null)
         {
             // Check if we already have a cached instance
             if (_dashboardCache.TryGetValue(role, out var cachedDashboard))
             {
+                // Don't return the cached dashboard if it's the current window
+                if (cachedDashboard == currentWindow)
+                {
+                    _dashboardCache.Remove(role);
+                }
                 // Verify the cached window is still valid
-                if (cachedDashboard != null && !cachedDashboard.IsLoaded)
+                else if (cachedDashboard != null && !cachedDashboard.IsLoaded)
                 {
                     // Window was closed externally, remove from cache
                     _dashboardCache.Remove(role);

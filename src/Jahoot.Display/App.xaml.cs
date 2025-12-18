@@ -56,6 +56,9 @@ public partial class App : Application
         services.AddTransient<ILecturerService, LecturerService>();
         services.AddTransient<IStudentService, StudentService>();
         
+        // Register user role service as singleton to maintain state across the application
+        services.AddSingleton<IUserRoleService, UserRoleService>();
+        
         // Register dashboard navigation service as singleton to maintain cache
         services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
         
