@@ -4,17 +4,19 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
-using System.Text;
 using System.Collections.Generic;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Models;
 using System.Net;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Jahoot.Display.Services;
+
 public class AuthService(HttpClient httpClient, ISecureStorageService secureStorageService) : IAuthService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly ISecureStorageService _secureStorageService = secureStorageService;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
     public async Task<Result> Login(LoginRequestModel loginRequest)
     {
@@ -32,7 +34,7 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
                     {
                         _secureStorageService.SaveToken(token);
                         
-                        // Decode the JWT token to extract roles
+                        // Extract roles from token using JWT library
                         var roles = ExtractRolesFromToken(token);
                         
                         return new Result 
@@ -61,56 +63,33 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
     {
         try
         {
-            // JWT token format: header.payload.signature
-            var parts = token.Split('.');
-            if (parts.Length != 3)
-                return new List<Role>();
-            
-            // Decode the payload (second part)
-            var payload = parts[1];
-            
-            // Add padding if needed for base64 decoding
-            switch (payload.Length % 4)
-            {
-                case 2: payload += "=="; break;
-                case 3: payload += "="; break;
-            }
-            
-            var payloadBytes = Convert.FromBase64String(payload);
-            var payloadJson = Encoding.UTF8.GetString(payloadBytes);
-            
-            // Parse the JSON payload
-            using var jsonDoc = JsonDocument.Parse(payloadJson);
+            // Use JwtSecurityTokenHandler to safely parse the token
+            var jwtToken = _tokenHandler.ReadJwtToken(token);
             var roles = new List<Role>();
             
             // JWT role claims use "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" as the key
-            if (jsonDoc.RootElement.TryGetProperty("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", out var roleElement))
+            const string roleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+            
+            var roleClaims = jwtToken.Claims.Where(c => c.Type == roleClaimType);
+            
+            foreach (var claim in roleClaims)
             {
-                // Roles can be a single string or an array of strings
-                if (roleElement.ValueKind == JsonValueKind.String)
+                if (Enum.TryParse<Role>(claim.Value, out var role))
                 {
-                    if (Enum.TryParse<Role>(roleElement.GetString(), out var role))
-                    {
-                        roles.Add(role);
-                    }
-                }
-                else if (roleElement.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var roleItem in roleElement.EnumerateArray())
-                    {
-                        if (Enum.TryParse<Role>(roleItem.GetString(), out var role))
-                        {
-                            roles.Add(role);
-                        }
-                    }
+                    roles.Add(role);
                 }
             }
             
             return roles;
         }
-        catch
+        catch (ArgumentException)
         {
-            // If token parsing fails, return empty list
+            // Token format is invalid
+            return new List<Role>();
+        }
+        catch (Exception)
+        {
+            // Any other parsing error
             return new List<Role>();
         }
     }

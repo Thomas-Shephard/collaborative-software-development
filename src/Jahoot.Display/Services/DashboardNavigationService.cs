@@ -34,14 +34,18 @@ namespace Jahoot.Display.Services
 
         /// <summary>
         /// Determines which dashboard to navigate to based on user's roles.
-        /// Priority order: Admin/Lecturer -> Student
+        /// Priority order: Admin -> Lecturer -> Student
         /// </summary>
         private string DetermineTargetRoleFromRoles(List<Role> roles)
         {
             // Priority order: Admin -> Lecturer -> Student
-            if (roles.Contains(Role.Admin) || roles.Contains(Role.Lecturer))
+            if (roles.Contains(Role.Admin))
             {
-                return "Lecturer"; // Both Admin and Lecturer use LecturerDashboard
+                return "Admin";
+            }
+            else if (roles.Contains(Role.Lecturer))
+            {
+                return "Lecturer";
             }
             else if (roles.Contains(Role.Student))
             {
@@ -54,8 +58,9 @@ namespace Jahoot.Display.Services
 
         /// <summary>
         /// Navigates to the specified dashboard role, reusing cached instances when possible.
+        /// Only allows navigation to roles the user actually has access to.
         /// </summary>
-        /// <param name="role">The role name (e.g., "Student", "Lecturer")</param>
+        /// <param name="role">The role name (e.g., "Student", "Lecturer", "Admin")</param>
         /// <param name="currentWindow">The window to close after navigation</param>
         /// <returns>True if navigation was successful, false otherwise</returns>
         public bool NavigateToDashboard(string role, Window currentWindow)
@@ -126,6 +131,7 @@ namespace Jahoot.Display.Services
             {
                 "Student" => _serviceProvider.GetService(typeof(StudentViews.StudentDashboard)) as Window,
                 "Lecturer" => _serviceProvider.GetService(typeof(LecturerViews.LecturerDashboard)) as Window,
+                "Admin" => _serviceProvider.GetService(typeof(Pages.AdminDashboard)) as Window,
                 _ => null
             };
         }

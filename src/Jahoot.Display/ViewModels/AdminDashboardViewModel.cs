@@ -6,6 +6,8 @@ namespace Jahoot.Display.ViewModels
 {
     public class AdminDashboardViewModel : BaseViewModel
     {
+        private ObservableCollection<string> _availableRoles = new();
+        
         public string AdminInitials
         {
             get => field;
@@ -62,13 +64,13 @@ namespace Jahoot.Display.ViewModels
 
         public ObservableCollection<string> AvailableRoles
         {
-            get => field;
+            get => _availableRoles;
             set
             {
-                field = value;
+                _availableRoles = value;
                 OnPropertyChanged();
             }
-        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+        }
 
         public string SelectedRole
         {
@@ -93,6 +95,9 @@ namespace Jahoot.Display.ViewModels
 
         public AdminDashboardViewModel()
         {
+            // Initialize with Admin role by default
+            _availableRoles = new ObservableCollection<string> { "Admin" };
+            
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
             {
                 new RecentActivityItem { StudentInitials = "Sy", DescriptionPrefix = "System ", TestName = "Backup Completed", TimeAgo = "10 mins ago", Result = "Success" },

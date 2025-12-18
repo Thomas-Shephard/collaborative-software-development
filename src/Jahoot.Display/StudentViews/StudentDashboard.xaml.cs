@@ -1,9 +1,13 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using Jahoot.Display.Models;
+using Jahoot.Display.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display.StudentViews
 {
@@ -12,12 +16,27 @@ namespace Jahoot.Display.StudentViews
         public StudentDashboard()
         {
             InitializeComponent();
-            this.DataContext = new StudentDashboardViewModel();
+            
+            // Get user roles from service and filter available roles
+            var app = Application.Current as App;
+            var userRoleService = app?.ServiceProvider?.GetService<IUserRoleService>();
+            
+            var viewModel = new StudentDashboardViewModel();
+            
+            if (userRoleService != null)
+            {
+                var availableDashboards = userRoleService.GetAvailableDashboards();
+                viewModel.AvailableRoles = new ObservableCollection<string>(availableDashboards);
+            }
+            
+            DataContext = viewModel;
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            // Future functionality
+            // Tab selection handling - future functionality
+            // The Student Dashboard uses a different layout structure
+            // that doesn't require visibility toggling
         }
     }
 
@@ -33,6 +52,9 @@ namespace Jahoot.Display.StudentViews
 
     public class StudentDashboardViewModel : BaseViewModel
     {
+        private int _selectedTabIndex = 0;
+        private ObservableCollection<string> _availableRoles = new();
+
         public string StudentInitials
         {
             get => field;
@@ -89,13 +111,13 @@ namespace Jahoot.Display.StudentViews
 
         public ObservableCollection<string> AvailableRoles
         {
-            get => field;
+            get => _availableRoles;
             set
             {
-                field = value;
+                _availableRoles = value;
                 OnPropertyChanged();
             }
-        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+        }
 
         public string SelectedRole
         {
@@ -109,16 +131,19 @@ namespace Jahoot.Display.StudentViews
 
         public int SelectedTabIndex
         {
-            get => field;
+            get => _selectedTabIndex;
             set
             {
-                field = value;
+                _selectedTabIndex = value;
                 OnPropertyChanged();
             }
-        } = 0;
+        }
 
         public StudentDashboardViewModel()
         {
+            // Initialize with Student role by default
+            _availableRoles = new ObservableCollection<string> { "Student" };
+
             UpcomingTestItems = new ObservableCollection<TestItem>
             {
                 new TestItem 

@@ -7,6 +7,7 @@ using Jahoot.Core.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display;
+
 public partial class LoginPage : Window
 {
     private readonly IAuthService _authService;
@@ -42,6 +43,10 @@ public partial class LoginPage : Window
 
             if (result.Success)
             {
+                // Store user roles in the UserRoleService
+                var userRoleService = _serviceProvider.GetService<IUserRoleService>();
+                userRoleService?.SetUserRoles(result.UserRoles);
+
                 var navigationService = _serviceProvider.GetRequiredService<IDashboardNavigationService>();
                 
                 // Use centralized navigation service with role-based logic
@@ -55,13 +60,13 @@ public partial class LoginPage : Window
             }
             else
             {
-                LoginErrorText.Text = result.ErrorMessage;
+                LoginErrorText.Text = result.ErrorMessage ?? "Login failed";
                 LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
-        catch 
+        catch
         {
-            LoginErrorText.Text = $"An error occurred.";
+            LoginErrorText.Text = "An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
         }
     }
@@ -99,10 +104,11 @@ public partial class LoginPage : Window
         var strongPasswordAttribute = new StrongPasswordAttribute();
         if (!strongPasswordAttribute.IsValid(password))
         {
-            LoginErrorText.Text = strongPasswordAttribute.ErrorMessage;
+            LoginErrorText.Text = strongPasswordAttribute.ErrorMessage ?? "Password does not meet requirements.";
             LoginErrorBanner.Visibility = Visibility.Visible;
             return;
         }
+        
         if (password != confirmPassword)
         {
             LoginErrorText.Text = "Passwords do not match.";
@@ -129,13 +135,13 @@ public partial class LoginPage : Window
             }
             else
             {
-                LoginErrorText.Text = result.ErrorMessage;
+                LoginErrorText.Text = result.ErrorMessage ?? "Registration failed";
                 LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
         catch
         {
-            LoginErrorText.Text = $"An error occurred.";
+            LoginErrorText.Text = "An error occurred.";
             LoginErrorBanner.Visibility = Visibility.Visible;
         }
     }
@@ -149,7 +155,7 @@ public partial class LoginPage : Window
 
     private void SignInPasswordBox_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter)
+        if (e.Key == Key.Enter)
         {
             LoginButton_Click(sender, e);
         }

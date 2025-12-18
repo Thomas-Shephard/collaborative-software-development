@@ -5,9 +5,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using Jahoot.Core.Models;
-using Jahoot.Display.Services;
 
 namespace Jahoot.Display.Controls
 {
@@ -18,8 +15,8 @@ namespace Jahoot.Display.Controls
 
         public ObservableCollection<string> AvailableRoles
         {
-            get { return (ObservableCollection<string>)GetValue(AvailableRolesProperty); }
-            set { SetValue(AvailableRolesProperty, value); }
+            get => (ObservableCollection<string>)GetValue(AvailableRolesProperty);
+            set => SetValue(AvailableRolesProperty, value);
         }
 
         public static readonly DependencyProperty SelectedRoleProperty =
@@ -27,8 +24,8 @@ namespace Jahoot.Display.Controls
 
         public string SelectedRole
         {
-            get { return (string)GetValue(SelectedRoleProperty); }
-            set { SetValue(SelectedRoleProperty, value); }
+            get => (string)GetValue(SelectedRoleProperty);
+            set => SetValue(SelectedRoleProperty, value);
         }
 
         public static readonly DependencyProperty UserInitialsProperty =
@@ -36,8 +33,8 @@ namespace Jahoot.Display.Controls
 
         public string UserInitials
         {
-            get { return (string)GetValue(UserInitialsProperty); }
-            set { SetValue(UserInitialsProperty, value); }
+            get => (string)GetValue(UserInitialsProperty);
+            set => SetValue(UserInitialsProperty, value);
         }
 
         public static readonly DependencyProperty SubHeaderTextProperty =
@@ -45,8 +42,8 @@ namespace Jahoot.Display.Controls
 
         public string SubHeaderText
         {
-            get { return (string)GetValue(SubHeaderTextProperty); }
-            set { SetValue(SubHeaderTextProperty, value); }
+            get => (string)GetValue(SubHeaderTextProperty);
+            set => SetValue(SubHeaderTextProperty, value);
         }
 
         private static void OnSelectedRoleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -59,6 +56,12 @@ namespace Jahoot.Display.Controls
 
         private void HandleRoleChange(string newRole)
         {
+            if (string.IsNullOrWhiteSpace(newRole))
+            {
+                Debug.WriteLine("[DashboardHeader] Role change aborted: new role is null or empty");
+                return;
+            }
+
             try
             {
                 var currentWindow = Window.GetWindow(this);
@@ -75,6 +78,21 @@ namespace Jahoot.Display.Controls
                     return;
                 }
 
+                // Check if user has access to the requested dashboard
+                var userRoleService = app.ServiceProvider.GetService<IUserRoleService>();
+                if (userRoleService != null && !userRoleService.HasAccessToDashboard(newRole))
+                {
+                    Debug.WriteLine($"[DashboardHeader] Access denied: User does not have {newRole} role");
+                    MessageBox.Show($"You do not have access to the {newRole} dashboard.", 
+                        "Access Denied", 
+                        MessageBoxButton.OK, 
+                        MessageBoxImage.Warning);
+                    
+                    // Revert to previous role
+                    SelectedRole = (string)GetValue(SelectedRoleProperty);
+                    return;
+                }
+
                 var navigationService = app.ServiceProvider.GetRequiredService<IDashboardNavigationService>();
                 
                 bool success = navigationService.NavigateToDashboard(newRole, currentWindow);
@@ -82,12 +100,20 @@ namespace Jahoot.Display.Controls
                 if (!success)
                 {
                     Debug.WriteLine($"[DashboardHeader] Navigation to {newRole} dashboard failed");
+                    MessageBox.Show($"Failed to navigate to {newRole} dashboard.", 
+                        "Navigation Error", 
+                        MessageBoxButton.OK, 
+                        MessageBoxImage.Error);
                 }
             }
             catch (InvalidOperationException ex)
             {
                 Debug.WriteLine($"[DashboardHeader] Service resolution failed: {ex.Message}");
                 Trace.TraceError($"DashboardHeader role change failed - DI issue: {ex}");
+                MessageBox.Show("An error occurred while changing dashboards.", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
             catch (ArgumentException ex)
             {
@@ -98,6 +124,10 @@ namespace Jahoot.Display.Controls
             {
                 Debug.WriteLine($"[DashboardHeader] Unexpected error during role change: {ex.Message}");
                 Trace.TraceError($"DashboardHeader role change failed - Unexpected error: {ex}");
+                MessageBox.Show("An unexpected error occurred.", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
 
@@ -112,8 +142,12 @@ namespace Jahoot.Display.Controls
             {
                 var app = (App)Application.Current;
                 var authService = app.ServiceProvider.GetRequiredService<IAuthService>();
+                var userRoleService = app.ServiceProvider.GetService<IUserRoleService>();
 
                 await authService.Logout();
+                
+                // Clear user roles on logout
+                userRoleService?.ClearRoles();
 
                 MessageBox.Show("You have been successfully signed out", "Signed Out", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -123,9 +157,10 @@ namespace Jahoot.Display.Controls
                 var currentWindow = Window.GetWindow(this);
                 currentWindow?.Close();
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show($"Logout failed", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"[DashboardHeader] Logout failed: {ex.Message}");
+                MessageBox.Show("Logout failed", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

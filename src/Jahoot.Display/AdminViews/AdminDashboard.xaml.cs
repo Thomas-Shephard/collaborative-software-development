@@ -1,6 +1,8 @@
 using System.Windows;
 using Jahoot.Display.Services;
 using Jahoot.Display.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 
 namespace Jahoot.Display.Pages
 {
@@ -9,7 +11,20 @@ namespace Jahoot.Display.Pages
         public AdminDashboard(ISubjectService subjectService, ILecturerService lecturerService)
         {
             InitializeComponent();
-            this.DataContext = new AdminDashboardViewModel();
+            
+            // Get user roles from service and filter available roles
+            var app = Application.Current as App;
+            var userRoleService = app?.ServiceProvider?.GetService<IUserRoleService>();
+            
+            var viewModel = new AdminDashboardViewModel();
+            
+            if (userRoleService != null)
+            {
+                var availableDashboards = userRoleService.GetAvailableDashboards();
+                viewModel.AvailableRoles = new ObservableCollection<string>(availableDashboards);
+            }
+            
+            DataContext = viewModel;
             _ = InitializeViewsAsync(subjectService, lecturerService);
         }
 
@@ -21,7 +36,7 @@ namespace Jahoot.Display.Pages
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            if (this.DataContext is AdminDashboardViewModel vm)
+            if (DataContext is AdminDashboardViewModel vm)
             {
                 // Ensure UI elements are initialized
                 if (OverviewContent == null || SubjectsView == null || LecturersView == null || SettingsView == null)
