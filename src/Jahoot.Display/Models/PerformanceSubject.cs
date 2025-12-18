@@ -1,5 +1,8 @@
 namespace Jahoot.Display.Models
 {
+    /// <summary>
+    /// Represents performance data for a subject.
+    /// </summary>
     public class PerformanceSubject
     {
         public required string SubjectName { get; set; }

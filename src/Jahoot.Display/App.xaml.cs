@@ -1,45 +1,52 @@
-    using Jahoot.Display.Services;
-    using Microsoft.Extensions.DependencyInjection;
-    using System.Net.Http;
-    using System.Windows;
-    using Microsoft.Extensions.Configuration;
-    using System.IO;
-    using System.Reflection;
-using Jahoot.Display.ViewModels;
+using Jahoot.Display.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using System.Windows;
 
 namespace Jahoot.Display;
 
-    public partial class App : Application
+public partial class App : Application
+{
+    public IServiceProvider ServiceProvider { get; private set; }
+    private IConfigurationRoot? _configuration;
+
+    public App()
     {
-        public IServiceProvider ServiceProvider { get; private set; }
-        private IConfigurationRoot? _configuration;
+        var serviceCollection = new ServiceCollection();
+        ConfigureAppConfiguration(serviceCollection);
+        ConfigureServices(serviceCollection);
+        ServiceProvider = serviceCollection.BuildServiceProvider();
+    }
 
-        public App()
+    private void ConfigureAppConfiguration(IServiceCollection services)
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using Stream? stream = assembly.GetManifestResourceStream("appsettings.json");
+
+        if (stream is null)
         {
-            var serviceCollection = new ServiceCollection();
-            ConfigureAppConfiguration(serviceCollection);
-            ConfigureServices(serviceCollection);
-            ServiceProvider = serviceCollection.BuildServiceProvider();
+            throw new InvalidOperationException("Embedded appsettings.json not found.");
         }
 
-        private void ConfigureAppConfiguration(IServiceCollection services)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using Stream? stream = assembly.GetManifestResourceStream("appsettings.json");
+        _configuration = new ConfigurationBuilder()
+            .AddJsonStream(stream)
+            .Build();
 
-            if (stream is null)
-            {
-                throw new InvalidOperationException("Embedded appsettings.json not found.");
-            }
+        services.AddSingleton<IConfiguration>(_configuration);
+    }
 
-            _configuration = new ConfigurationBuilder()
-                .AddJsonStream(stream)
-                .Build();
+    private void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<ISecureStorageService, SecureStorageService>();
 
-            services.AddSingleton<IConfiguration>(_configuration);
-        }
+        string baseAddress = _configuration?.GetValue<string>("BaseAddress")
+                             ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
 
-        private void ConfigureServices(IServiceCollection services)
+        services.AddSingleton<HttpClient>(sp => new HttpClient
         {
             services.AddSingleton<ISecureStorageService, SecureStorageService>();
 
@@ -60,12 +67,14 @@ namespace Jahoot.Display;
             services.AddTransient<AssignStudentsToSubjectsViewModel>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
+            services.AddSingleton<IUserRoleService, UserRoleService>();
+            services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
-            landingPage.Show();
-        }
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
+        landingPage.Show();
     }
+}

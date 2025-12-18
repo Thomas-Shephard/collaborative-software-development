@@ -49,7 +49,7 @@ public partial class SubjectFormWindow : Window
             return;
         }
 
-        Result result = _subject == null
+        Services.Result result = _subject == null
             ? await _subjectService.CreateSubjectAsync(new CreateSubjectRequestModel { Name = name })
             : await _subjectService.UpdateSubjectAsync(_subject.SubjectId, new UpdateSubjectRequestModel { Name = name, IsActive = ActiveCheckBox.IsChecked.GetValueOrDefault() });
 

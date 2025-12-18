@@ -1,5 +1,6 @@
 using Jahoot.Core.Models;
 using Jahoot.Display.Services;
+using Jahoot.Display.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -51,12 +52,12 @@ namespace Jahoot.Display.LecturerViews
         {
             _studentService = studentService;
 
-            EditStudentCommand = new RelayCommand(EditStudent);
-            ApproveStudentCommand = new RelayCommand(ApproveStudent);
-            RejectStudentCommand = new RelayCommand(RejectStudent);
-            DeleteStudentCommand = new RelayCommand(DeleteStudent);
-            EnableStudentCommand = new RelayCommand(EnableStudent);
-            DisableStudentCommand = new RelayCommand(DisableStudent);
+            EditStudentCommand = new RelayCommand(EditStudent, null);
+            ApproveStudentCommand = new RelayCommand(ApproveStudent, null);
+            RejectStudentCommand = new RelayCommand(RejectStudent, null);
+            DeleteStudentCommand = new RelayCommand(DeleteStudent, null);
+            EnableStudentCommand = new RelayCommand(EnableStudent, null);
+            DisableStudentCommand = new RelayCommand(DisableStudent, null);
 
             _ = LoadStudents();
         }
