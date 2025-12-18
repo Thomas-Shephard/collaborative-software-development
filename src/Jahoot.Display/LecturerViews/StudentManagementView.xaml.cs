@@ -145,10 +145,6 @@ namespace Jahoot.Display.LecturerViews
                             await LoadStudents();
                         }
                     }
-                    else
-                    {
-                        // User has requested this message box be removed.
-                    }
                 }
                 catch (Exception ex)
                 {
