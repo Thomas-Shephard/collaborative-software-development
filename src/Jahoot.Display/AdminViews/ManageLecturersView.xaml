@@ -28,7 +28,7 @@
 
             <controls:StatCard Grid.Column="0" Title="Total Lecturers" Value="{Binding TotalLecturers}" Icon="👨‍🏫" Margin="0,0,20,0"/>
             <controls:StatCard Grid.Column="1" Title="Active Lecturers" Value="{Binding ActiveLecturers}" Icon="✅" Margin="0,0,20,0"/>
-            <controls:StatCard Grid.Column="2" Title="Disabled Lecturers" Value="{Binding InactiveLecturers}" Icon="🚫"/>
+            <controls:StatCard Grid.Column="2" Title="Inactive Lecturers" Value="{Binding InactiveLecturers}" Icon="🚫"/>
         </Grid>
 
         <!-- Main Content Area -->
