@@ -73,7 +73,7 @@ public partial class LecturerFormWindow : Window
              return;
         }
 
-        Result result;
+        Services.Result result;
 
         if (_lecturer == null)
         {
