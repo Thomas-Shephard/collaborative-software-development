@@ -3,20 +3,29 @@ using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.WebApi.Models.Responses;
 using Jahoot.WebApi.Repositories;
+using Jahoot.WebApi.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Jahoot.WebApi.Controllers.Test;
 
 [Route("api/test/{testId:int}/submit")]
 [ApiController]
 [Tags("Test")]
-public class SubmitTestController(ITestRepository testRepository, ISubjectRepository subjectRepository, IStudentRepository studentRepository) : ControllerBase
+public class SubmitTestController(ITestRepository testRepository, ISubjectRepository subjectRepository, IStudentRepository studentRepository, IOptions<ScoringSettings> scoringSettings) : ControllerBase
 {
+    private readonly ScoringSettings _scoringSettings = scoringSettings.Value;
+
     [HttpPost]
     [Authorize(Policy = nameof(Role.Student))]
     public async Task<ActionResult<CompletedTestResponse>> SubmitTest(int testId, [FromBody] SubmitTestRequestModel request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         Core.Models.Test? test = await testRepository.GetTestByIdAsync(testId);
         if (test is null)
         {
@@ -57,24 +66,30 @@ public class SubmitTestController(ITestRepository testRepository, ISubjectReposi
 
         int score = 0;
         int questionsCorrect = 0;
+        HashSet<int> processedQuestionIds = [];
 
         foreach (AnswerRequestModel answer in request.Answers)
         {
-            Question? question = test.Questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
-            if (question is null)
+            if (!processedQuestionIds.Add(answer.QuestionId))
             {
                 continue;
             }
 
-            QuestionOption? selectedOption = question.Options.FirstOrDefault(o => o.QuestionOptionId == answer.SelectedOptionId);
-            if (selectedOption is { IsCorrect: true })
+            Question? question = test.Questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
+            QuestionOption? selectedOption = question?.Options.FirstOrDefault(o => o.QuestionOptionId == answer.SelectedOptionId);
+            if (selectedOption is null)
             {
-                score += 30;
+                continue;
+            }
+
+            if (selectedOption.IsCorrect)
+            {
+                score += _scoringSettings.PointsPerCorrectAnswer;
                 questionsCorrect++;
             }
             else
             {
-                score -= 10;
+                score += _scoringSettings.PointsPerIncorrectAnswer;
             }
         }
 
@@ -86,8 +101,8 @@ public class SubmitTestController(ITestRepository testRepository, ISubjectReposi
             TestName = test.Name,
             SubjectName = subject.Name,
             StudentName = student.Name,
-            CompletedDate = DateTime.Now,
-            ScorePercentage = (double)questionsCorrect * 100 / test.NumberOfQuestions,
+            CompletedDate = DateTime.UtcNow,
+            ScorePercentage = test.NumberOfQuestions > 0 ? (double)questionsCorrect * 100 / test.NumberOfQuestions : 0,
             TotalPoints = score
         });
     }
