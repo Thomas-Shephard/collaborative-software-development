@@ -1,12 +1,8 @@
-# collaborative-software-development
+# Collaborative Software Development
 
-## API Testing with Bruno
+## API Testing with Scalar
 
-This project includes a Bruno collection for API testing.
-The collection defines various API requests that can be used to interact with the project's backend services.
-You can find the collection in the `bruno/` directory.
-
-Bruno assumes that the backend services are being hosted locally using Docker compose.
+This project automatically compiles a list of its endpoints through scalar for testing purposes. You may access this locally at http://localhost/scalar or when deployed at https://jahoot.net/scalar.
 
 ## GitHub Pull Request Titles
 

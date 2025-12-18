@@ -111,6 +111,16 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
         }
     }
 
+    private async void AssignLecturer_Click(object sender, RoutedEventArgs e)
+    {
+        var form = new AssignLecturerRoleWindow(_lecturerService);
+        form.Owner = Window.GetWindow(this);
+        if (form.ShowDialog() == true)
+        {
+            await LoadLecturers();
+        }
+    }
+
     private async void EditLecturer_Click(object sender, RoutedEventArgs e)
     {
         var lecturer = (sender as Button)?.CommandParameter as Lecturer;
