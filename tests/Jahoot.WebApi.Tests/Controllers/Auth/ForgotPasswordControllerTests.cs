@@ -1,9 +1,11 @@
+using System.Net;
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.WebApi.Controllers.Auth;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services;
 using Jahoot.WebApi.Services.Background;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -14,7 +16,9 @@ public class ForgotPasswordControllerTests
     private Mock<IUserRepository> _userRepositoryMock;
     private Mock<IPasswordResetRepository> _passwordResetRepositoryMock;
     private Mock<IEmailQueue> _emailQueueMock;
+    private Mock<ISecurityLockoutService> _securityLockoutServiceMock;
     private ForgotPasswordController _forgotPasswordController;
+    private Mock<HttpContext> _httpContextMock;
 
     [SetUp]
     public void Setup()
@@ -22,7 +26,19 @@ public class ForgotPasswordControllerTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _passwordResetRepositoryMock = new Mock<IPasswordResetRepository>();
         _emailQueueMock = new Mock<IEmailQueue>();
-        _forgotPasswordController = new ForgotPasswordController(_userRepositoryMock.Object, _passwordResetRepositoryMock.Object, _emailQueueMock.Object);
+        _securityLockoutServiceMock = new Mock<ISecurityLockoutService>();
+
+        _forgotPasswordController = new ForgotPasswordController(_userRepositoryMock.Object, _passwordResetRepositoryMock.Object, _emailQueueMock.Object, _securityLockoutServiceMock.Object);
+
+        _httpContextMock = new Mock<HttpContext>();
+        Mock<ConnectionInfo> connection = new();
+        connection.Setup(c => c.RemoteIpAddress).Returns(new IPAddress(new byte[] { 127, 0, 0, 1 }));
+        _httpContextMock.Setup(c => c.Connection).Returns(connection.Object);
+
+        _forgotPasswordController.ControllerContext = new ControllerContext
+        {
+            HttpContext = _httpContextMock.Object
+        };
     }
 
     [Test]
@@ -82,12 +98,9 @@ public class ForgotPasswordControllerTests
             Assert.That(capturedEmailMessage.Subject, Is.EqualTo("Reset Your Jahoot Password"));
         }
 
-        // Extract token from email body "Use the code {token} to reset your password. You have 15 minutes until the code expires."
-        // Note: The controller format is "Use the code {token} to reset your password..."
         string plainToken = capturedEmailMessage!.Body.Split("Use the code ")[1].Split(" to reset your password")[0];
 
-        //Assert.That(PasswordUtils.VerifyPassword(plainToken, capturedTokenHash), Is.True);
-
+        _securityLockoutServiceMock.Verify(s => s.ResetAttempts("IP:127.0.0.1", "Email:test@example.com"), Times.Once);
         _passwordResetRepositoryMock.Verify(passwordResetRepository => passwordResetRepository.CreateTokenAsync(user.UserId, capturedTokenHash), Times.Once);
         _emailQueueMock.Verify(s => s.QueueBackgroundEmailAsync(It.Is<EmailMessage>(m => m.To == user.Email && m.Body.Contains(plainToken))), Times.Once);
     }

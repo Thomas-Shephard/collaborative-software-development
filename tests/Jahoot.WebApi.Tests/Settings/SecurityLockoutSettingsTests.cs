@@ -2,7 +2,7 @@ using Jahoot.WebApi.Settings;
 
 namespace Jahoot.WebApi.Tests.Settings;
 
-public class LoginAttemptSettingsTests
+public class SecurityLockoutSettingsTests
 {
     private const int MaxFailedAttempts = 5;
     private readonly TimeSpan _cleanupInterval = TimeSpan.FromHours(1);
@@ -11,9 +11,9 @@ public class LoginAttemptSettingsTests
     private readonly TimeSpan _initialLockoutDuration = TimeSpan.FromMinutes(1);
 
     [Test]
-    public void LoginAttemptSettings_CanBeInstantiated_WithValidProperties()
+    public void SecurityLockoutSettings_CanBeInstantiated_WithValidProperties()
     {
-        LoginAttemptSettings settings = new()
+        SecurityLockoutSettings settings = new()
         {
             MaxFailedAttempts = MaxFailedAttempts,
             InitialLockoutDuration = _initialLockoutDuration,
@@ -33,11 +33,11 @@ public class LoginAttemptSettingsTests
     }
 
     [Test]
-    public void LoginAttemptSettings_MaxFailedAttemptsIsZero_ThrowsInvalidOperationException()
+    public void SecurityLockoutSettings_MaxFailedAttemptsIsZero_ThrowsInvalidOperationException()
     {
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _ = new LoginAttemptSettings
+            _ = new SecurityLockoutSettings
             {
                 MaxFailedAttempts = 0,
                 InitialLockoutDuration = _initialLockoutDuration,
@@ -49,11 +49,11 @@ public class LoginAttemptSettingsTests
     }
 
     [Test]
-    public void LoginAttemptSettings_InitialLockoutDurationIsZero_ThrowsInvalidOperationException()
+    public void SecurityLockoutSettings_InitialLockoutDurationIsZero_ThrowsInvalidOperationException()
     {
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _ = new LoginAttemptSettings
+            _ = new SecurityLockoutSettings
             {
                 MaxFailedAttempts = MaxFailedAttempts,
                 InitialLockoutDuration = TimeSpan.Zero,
@@ -65,11 +65,11 @@ public class LoginAttemptSettingsTests
     }
 
     [Test]
-    public void LoginAttemptSettings_IncrementalLockoutDurationIsNegative_ThrowsInvalidOperationException()
+    public void SecurityLockoutSettings_IncrementalLockoutDurationIsNegative_ThrowsInvalidOperationException()
     {
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _ = new LoginAttemptSettings
+            _ = new SecurityLockoutSettings
             {
                 MaxFailedAttempts = MaxFailedAttempts,
                 InitialLockoutDuration = _initialLockoutDuration,
@@ -81,11 +81,11 @@ public class LoginAttemptSettingsTests
     }
 
     [Test]
-    public void LoginAttemptSettings_FailedAttemptResetIntervalIsNegative_ThrowsInvalidOperationException()
+    public void SecurityLockoutSettings_FailedAttemptResetIntervalIsNegative_ThrowsInvalidOperationException()
     {
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _ = new LoginAttemptSettings
+            _ = new SecurityLockoutSettings
             {
                 MaxFailedAttempts = MaxFailedAttempts,
                 InitialLockoutDuration = _initialLockoutDuration,
@@ -97,11 +97,11 @@ public class LoginAttemptSettingsTests
     }
 
     [Test]
-    public void LoginAttemptSettings_CleanupIntervalIsZero_ThrowsInvalidOperationException()
+    public void SecurityLockoutSettings_CleanupIntervalIsZero_ThrowsInvalidOperationException()
     {
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _ = new LoginAttemptSettings
+            _ = new SecurityLockoutSettings
             {
                 MaxFailedAttempts = MaxFailedAttempts,
                 InitialLockoutDuration = _initialLockoutDuration,
