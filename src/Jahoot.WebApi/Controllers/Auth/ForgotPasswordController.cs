@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.Core.Utils;
+using Jahoot.WebApi.Attributes;
 using Jahoot.WebApi.Repositories;
 using Jahoot.WebApi.Services.Background;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ public class ForgotPasswordController(IUserRepository userRepository, IPasswordR
     private const string SuccessMessage = "If the email exists, a password reset token has been sent.";
 
     [HttpPost]
+    [SecurityLockout]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestModel requestModel)
     {
         if (!ModelState.IsValid)
