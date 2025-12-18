@@ -46,7 +46,7 @@ public partial class App : Application
         string baseAddress = _configuration?.GetValue<string>("BaseAddress")
                              ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
 
-        services.AddSingleton(new HttpClient
+        services.AddSingleton<HttpClient>(sp => new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
         });

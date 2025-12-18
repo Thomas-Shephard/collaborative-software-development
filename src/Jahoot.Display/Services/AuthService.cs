@@ -70,7 +70,7 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
             
             var roleClaims = jwtToken.Claims.Where(c => c.Type == roleClaimType);
             
-            foreach (var claim in roleClaims)
+            foreach (var claim in roleClaims.Where(c => Enum.TryParse<Role>(c.Value, out _)))
             {
                 if (Enum.TryParse<Role>(claim.Value, out var role))
                 {

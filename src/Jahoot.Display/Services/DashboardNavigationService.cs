@@ -162,15 +162,10 @@ namespace Jahoot.Display.Services
         /// </summary>
         private void RemoveFromCacheByWindow(Window window)
         {
-            string? keyToRemove = null;
-            foreach (var kvp in _dashboardCache)
-            {
-                if (kvp.Value == window)
-                {
-                    keyToRemove = kvp.Key;
-                    break;
-                }
-            }
+            var keyToRemove = _dashboardCache
+                .Where(kvp => kvp.Value == window)
+                .Select(kvp => kvp.Key)
+                .FirstOrDefault();
 
             if (keyToRemove != null)
             {

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -83,16 +81,6 @@ namespace Jahoot.Display.StudentViews
             {
                 viewModel.UpdateTabVisibility(viewModel.SelectedTabIndex);
             }
-        }
-    }
-
-    public abstract class BaseViewModel : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

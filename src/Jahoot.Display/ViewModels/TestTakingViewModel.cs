@@ -108,7 +108,7 @@ namespace Jahoot.Display.ViewModels
         } = "00:00";
 
         private List<Question> _questions = new();
-        private Dictionary<int, int?> _selectedAnswers = new();
+        private readonly Dictionary<int, int?> _selectedAnswers = new();
         private readonly DateTime _testStartTime;
 
         public ICommand NextCommand { get; }
@@ -489,12 +489,9 @@ namespace Jahoot.Display.ViewModels
         {
             var currentQuestion = _questions[CurrentQuestionIndex];
             
-            foreach (var option in CurrentOptions)
+            foreach (var option in CurrentOptions.Where(o => o != selectedOption))
             {
-                if (option != selectedOption)
-                {
-                    option.IsSelected = false;
-                }
+                option.IsSelected = false;
             }
 
             if (selectedOption.IsSelected)
