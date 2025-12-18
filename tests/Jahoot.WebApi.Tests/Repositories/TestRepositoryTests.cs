@@ -496,6 +496,41 @@ public class TestRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task GetUpcomingTestsForStudentAsync_FiltersOutDisabledSubjects()
+    {
+        // Create Subjects (one active, one disabled)
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Active Subject', 1)");
+        int activeSubjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Subject (name, is_active) VALUES ('Disabled Subject', 0)");
+        int disabledSubjectId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // Create Tests
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Active Test', 10)", new { SubId = activeSubjectId });
+        int activeTestId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Disabled Test', 5)", new { SubId = disabledSubjectId });
+
+        // Create Student and assign to both Subjects
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('filter@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = activeSubjectId });
+        await Connection.ExecuteAsync("INSERT INTO StudentSubject (student_id, subject_id) VALUES (@StudentId, @SubjectId)", new { StudentId = studentId, SubjectId = disabledSubjectId });
+
+        List<UpcomingTestResponse> result = (await _repository.GetUpcomingTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].TestId, Is.EqualTo(activeTestId));
+            Assert.That(result[0].Name, Is.EqualTo("Active Test"));
+        }
+    }
+
+    [Test]
     public async Task GetCompletedTestsForStudentAsync_ReturnsCompletedTestsForStudent()
     {
         int subjectId = await CreateSubject("Maths");
