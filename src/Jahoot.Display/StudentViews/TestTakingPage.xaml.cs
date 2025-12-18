@@ -8,13 +8,32 @@ namespace Jahoot.Display.StudentViews
         public TestTakingPage()
         {
             InitializeComponent();
-            DataContext = new TestTakingViewModel();
+            var viewModel = new TestTakingViewModel();
+            DataContext = viewModel;
+            
+            // Subscribe to TestSubmitted event to close window and return to dashboard
+            viewModel.TestSubmitted += OnTestSubmitted;
+            
+            // Clean up event subscription when window closes
+            Closed += (s, e) => viewModel.TestSubmitted -= OnTestSubmitted;
         }
 
         public TestTakingPage(TestTakingViewModel viewModel)
         {
             InitializeComponent();
             DataContext = viewModel;
+            
+            // Subscribe to TestSubmitted event to close window and return to dashboard
+            viewModel.TestSubmitted += OnTestSubmitted;
+            
+            // Clean up event subscription when window closes
+            Closed += (s, e) => viewModel.TestSubmitted -= OnTestSubmitted;
+        }
+
+        private void OnTestSubmitted(object? sender, System.EventArgs e)
+        {
+            // Close the test page and return to dashboard
+            this.Close();
         }
     }
 }

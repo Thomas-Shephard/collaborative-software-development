@@ -18,6 +18,8 @@ namespace Jahoot.Display.ViewModels
             }
         } = "AD";
 
+        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
+        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
         public ObservableCollection<TabItem> TabItems { get; set; }
 
         public ObservableCollection<string> AvailableRoles
@@ -60,14 +62,14 @@ namespace Jahoot.Display.ViewModels
             {
                 new RecentActivityItem { StudentInitials = "Sy", DescriptionPrefix = "System ", TestName = "Backup Completed", TimeAgo = "10 mins ago", Result = "Success" },
                 new RecentActivityItem { StudentInitials = "Us", DescriptionPrefix = "User ", TestName = "New Registration", TimeAgo = "1 hour ago", Result = "Pending" },
-                 new RecentActivityItem { StudentInitials = "Al", DescriptionPrefix = "Alert ", TestName = "High CPU Usage", TimeAgo = "2 hours ago", Result = "Resolved" }
+                new RecentActivityItem { StudentInitials = "Al", DescriptionPrefix = "Alert ", TestName = "High CPU Usage", TimeAgo = "2 hours ago", Result = "Resolved" }
             };
 
             PerformanceSubjects = new ObservableCollection<PerformanceSubject>
             {
                 new PerformanceSubject { SubjectName = "Server Load", ScoreText = "Low", ScoreValue = 20 },
                 new PerformanceSubject { SubjectName = "Memory Usage", ScoreText = "45%", ScoreValue = 45 },
-                 new PerformanceSubject { SubjectName = "Disk Space", ScoreText = "60%", ScoreValue = 60 }
+                new PerformanceSubject { SubjectName = "Disk Space", ScoreText = "60%", ScoreValue = 60 }
             };
 
             TabItems = new ObservableCollection<TabItem>

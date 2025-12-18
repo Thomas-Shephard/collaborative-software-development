@@ -110,18 +110,41 @@ namespace Jahoot.Display.ViewModels
         public ICommand BackCommand { get; }
         public ICommand SubmitCommand { get; }
 
+        // Event to notify when test is submitted and window should close
+        public event EventHandler? TestSubmitted;
+
         public TestTakingViewModel()
         {
             NextCommand = new RelayCommand(GoToNext, () => CanGoNext);
             BackCommand = new RelayCommand(GoToBack, () => CanGoBack);
             SubmitCommand = new RelayCommand(SubmitTest, () => HasAnsweredCurrentQuestion);
-
-            LoadMockData();
         }
 
-        private void LoadMockData()
+        /// <summary>
+        /// Loads a mock test with 5 questions based on the test ID
+        /// </summary>
+        public void LoadMockTest(int testId, string testName, string subjectName)
         {
-            _questions = new List<Question>
+            TestName = testName;
+            SubjectName = subjectName;
+            _selectedAnswers.Clear();
+            CurrentQuestionIndex = 0;
+
+            _questions = testId switch
+            {
+                1 => GetMathematicsQuestions(),
+                2 => GetChemistryQuestions(),
+                3 => GetProgrammingQuestions(),
+                _ => GetDefaultQuestions()
+            };
+
+            TotalQuestions = _questions.Count;
+            LoadCurrentQuestion();
+        }
+
+        private List<Question> GetMathematicsQuestions()
+        {
+            return new List<Question>
             {
                 new Question
                 {
@@ -164,11 +187,267 @@ namespace Jahoot.Display.ViewModels
                     }.AsReadOnly(),
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 4,
+                    Text = "What is 2³?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "8", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 14, QuestionId = 4, OptionText = "6", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "9", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "4", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 5,
+                    Text = "What is the area of a circle with radius 3?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 17, QuestionId = 5, OptionText = "9?", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 18, QuestionId = 5, OptionText = "6?", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "3?", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "12?", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 }
             };
+        }
 
-            TotalQuestions = _questions.Count;
-            LoadCurrentQuestion();
+        private List<Question> GetChemistryQuestions()
+        {
+            return new List<Question>
+            {
+                new Question
+                {
+                    QuestionId = 1,
+                    Text = "What is the chemical symbol for Gold?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 1, QuestionId = 1, OptionText = "Au", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 2, QuestionId = 1, OptionText = "Ag", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Go", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Gd", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 2,
+                    Text = "What is H?O commonly known as?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "Water", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "Oxygen", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Hydrogen Peroxide", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Acid", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 3,
+                    Text = "What is the pH of a neutral solution?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "7", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 10, QuestionId = 3, OptionText = "0", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "14", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "1", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 4,
+                    Text = "What is the atomic number of Carbon?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "6", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 14, QuestionId = 4, OptionText = "12", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "8", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "14", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 5,
+                    Text = "What gas do plants absorb from the atmosphere?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 17, QuestionId = 5, OptionText = "Carbon Dioxide", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 18, QuestionId = 5, OptionText = "Oxygen", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Nitrogen", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Hydrogen", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }
+            };
+        }
+
+        private List<Question> GetProgrammingQuestions()
+        {
+            return new List<Question>
+            {
+                new Question
+                {
+                    QuestionId = 1,
+                    Text = "What does OOP stand for?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 1, QuestionId = 1, OptionText = "Object-Oriented Programming", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 2, QuestionId = 1, OptionText = "Open Operating Protocol", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Optimal Output Processing", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Organized Object Procedure", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 2,
+                    Text = "Which data structure uses LIFO?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "Stack", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "Queue", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Array", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Linked List", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 3,
+                    Text = "What is the time complexity of binary search?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "O(log n)", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 10, QuestionId = 3, OptionText = "O(n)", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(n²)", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "O(1)", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 4,
+                    Text = "Which sorting algorithm is generally fastest?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "Quick Sort", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 14, QuestionId = 4, OptionText = "Bubble Sort", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "Selection Sort", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "Insertion Sort", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 5,
+                    Text = "What is encapsulation in OOP?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 17, QuestionId = 5, OptionText = "Hiding internal details", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 18, QuestionId = 5, OptionText = "Creating multiple instances", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Sorting data", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Looping through arrays", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }
+            };
+        }
+
+        private List<Question> GetDefaultQuestions()
+        {
+            return new List<Question>
+            {
+                new Question
+                {
+                    QuestionId = 1,
+                    Text = "Sample Question 1?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 1, QuestionId = 1, OptionText = "Option A", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 2, QuestionId = 1, OptionText = "Option B", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "Option C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "Option D", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 2,
+                    Text = "Sample Question 2?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "Option A", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "Option B", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "Option C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "Option D", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 3,
+                    Text = "Sample Question 3?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "Option A", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 10, QuestionId = 3, OptionText = "Option B", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "Option C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "Option D", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 4,
+                    Text = "Sample Question 4?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "Option A", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 14, QuestionId = 4, OptionText = "Option B", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 15, QuestionId = 4, OptionText = "Option C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 16, QuestionId = 4, OptionText = "Option D", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Question
+                {
+                    QuestionId = 5,
+                    Text = "Sample Question 5?",
+                    Options = new List<QuestionOption>
+                    {
+                        new QuestionOption { QuestionOptionId = 17, QuestionId = 5, OptionText = "Option A", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 18, QuestionId = 5, OptionText = "Option B", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 19, QuestionId = 5, OptionText = "Option C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 20, QuestionId = 5, OptionText = "Option D", IsCorrect = false }
+                    }.AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }
+            };
         }
 
         private void LoadCurrentQuestion()
@@ -251,10 +530,17 @@ namespace Jahoot.Display.ViewModels
                 return;
             }
 
-            System.Windows.MessageBox.Show($"Test submitted! You answered {_selectedAnswers.Count}/{TotalQuestions} questions.", 
+            var result = System.Windows.MessageBox.Show(
+                $"Test '{TestName}' submitted!\n\nYou answered {_selectedAnswers.Count}/{TotalQuestions} questions.\n\nReturn to dashboard?", 
                 "Test Submitted", 
-                System.Windows.MessageBoxButton.OK, 
+                System.Windows.MessageBoxButton.YesNo, 
                 System.Windows.MessageBoxImage.Information);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                // Raise event to close window and return to dashboard
+                TestSubmitted?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
 

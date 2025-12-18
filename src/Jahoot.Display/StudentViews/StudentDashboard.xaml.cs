@@ -1,12 +1,16 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Jahoot.Display.Models;
 using Jahoot.Display.Services;
+using Jahoot.Display.ViewModels;
+using Jahoot.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display.StudentViews
@@ -29,14 +33,75 @@ namespace Jahoot.Display.StudentViews
                 viewModel.AvailableRoles = new ObservableCollection<string>(availableDashboards);
             }
             
+            // Wire up the test item click command
+            viewModel.TestItemClickCommand = new RelayCommand(OnTestItemClick, CanClickTestItem);
+            
             DataContext = viewModel;
+        }
+
+        private bool CanClickTestItem(object? parameter)
+        {
+            // Allow clicking on any test item
+            return parameter is TestItem;
+        }
+
+        private void OnTestItemClick(object? parameter)
+        {
+            Debug.WriteLine($"[StudentDashboard] Test item clicked: {parameter?.GetType().Name}");
+            
+            if (parameter is TestItem testItem)
+            {
+                Debug.WriteLine($"[StudentDashboard] Test: {testItem.TestName}, Status: {testItem.StatusLabel}");
+                
+                // Only open test page for NOT TAKEN tests
+                if (testItem.StatusLabel == "NOT TAKEN")
+                {
+                    Debug.WriteLine($"[StudentDashboard] Opening test {testItem.TestId}: {testItem.TestName}");
+                    
+                    try
+                    {
+                        // Open TestTakingPage with the selected test
+                        var app = Application.Current as App;
+                        var testPage = app?.ServiceProvider?.GetRequiredService<TestTakingPage>();
+                        
+                        if (testPage != null && testPage.DataContext is TestTakingViewModel viewModel)
+                        {
+                            // Load test data based on testId
+                            viewModel.LoadMockTest(testItem.TestId, testItem.TestName, testItem.SubjectName);
+                            testPage.Show();
+                            Debug.WriteLine($"[StudentDashboard] Test page opened successfully");
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"[StudentDashboard] Failed to get test page or view model");
+                            MessageBox.Show("Unable to open test page.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[StudentDashboard] Error opening test: {ex.Message}");
+                        MessageBox.Show($"Error opening test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"[StudentDashboard] Test already completed, cannot retake");
+                    MessageBox.Show("This test has already been completed.", "Test Completed", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"[StudentDashboard] Parameter is not a TestItem");
+            }
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            // Tab selection handling - future functionality
-            // The Student Dashboard uses a different layout structure
-            // that doesn't require visibility toggling
+            if (DataContext is StudentDashboardViewModel viewModel)
+            {
+                // Update visibility based on selected tab
+                viewModel.UpdateTabVisibility(viewModel.SelectedTabIndex);
+            }
         }
     }
 
@@ -54,6 +119,10 @@ namespace Jahoot.Display.StudentViews
     {
         private int _selectedTabIndex = 0;
         private ObservableCollection<string> _availableRoles = new();
+        private Visibility _availableTestsVisibility = Visibility.Visible;
+        private Visibility _completedTestsVisibility = Visibility.Collapsed;
+        private Visibility _leaderboardVisibility = Visibility.Collapsed;
+        private Visibility _statisticsVisibility = Visibility.Collapsed;
 
         public string StudentInitials
         {
@@ -83,7 +152,7 @@ namespace Jahoot.Display.StudentViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = 12;
+        } = 4;
 
         public double AverageScore
         {
@@ -93,7 +162,7 @@ namespace Jahoot.Display.StudentViews
                 field = value;
                 OnPropertyChanged();
             }
-        } = 82.5;
+        } = 85.75;
 
         public string CurrentGrade
         {
@@ -107,6 +176,7 @@ namespace Jahoot.Display.StudentViews
 
         public ObservableCollection<TestItem> UpcomingTestItems { get; set; }
         public ObservableCollection<TestItem> CompletedTestItems { get; set; }
+        public ObservableCollection<GradeDataPoint> GradeHistory { get; set; }
         public ObservableCollection<TabItem> TabItems { get; set; }
 
         public ObservableCollection<string> AvailableRoles
@@ -136,8 +206,51 @@ namespace Jahoot.Display.StudentViews
             {
                 _selectedTabIndex = value;
                 OnPropertyChanged();
+                UpdateTabVisibility(value);
             }
         }
+
+        public Visibility AvailableTestsVisibility
+        {
+            get => _availableTestsVisibility;
+            set
+            {
+                _availableTestsVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility CompletedTestsVisibility
+        {
+            get => _completedTestsVisibility;
+            set
+            {
+                _completedTestsVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility LeaderboardVisibility
+        {
+            get => _leaderboardVisibility;
+            set
+            {
+                _leaderboardVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility StatisticsVisibility
+        {
+            get => _statisticsVisibility;
+            set
+            {
+                _statisticsVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ICommand? TestItemClickCommand { get; set; }
 
         public StudentDashboardViewModel()
         {
@@ -148,6 +261,7 @@ namespace Jahoot.Display.StudentViews
             {
                 new TestItem 
                 { 
+                    TestId = 1,
                     Icon = "??", 
                     TestName = "Mathematics Final Exam", 
                     SubjectName = "Advanced Calculus", 
@@ -157,6 +271,7 @@ namespace Jahoot.Display.StudentViews
                 },
                 new TestItem 
                 { 
+                    TestId = 2,
                     Icon = "??", 
                     TestName = "Chemistry Quiz", 
                     SubjectName = "Organic Chemistry", 
@@ -166,6 +281,7 @@ namespace Jahoot.Display.StudentViews
                 },
                 new TestItem 
                 { 
+                    TestId = 3,
                     Icon = "??", 
                     TestName = "Programming Assignment", 
                     SubjectName = "Data Structures", 
@@ -179,6 +295,7 @@ namespace Jahoot.Display.StudentViews
             {
                 new TestItem 
                 { 
+                    TestId = 4,
                     Icon = "??", 
                     TestName = "Statistics Midterm", 
                     SubjectName = "Applied Statistics", 
@@ -188,6 +305,7 @@ namespace Jahoot.Display.StudentViews
                 },
                 new TestItem 
                 { 
+                    TestId = 5,
                     Icon = "??", 
                     TestName = "History Essay", 
                     SubjectName = "World History", 
@@ -197,6 +315,7 @@ namespace Jahoot.Display.StudentViews
                 },
                 new TestItem 
                 { 
+                    TestId = 6,
                     Icon = "??", 
                     TestName = "Physics Lab Report", 
                     SubjectName = "General Physics", 
@@ -206,6 +325,7 @@ namespace Jahoot.Display.StudentViews
                 },
                 new TestItem 
                 { 
+                    TestId = 7,
                     Icon = "??", 
                     TestName = "English Literature Quiz", 
                     SubjectName = "Modern Literature", 
@@ -215,13 +335,81 @@ namespace Jahoot.Display.StudentViews
                 }
             };
 
+            // Initialize grade history data for the chart
+            GradeHistory = new ObservableCollection<GradeDataPoint>
+            {
+                new GradeDataPoint { TestName = "History Essay", Score = 85, TestDate = DateTime.Now.AddDays(-28) },
+                new GradeDataPoint { TestName = "Physics Lab", Score = 78, TestDate = DateTime.Now.AddDays(-21) },
+                new GradeDataPoint { TestName = "Literature Quiz", Score = 88, TestDate = DateTime.Now.AddDays(-14) },
+                new GradeDataPoint { TestName = "Statistics Midterm", Score = 92, TestDate = DateTime.Now.AddDays(-7) }
+            };
+
             TabItems = new ObservableCollection<TabItem>
             {
-                new TabItem { Header = "Overview" },
-                new TabItem { Header = "My Tests" },
-                new TabItem { Header = "Performance" },
-                new TabItem { Header = "Calendar" }
+                new TabItem { Header = "Available" },
+                new TabItem { Header = "Completed" },
+                new TabItem { Header = "Leaderboard" },
+                new TabItem { Header = "Statistics" }
             };
+        }
+
+        public void UpdateTabVisibility(int tabIndex)
+        {
+            // Tab 0: Available - show upcoming tests
+            // Tab 1: Completed - show completed tests
+            // Tab 2: Leaderboard - show leaderboard (pending)
+            // Tab 3: Statistics - show grades over time chart
+
+            // Hide all tabs first
+            AvailableTestsVisibility = Visibility.Collapsed;
+            CompletedTestsVisibility = Visibility.Collapsed;
+            LeaderboardVisibility = Visibility.Collapsed;
+            StatisticsVisibility = Visibility.Collapsed;
+
+            // Show selected tab
+            switch (tabIndex)
+            {
+                case 0: // Available
+                    AvailableTestsVisibility = Visibility.Visible;
+                    break;
+                case 1: // Completed
+                    CompletedTestsVisibility = Visibility.Visible;
+                    break;
+                case 2: // Leaderboard
+                    LeaderboardVisibility = Visibility.Visible;
+                    break;
+                case 3: // Statistics
+                    StatisticsVisibility = Visibility.Visible;
+                    break;
+            }
+        }
+    }
+
+    public class RelayCommand : ICommand
+    {
+        private readonly Action<object?> _execute;
+        private readonly Predicate<object?>? _canExecute;
+
+        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object? parameter)
+        {
+            return _canExecute == null || _canExecute(parameter);
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public void Execute(object? parameter)
+        {
+            _execute(parameter);
         }
     }
 }

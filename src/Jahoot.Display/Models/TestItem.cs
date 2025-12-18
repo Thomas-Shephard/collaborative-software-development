@@ -6,6 +6,7 @@ namespace Jahoot.Display.Models
     /// </summary>
     public class TestItem
     {
+        public int TestId { get; set; }
         public required string Icon { get; set; }
         public required string TestName { get; set; }
         public required string SubjectName { get; set; }

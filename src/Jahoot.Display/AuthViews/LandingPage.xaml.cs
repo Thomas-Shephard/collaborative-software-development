@@ -12,7 +12,7 @@ public partial class LandingPage : Window
     private readonly IAuthService _authService;
     private readonly IServiceProvider _serviceProvider;
 
-    public LandingPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard, IServiceProvider serviceProvider)
+    public LandingPage(IAuthService authService, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _authService = authService;
@@ -53,8 +53,7 @@ public partial class LandingPage : Window
                 
                 if (!navigationSuccess)
                 {
-                    LoginErrorText.Text = "Unable to navigate to dashboard. Please try again.";
-                    LoginErrorBanner.Visibility = Visibility.Visible;
+                    FeedbackBox.Message = "Unable to navigate to dashboard. Please try again.";
                 }
             }
             else

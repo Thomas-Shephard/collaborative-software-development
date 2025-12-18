@@ -1,10 +1,11 @@
 using Jahoot.Display.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
-using System.Windows;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
+using System.Windows;
 
 namespace Jahoot.Display;
 
@@ -45,18 +46,6 @@ public partial class App : Application
         string baseAddress = _configuration?.GetValue<string>("BaseAddress")
                              ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
 
-            services.AddSingleton(new HttpClient
-            {
-                BaseAddress = new Uri(baseAddress)
-            });
-            services.AddSingleton<IHttpService, HttpService>();
-            services.AddTransient<IAuthService, AuthService>();
-            services.AddTransient<ISubjectService, SubjectService>();
-            services.AddTransient<ILecturerService, LecturerService>();
-            services.AddTransient<LandingPage>();
-            services.AddTransient<LecturerViews.LecturerDashboard>();
-            services.AddTransient<Pages.AdminDashboard>();
-        }
         services.AddSingleton(new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
@@ -64,23 +53,22 @@ public partial class App : Application
         services.AddSingleton<IHttpService, HttpService>();
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<ISubjectService, SubjectService>();
-        services.AddTransient<LoginPage>();
+        services.AddTransient<ILecturerService, LecturerService>();
+        
+        // Register dashboard navigation service as singleton to maintain cache
+        services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
+        
+        services.AddTransient<LandingPage>();
         services.AddTransient<LecturerViews.LecturerDashboard>();
-        services.AddTransient<Pages.AdminDashboard>();
+        services.AddTransient<StudentViews.StudentDashboard>();
         services.AddTransient<StudentViews.TestTakingPage>();
+        services.AddTransient<Pages.AdminDashboard>();
     }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
-            landingPage.Show();
-        }
-    }
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var loginPage = ServiceProvider.GetRequiredService<LoginPage>();
-        loginPage.Show();
+        var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
+        landingPage.Show();
     }
 }

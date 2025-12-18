@@ -13,7 +13,6 @@ namespace Jahoot.Display.Controls
     /// </summary>
     public partial class GradesChartView : UserControl
     {
-        // TODO: Add DependencyProperty for ItemsSource to bind grade data
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
                 nameof(ItemsSource),
@@ -36,12 +35,15 @@ namespace Jahoot.Display.Controls
             // 3. Generate Polyline points from data
             // 4. Add data point ellipses
             // 5. Update X-axis labels with actual test names
+            
+            // For now, the chart will continue to show hardcoded data
+            // When implementing dynamic rendering, use GradeDataPoint model from ItemsSource
         }
 
         public GradesChartView()
         {
             InitializeComponent();
-            // NOTE: Currently displays hardcoded sample data in XAML (line 35)
+            // NOTE: Currently displays hardcoded sample data in XAML
             // This is not production-ready and must be replaced with dynamic rendering
         }
     }

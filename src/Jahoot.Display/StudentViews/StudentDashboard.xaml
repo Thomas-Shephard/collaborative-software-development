@@ -43,35 +43,69 @@
         <controls:NavigationalTabs Grid.Row="2"
                                    x:Name="MainTabs"
                                    ItemsSource="{Binding TabItems}"
-                                   SelectedIndex="{Binding SelectedTabIndex}"
+                                   SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
                                    SelectionChanged="MainTabs_SelectionChanged"
                                    TabWidthConverterParameter="4"/>
 
         <Grid Grid.Row="3" Margin="20,10,20,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <controls:TestListView Grid.Column="0" 
-                                       Title="Upcoming Tests" 
-                                       Subtitle="Tests you need to complete"
-                                       ItemsSource="{Binding UpcomingTestItems}"/>
-                
-                <controls:TestListView Grid.Column="1" 
-                                       Title="Completed Tests" 
-                                       Subtitle="Your test history and scores"
-                                       ItemsSource="{Binding CompletedTestItems}"/>
+            <!-- Tab 0: Available Tests -->
+            <Grid Visibility="{Binding AvailableTestsVisibility}">
+                <controls:TestListView 
+                    Title="Available Tests" 
+                    Subtitle="Tests you need to complete"
+                    ItemsSource="{Binding UpcomingTestItems}"
+                    ItemClickCommand="{Binding TestItemClickCommand}"
+                    Margin="0,0,10,0"/>
             </Grid>
 
-            <Grid Grid.Row="1" Margin="0,20,0,0">
-                <controls:GradesChartView/>
+            <!-- Tab 1: Completed Tests -->
+            <Grid Visibility="{Binding CompletedTestsVisibility}">
+                <controls:TestListView 
+                    Title="Completed Tests" 
+                    Subtitle="Your test history and scores"
+                    ItemsSource="{Binding CompletedTestItems}"
+                    Margin="0,0,10,0"/>
+            </Grid>
+
+            <!-- Tab 2: Leaderboard (Pending Implementation) -->
+            <Grid Visibility="{Binding LeaderboardVisibility}">
+                <Border Background="White" 
+                        CornerRadius="8" 
+                        Padding="40" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        MinWidth="400"
+                        MinHeight="300">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="??" 
+                                   FontSize="48" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,0,0,20"/>
+                        <TextBlock Text="Leaderboard" 
+                                   FontSize="24" 
+                                   FontWeight="SemiBold" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="Feature coming soon!" 
+                                   FontSize="16" 
+                                   Foreground="Gray" 
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Compare your performance with other students" 
+                                   FontSize="14" 
+                                   Foreground="Gray" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,5,0,0"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   MaxWidth="300"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Tab 3: Statistics (Grades Over Time) -->
+            <Grid Visibility="{Binding StatisticsVisibility}">
+                <controls:GradesChartView 
+                    ItemsSource="{Binding GradeHistory}"/>
             </Grid>
         </Grid>
     </Grid>
