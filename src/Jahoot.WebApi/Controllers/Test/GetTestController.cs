@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Security.Cryptography;
 using Jahoot.Core.Models;
 using Jahoot.WebApi.Models.Responses.Test;
 using Jahoot.WebApi.Repositories;
@@ -9,7 +11,7 @@ namespace Jahoot.WebApi.Controllers.Test;
 [Route("api/test/{testId:int}")]
 [ApiController]
 [Tags("Test")]
-public class GetTestController(ITestRepository testRepository, ISubjectRepository subjectRepository) : ControllerBase
+public class GetTestController(ITestRepository testRepository, ISubjectRepository subjectRepository, IStudentRepository studentRepository) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = nameof(Role.Student))]
@@ -27,14 +29,23 @@ public class GetTestController(ITestRepository testRepository, ISubjectRepositor
             return StatusCode(500, "Test has invalid subject");
         }
 
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+        {
+            return BadRequest();
+        }
+
+        if (!await studentRepository.IsUserEnrolledInSubjectAsync(userId, test.SubjectId))
+        {
+            return StatusCode(403, "You are not enrolled in this subject.");
+        }
+
         if (!subject.IsActive)
         {
             return StatusCode(403, "The subject is disabled.");
         }
 
-        Random random = new();
         List<StudentQuestionResponse> questions = test.Questions
-                                                      .OrderBy(_ => random.Next())
+                                                      .OrderBy(_ => RandomNumberGenerator.GetInt32(int.MaxValue))
                                                       .Take(test.NumberOfQuestions)
                                                       .Select(q => new StudentQuestionResponse
                                                       {
@@ -46,7 +57,7 @@ public class GetTestController(ITestRepository testRepository, ISubjectRepositor
                                                                          QuestionOptionId = o.QuestionOptionId,
                                                                          OptionText = o.OptionText
                                                                      })
-                                                                     .OrderBy(_ => random.Next())
+                                                                     .OrderBy(_ => RandomNumberGenerator.GetInt32(int.MaxValue))
                                                                      .ToList()
                                                       })
                                                       .ToList();
