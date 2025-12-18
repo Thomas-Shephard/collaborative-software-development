@@ -31,8 +31,8 @@ public partial class AssignLecturerRoleWindow : Window
 
         if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
         {
-             ShowError("Please enter a valid email address.");
-             return;
+            ShowError("Please enter a valid email address.");
+            return;
         }
 
         var request = new AssignLecturerRoleRequestModel
