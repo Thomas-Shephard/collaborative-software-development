@@ -153,6 +153,26 @@ public class TestRepository(IDbConnection connection) : ITestRepository
         return await connection.QueryAsync<UpcomingTestResponse>(query, new { StudentId = studentId });
     }
 
+    public async Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsForStudentAsync(int studentId)
+    {
+        const string query = """
+                             SELECT 
+                                 test.test_id AS TestId, 
+                                 test.name AS TestName, 
+                                 subject.name AS SubjectName, 
+                                 test_result.completion_date AS CompletedDate, 
+                                 (test_result.questions_correct * 100.0 / test.number_of_questions) AS ScorePercentage, 
+                                 test_result.score AS TotalPoints
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Subject subject ON test.subject_id = subject.subject_id
+                             WHERE test_result.student_id = @StudentId
+                             ORDER BY test_result.completion_date DESC
+                             """;
+
+        return await connection.QueryAsync<CompletedTestResponse>(query, new { StudentId = studentId });
+    }
+
     private async Task<Test?> GetTestInternalAsync(int testId)
     {
         const string query = "SELECT * FROM Test WHERE test_id = @TestId";

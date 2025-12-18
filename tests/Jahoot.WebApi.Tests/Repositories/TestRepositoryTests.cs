@@ -494,4 +494,32 @@ public class TestRepositoryTests : RepositoryTestBase
             Assert.That(result.Any(t => t.TestId == test3Id && t is { Name: "Test 3", Subject: "Subject 2", NumberOfQuestions: 8 }), Is.True);
         }
     }
+
+    [Test]
+    public async Task GetCompletedTestsForStudentAsync_ReturnsCompletedTestsForStudent()
+    {
+        int subjectId = await CreateSubject("Maths");
+        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubId, 'Test 1', 10)", new { SubId = subjectId });
+        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        await Connection.ExecuteAsync("INSERT INTO User (email, name, password_hash) VALUES ('completed@test.com', 'Student', 'hash')");
+        int userId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+        await Connection.ExecuteAsync("INSERT INTO Student (user_id) VALUES (@UserId)", new { UserId = userId });
+        int studentId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
+
+        // +30 for correct (7), -10 for incorrect (3) => 210 - 30 = 180
+        await Connection.ExecuteAsync("INSERT INTO TestResult (test_id, student_id, questions_correct, score) VALUES (@TestId, @StudentId, 7, 180)", new { TestId = testId, StudentId = studentId });
+
+        List<CompletedTestResponse> result = (await _repository.GetCompletedTestsForStudentAsync(studentId)).ToList();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].TestId, Is.EqualTo(testId));
+            Assert.That(result[0].TestName, Is.EqualTo("Test 1"));
+            Assert.That(result[0].SubjectName, Is.EqualTo("Maths"));
+            Assert.That(result[0].ScorePercentage, Is.EqualTo(70.0));
+            Assert.That(result[0].TotalPoints, Is.EqualTo(180));
+        }
+    }
 }
