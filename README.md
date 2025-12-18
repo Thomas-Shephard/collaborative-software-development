@@ -1,12 +1,4 @@
-# collaborative-software-development
-
-## API Testing with Bruno
-
-This project includes a Bruno collection for API testing.
-The collection defines various API requests that can be used to interact with the project's backend services.
-You can find the collection in the `bruno/` directory.
-
-Bruno assumes that the backend services are being hosted locally using Docker compose.
+# Collaborative Software Development
 
 ## GitHub Pull Request Titles
 
