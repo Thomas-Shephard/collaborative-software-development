@@ -77,10 +77,19 @@
             <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="20,20,20,10">
-                <TextBlock Text="Jahoot" FontSize="32" FontWeight="Bold" Foreground="Black"/>
-                <TextBlock Text="University Centre Weston - Student testing platform" FontSize="18" Foreground="Gray"/>
-            </StackPanel>
+            <Grid Grid.Row="0" Margin="20,20,20,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Jahoot" FontSize="32" FontWeight="Bold" Foreground="Black"/>
+                    <TextBlock Text="University Centre Weston - Student testing platform" FontSize="18" Foreground="Gray"/>
+                </StackPanel>
+
+                <Image Grid.Column="1" Source="/Images/Jahoot.png" Height="50" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Grid>
 
             <Border Grid.Row="1" x:Name="LoginErrorBanner" Background="#F8D7DA" BorderBrush="#F5C6CB" BorderThickness="1" CornerRadius="5" Margin="20,0,20,10" Padding="15" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

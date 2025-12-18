@@ -20,6 +20,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Resource Include="..\Jahoot.WebApi\wwwroot\logos\Jahoot.png" Link="Images\Jahoot.png" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
