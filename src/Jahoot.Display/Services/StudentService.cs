@@ -27,7 +27,7 @@ namespace Jahoot.Display.Services
                 Email = student.Email,
                 IsApproved = student.IsApproved,
                 IsDisabled = student.IsDisabled,
-                SubjectIds = student.Subjects.ToList().ConvertAll(s => s.SubjectId)
+                SubjectIds = (student.Subjects?.ToList() ?? new List<Jahoot.Core.Models.Subject>()).ConvertAll(s => s.SubjectId)
             };
             var result = await _httpService.PutAsync($"api/student/{userId}", request);
             if (result is Result operationResult && !operationResult.Success)
