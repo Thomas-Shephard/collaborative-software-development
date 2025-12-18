@@ -53,7 +53,7 @@ public class StudentDashboardViewModel : BaseViewModel
             field = value;
             OnPropertyChanged();
         }
-    } = 4;
+    } = 0;
 
     public double AverageScore
     {
@@ -63,7 +63,7 @@ public class StudentDashboardViewModel : BaseViewModel
             field = value;
             OnPropertyChanged();
         }
-    } = 85.75;
+    } = 0;
 
     public string CurrentGrade
     {
@@ -73,7 +73,7 @@ public class StudentDashboardViewModel : BaseViewModel
             field = value;
             OnPropertyChanged();
         }
-    } = "B+";
+    } = "N/A";
 
     public bool IsLoading
     {
@@ -81,6 +81,17 @@ public class StudentDashboardViewModel : BaseViewModel
         set
         {
             _isLoading = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private bool _isInitialized = false;
+    public bool IsInitialized
+    {
+        get => _isInitialized;
+        set
+        {
+            _isInitialized = value;
             OnPropertyChanged();
         }
     }
@@ -191,13 +202,8 @@ public class StudentDashboardViewModel : BaseViewModel
         UpcomingTestItems = new ObservableCollection<TestItem>();
         CompletedTestItems = new ObservableCollection<TestItem>();
 
-        GradeHistory = new ObservableCollection<GradeDataPoint>
-        {
-            new GradeDataPoint { TestName = "History Essay", Score = 85, TestDate = _baseDate.AddDays(20) },
-            new GradeDataPoint { TestName = "Physics Lab", Score = 78, TestDate = _baseDate.AddDays(25) },
-            new GradeDataPoint { TestName = "Literature Quiz", Score = 88, TestDate = _baseDate.AddDays(28) },
-            new GradeDataPoint { TestName = "Statistics Midterm", Score = 92, TestDate = _baseDate.AddDays(30) }
-        };
+        // Grade history will be populated from completed tests
+        GradeHistory = new ObservableCollection<GradeDataPoint>();
 
         TabItems = new ObservableCollection<System.Windows.Controls.TabItem>
         {
@@ -207,8 +213,27 @@ public class StudentDashboardViewModel : BaseViewModel
             new System.Windows.Controls.TabItem { Header = "Statistics" }
         };
 
-        _ = LoadUpcomingTestsAsync();
-        _ = LoadCompletedTestsAsync();
+        // Initialize data asynchronously with proper error handling
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            await Task.WhenAll(
+                LoadUpcomingTestsAsync(),
+                LoadCompletedTestsAsync()
+            );
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error during initialization: {ex.Message}");
+        }
+        finally
+        {
+            IsInitialized = true;
+        }
     }
 
     private async Task LoadUpcomingTestsAsync()
@@ -253,6 +278,8 @@ public class StudentDashboardViewModel : BaseViewModel
             var completedTests = await _testService.GetCompletedTestsAsync();
             
             CompletedTestItems.Clear();
+            GradeHistory.Clear();
+            
             foreach (var test in completedTests)
             {
                 CompletedTestItems.Add(new TestItem
@@ -264,6 +291,14 @@ public class StudentDashboardViewModel : BaseViewModel
                     DateInfo = $"Completed: {test.CompletedDate:MMM d, yyyy}",
                     StatusOrScore = $"{test.ScorePercentage:F1}%",
                     StatusLabel = "GRADE"
+                });
+                
+                // Populate grade history from completed tests
+                GradeHistory.Add(new GradeDataPoint
+                {
+                    TestName = test.TestName,
+                    Score = (int)Math.Round(test.ScorePercentage),
+                    TestDate = test.CompletedDate
                 });
             }
 

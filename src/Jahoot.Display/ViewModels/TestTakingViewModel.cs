@@ -191,10 +191,10 @@ namespace Jahoot.Display.ViewModels
                         QuestionOptionId = o.QuestionOptionId,
                         QuestionId = q.QuestionId,
                         OptionText = o.OptionText,
-                        IsCorrect = false
+                        IsCorrect = false // Backend doesn't send correct answers to prevent cheating
                     }).ToList().AsReadOnly(),
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = default, // Not provided by backend
+                    UpdatedAt = default  // Not provided by backend
                 }).ToList();
 
                 TotalQuestions = _questions.Count;
@@ -581,7 +581,9 @@ namespace Jahoot.Display.ViewModels
         {
             var currentQuestion = _questions[CurrentQuestionIndex];
             
-            foreach (var option in CurrentOptions.Where(o => o != selectedOption))
+            // Deselect all other options
+            var otherOptions = CurrentOptions.Where(o => o != selectedOption);
+            foreach (var option in otherOptions)
             {
                 option.IsSelected = false;
             }
@@ -644,13 +646,16 @@ namespace Jahoot.Display.ViewModels
                 var timeTaken = DateTime.Now - _testStartTime;
 
                 // Use backend-calculated score
+                // Calculate correct answers from percentage, then derive incorrect to avoid rounding errors
+                int correctAnswers = (int)Math.Round(submissionResult.ScorePercentage * TotalQuestions / 100.0);
+                
                 var resultSummary = new TestResultSummary
                 {
                     TestName = submissionResult.TestName,
                     SubjectName = submissionResult.SubjectName,
                     TotalQuestions = TotalQuestions,
-                    CorrectAnswers = (int)Math.Round(submissionResult.ScorePercentage * TotalQuestions / 100.0),
-                    IncorrectAnswers = TotalQuestions - (int)Math.Round(submissionResult.ScorePercentage * TotalQuestions / 100.0),
+                    CorrectAnswers = correctAnswers,
+                    IncorrectAnswers = TotalQuestions - correctAnswers, // Ensure sum equals TotalQuestions
                     ScorePercentage = Math.Round(submissionResult.ScorePercentage, 1),
                     Grade = submissionResult.ScorePercentage >= 90 ? "A" :
                            submissionResult.ScorePercentage >= 80 ? "B" :
@@ -660,7 +665,9 @@ namespace Jahoot.Display.ViewModels
                     TimeTaken = timeTaken
                 };
 
-                // Create a simple review showing questions and what user answered
+                // Create a review showing questions and what user answered
+                // Note: Backend doesn't return correct answer information to prevent cheating,
+                // so we can't show which answers were right/wrong. Review only shows selected answers.
                 var reviewItems = new List<QuestionReviewItem>();
                 for (int i = 0; i < _questions.Count; i++)
                 {
@@ -670,7 +677,7 @@ namespace Jahoot.Display.ViewModels
                     var options = question.Options.Select(o => new AnswerOptionReview
                     {
                         OptionText = o.OptionText,
-                        IsCorrectAnswer = false,
+                        IsCorrectAnswer = false, // Backend doesn't provide correct answers for security
                         WasSelected = o.QuestionOptionId == selectedOptionId
                     }).ToList();
 
@@ -679,7 +686,7 @@ namespace Jahoot.Display.ViewModels
                         QuestionNumber = i + 1,
                         QuestionText = question.Text,
                         Options = options,
-                        IsCorrect = false
+                        IsCorrect = false // Can't determine correctness without backend data
                     });
                 }
 
@@ -694,11 +701,14 @@ namespace Jahoot.Display.ViewModels
                     resultsPage.Show();
                 }
                 
+                // Notify that test was successfully submitted and results are displayed
+                // This triggers dashboard refresh and is only called on successful submission
                 TestSubmitted?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error submitting test: {ex.Message}");
+                // TestSubmitted is NOT invoked on error - dashboard won't refresh
             }
             finally
             {

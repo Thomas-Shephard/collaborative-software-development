@@ -1,19 +1,22 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Jahoot.Display.Commands;
 using Jahoot.Display.Models;
 using Jahoot.Display.Services;
 using Jahoot.Display.ViewModels;
-using Jahoot.Display.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Jahoot.Display.StudentViews
 {
     public partial class StudentDashboard : Window
     {
+        private TestTakingViewModel? _currentTestViewModel;
+
         public StudentDashboard(ITestService testService, IUserRoleService? userRoleService = null)
         {
             InitializeComponent();
@@ -29,6 +32,19 @@ namespace Jahoot.Display.StudentViews
             viewModel.TestItemClickCommand = new RelayCommand(OnTestItemClick, CanClickTestItem);
             
             DataContext = viewModel;
+            
+            // Cleanup when window closes
+            Closed += (s, e) => CleanupTestViewModel();
+        }
+
+        private void CleanupTestViewModel()
+        {
+            if (_currentTestViewModel != null)
+            {
+                _currentTestViewModel.ShowResults -= OnShowResults;
+                _currentTestViewModel.TestSubmitted -= OnTestSubmitted;
+                _currentTestViewModel = null;
+            }
         }
 
         private bool CanClickTestItem(object? parameter)
@@ -47,6 +63,9 @@ namespace Jahoot.Display.StudentViews
             {
                 try
                 {
+                    // Cleanup previous test view model if exists
+                    CleanupTestViewModel();
+
                     var app = Application.Current as App;
                     var testService = app?.ServiceProvider?.GetRequiredService<ITestService>();
                     
@@ -56,44 +75,30 @@ namespace Jahoot.Display.StudentViews
                         return;
                     }
 
-                    var testViewModel = new TestTakingViewModel(testService);
+                    _currentTestViewModel = new TestTakingViewModel(testService);
                     
-                    // Subscribe to show results inline
-                    testViewModel.ShowResults += (sender, data) =>
-                    {
-                        if (DataContext is StudentDashboardViewModel dashboardViewModel)
-                        {
-                            ShowResultsInline(data.Summary, data.ReviewItems);
-                        }
-                    };
-                    
-                    // Subscribe to test submission to refresh and return to dashboard
-                    testViewModel.TestSubmitted += async (sender, args) =>
-                    {
-                        // Refresh the test list after submission
-                        if (DataContext is StudentDashboardViewModel dashboardViewModel)
-                        {
-                            await dashboardViewModel.RefreshTestsAsync();
-                        }
-                    };
+                    // Subscribe to events with named methods for easier cleanup
+                    _currentTestViewModel.ShowResults += OnShowResults;
+                    _currentTestViewModel.TestSubmitted += OnTestSubmitted;
                     
                     // Load the test
-                    await testViewModel.LoadTestAsync(testItem.TestId, testItem.TestName, testItem.SubjectName);
+                    await _currentTestViewModel.LoadTestAsync(testItem.TestId, testItem.TestName, testItem.SubjectName);
                     
                     // Create test view and show it inline
                     var testView = new TestTakingView
                     {
-                        DataContext = testViewModel
+                        DataContext = _currentTestViewModel
                     };
                     
-                    if (DataContext is StudentDashboardViewModel dashboardViewModel2)
+                    if (DataContext is StudentDashboardViewModel dashboardViewModel)
                     {
-                        dashboardViewModel2.ShowTest(testView);
+                        dashboardViewModel.ShowTest(testView);
                     }
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error opening test: {ex.Message}");
+                    CleanupTestViewModel();
                 }
             }
             else
@@ -113,18 +118,22 @@ namespace Jahoot.Display.StudentViews
                     }
                     
                     // Parse the completion date from DateInfo (format: "Completed: MMM d, yyyy")
-                    DateTime completedDate = DateTime.Now;
                     var dateStr = completedTestData.DateInfo.Replace("Completed: ", "");
-                    DateTime.TryParse(dateStr, out completedDate);
+                    if (!DateTime.TryParse(dateStr, out var completedDate))
+                    {
+                        completedDate = DateTime.Now;
+                    }
                     
                     // Create a summary with available information
+                    // Note: TotalQuestions, CorrectAnswers, and IncorrectAnswers are not available
+                    // for completed tests since detailed results aren't stored in the database
                     var summary = new TestResultSummary
                     {
                         TestName = completedTestData.TestName,
                         SubjectName = completedTestData.SubjectName,
-                        TotalQuestions = 1, // Unknown - using 1 as placeholder
-                        CorrectAnswers = scorePercentage >= 50 ? 1 : 0, // Approximation
-                        IncorrectAnswers = scorePercentage < 50 ? 1 : 0, // Approximation
+                        TotalQuestions = 0, // Not available for completed tests
+                        CorrectAnswers = 0, // Not available
+                        IncorrectAnswers = 0, // Not available
                         ScorePercentage = scorePercentage,
                         Grade = scorePercentage >= 90 ? "A" :
                                scorePercentage >= 80 ? "B" :
@@ -148,19 +157,16 @@ namespace Jahoot.Display.StudentViews
         {
             var resultsView = new TestResultsView(resultSummary, reviewItems);
             
+            if (DataContext is not StudentDashboardViewModel dashboardViewModel)
+                return;
+
             // Subscribe to return to dashboard
             resultsView.ReturnToDashboardRequested += (sender, args) =>
             {
-                if (DataContext is StudentDashboardViewModel dashboardViewModel)
-                {
-                    dashboardViewModel.ReturnToDashboard();
-                }
+                dashboardViewModel.ReturnToDashboard();
             };
             
-            if (DataContext is StudentDashboardViewModel dashboardViewModel2)
-            {
-                dashboardViewModel2.ShowTest(resultsView);
-            }
+            dashboardViewModel.ShowTest(resultsView);
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
@@ -169,6 +175,26 @@ namespace Jahoot.Display.StudentViews
             {
                 viewModel.UpdateTabVisibility(viewModel.SelectedTabIndex);
             }
+        }
+
+        // Named event handler methods for easier subscription management
+        private void OnShowResults(object? sender, (TestResultSummary Summary, List<QuestionReviewItem> ReviewItems) data)
+        {
+            if (DataContext is StudentDashboardViewModel dashboardViewModel)
+            {
+                ShowResultsInline(data.Summary, data.ReviewItems);
+            }
+        }
+
+        private async void OnTestSubmitted(object? sender, EventArgs args)
+        {
+            if (DataContext is StudentDashboardViewModel dashboardViewModel)
+            {
+                await dashboardViewModel.RefreshTestsAsync();
+            }
+            
+            // Cleanup after test completion
+            CleanupTestViewModel();
         }
     }
 }
