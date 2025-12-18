@@ -55,6 +55,7 @@ public partial class App : Application
         services.AddTransient<ISubjectService, SubjectService>();
         services.AddTransient<ILecturerService, LecturerService>();
         services.AddTransient<IStudentService, StudentService>();
+        services.AddTransient<ITestService, TestService>();
         
         services.AddSingleton<IUserRoleService, UserRoleService>();
         
@@ -63,7 +64,6 @@ public partial class App : Application
         services.AddTransient<LandingPage>();
         services.AddTransient<LecturerViews.LecturerDashboard>();
         services.AddTransient<StudentViews.StudentDashboard>();
-        services.AddTransient<StudentViews.TestTakingPage>();
         services.AddTransient<Pages.AdminDashboard>();
         
         services.AddTransient<LecturerViews.StudentManagementViewModel>();

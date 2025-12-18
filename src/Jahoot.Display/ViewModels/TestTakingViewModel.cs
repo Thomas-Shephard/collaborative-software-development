@@ -2,11 +2,19 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Jahoot.Core.Models;
 using Jahoot.Display.Commands;
+using Jahoot.Display.Services;
+using System.Diagnostics;
+using System.Windows;
+using System.Net.Http;
+using Jahoot.Display.Models;
+using Jahoot.Display.StudentViews;
 
 namespace Jahoot.Display.ViewModels
 {
     public class TestTakingViewModel : BaseViewModel
     {
+        private readonly ITestService? _testService;
+
         public string TestName
         {
             get => field;
@@ -50,6 +58,7 @@ namespace Jahoot.Display.ViewModels
                 field = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(QuestionNumberText));
+                OnPropertyChanged(nameof(IsLastQuestion));
             }
         } = 0;
 
@@ -89,6 +98,17 @@ namespace Jahoot.Display.ViewModels
             }
         }
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool CanGoBack => CurrentQuestionIndex > 0;
 
         public bool CanGoNext => CurrentQuestionIndex < TotalQuestions - 1 && HasAnsweredCurrentQuestion;
@@ -110,6 +130,7 @@ namespace Jahoot.Display.ViewModels
         private List<Question> _questions = new();
         private readonly Dictionary<int, int?> _selectedAnswers = new();
         private readonly DateTime _testStartTime;
+        private int _currentTestId;
 
         public ICommand NextCommand { get; }
         public ICommand BackCommand { get; }
@@ -117,9 +138,15 @@ namespace Jahoot.Display.ViewModels
 
         // Event to notify when test is submitted and window should close
         public event EventHandler? TestSubmitted;
+        public event EventHandler<(TestResultSummary Summary, List<QuestionReviewItem> ReviewItems)>? ShowResults;
 
-        public TestTakingViewModel()
+        public TestTakingViewModel() : this(null)
         {
+        }
+
+        public TestTakingViewModel(ITestService? testService)
+        {
+            _testService = testService;
             _testStartTime = DateTime.Now;
             NextCommand = new RelayCommand<object>(() => GoToNext(), () => CanGoNext);
             BackCommand = new RelayCommand<object>(() => GoToBack(), () => CanGoBack);
@@ -127,8 +154,73 @@ namespace Jahoot.Display.ViewModels
         }
 
         /// <summary>
-        /// Loads a mock test with 5 questions based on the subject category
+        /// Loads a test from the backend API
         /// </summary>
+        public async Task LoadTestAsync(int testId, string testName, string subjectName)
+        {
+            if (_testService == null)
+            {
+                Debug.WriteLine("Test service is not available.");
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+                TestName = testName;
+                SubjectName = subjectName;
+                _currentTestId = testId;
+                _selectedAnswers.Clear();
+                CurrentQuestionIndex = 0;
+
+                var testDetails = await _testService.GetTestDetailsAsync(testId);
+                
+                if (testDetails == null || testDetails.Questions == null || !testDetails.Questions.Any())
+                {
+                    Debug.WriteLine($"Unable to load test {testId} - no questions available");
+                    return;
+                }
+
+                // Convert API response to Question objects
+                _questions = testDetails.Questions.Select(q => new Question
+                {
+                    QuestionId = q.QuestionId,
+                    Text = q.Text,
+                    Options = q.Options.Select(o => new QuestionOption
+                    {
+                        QuestionOptionId = o.QuestionOptionId,
+                        QuestionId = q.QuestionId,
+                        OptionText = o.OptionText,
+                        IsCorrect = false
+                    }).ToList().AsReadOnly(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }).ToList();
+
+                TotalQuestions = _questions.Count;
+                
+                if (TotalQuestions == 0)
+                {
+                    Debug.WriteLine($"Test {testId} loaded but has no questions");
+                    return;
+                }
+                
+                LoadCurrentQuestion();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading test: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Loads a mock test with 5 questions based on the subject category (fallback for testing)
+        /// </summary>
+        [Obsolete("Use LoadTestAsync instead to load real test data from the API")]
         public void LoadMockTest(int subjectCategoryId, string testName, string subjectName)
         {
             TestName = testName;
@@ -524,17 +616,93 @@ namespace Jahoot.Display.ViewModels
             }
         }
 
-        private void SubmitTest()
+        private async void SubmitTest()
         {
-            var result = System.Windows.MessageBox.Show(
-                $"Test '{TestName}' submitted!\n\nYou answered all {TotalQuestions} questions.\n\nReturn to dashboard?", 
-                "Test Submitted", 
-                System.Windows.MessageBoxButton.YesNo, 
-                System.Windows.MessageBoxImage.Information);
-
-            if (result == System.Windows.MessageBoxResult.Yes)
+            try
             {
+                IsLoading = true;
+
+                // Convert answers dictionary to match what backend expects (questionId -> optionId)
+                var answersToSubmit = new Dictionary<int, int>();
+                foreach (var kvp in _selectedAnswers)
+                {
+                    if (kvp.Value.HasValue)
+                    {
+                        answersToSubmit[kvp.Key] = kvp.Value.Value;
+                    }
+                }
+
+                // Submit to backend and get official score
+                var submissionResult = await _testService.SubmitTestAsync(_currentTestId, answersToSubmit);
+
+                if (submissionResult == null)
+                {
+                    Debug.WriteLine("Failed to submit test - null response from server");
+                    return;
+                }
+
+                var timeTaken = DateTime.Now - _testStartTime;
+
+                // Use backend-calculated score
+                var resultSummary = new TestResultSummary
+                {
+                    TestName = submissionResult.TestName,
+                    SubjectName = submissionResult.SubjectName,
+                    TotalQuestions = TotalQuestions,
+                    CorrectAnswers = (int)Math.Round(submissionResult.ScorePercentage * TotalQuestions / 100.0),
+                    IncorrectAnswers = TotalQuestions - (int)Math.Round(submissionResult.ScorePercentage * TotalQuestions / 100.0),
+                    ScorePercentage = Math.Round(submissionResult.ScorePercentage, 1),
+                    Grade = submissionResult.ScorePercentage >= 90 ? "A" :
+                           submissionResult.ScorePercentage >= 80 ? "B" :
+                           submissionResult.ScorePercentage >= 70 ? "C" :
+                           submissionResult.ScorePercentage >= 60 ? "D" : "F",
+                    CompletedAt = submissionResult.CompletedDate,
+                    TimeTaken = timeTaken
+                };
+
+                // Create a simple review showing questions and what user answered
+                var reviewItems = new List<QuestionReviewItem>();
+                for (int i = 0; i < _questions.Count; i++)
+                {
+                    var question = _questions[i];
+                    var selectedOptionId = _selectedAnswers.GetValueOrDefault(question.QuestionId);
+
+                    var options = question.Options.Select(o => new AnswerOptionReview
+                    {
+                        OptionText = o.OptionText,
+                        IsCorrectAnswer = false,
+                        WasSelected = o.QuestionOptionId == selectedOptionId
+                    }).ToList();
+
+                    reviewItems.Add(new QuestionReviewItem
+                    {
+                        QuestionNumber = i + 1,
+                        QuestionText = question.Text,
+                        Options = options,
+                        IsCorrect = false
+                    });
+                }
+
+                // Show results inline if handler is attached, otherwise open window
+                if (ShowResults != null)
+                {
+                    ShowResults?.Invoke(this, (resultSummary, reviewItems));
+                }
+                else
+                {
+                    var resultsPage = new TestResultsPage(resultSummary, reviewItems);
+                    resultsPage.Show();
+                }
+                
                 TestSubmitted?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error submitting test: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
     }
