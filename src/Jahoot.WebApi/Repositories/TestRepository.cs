@@ -9,11 +9,6 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 {
     public async Task CreateTestAsync(Test test)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         using IDbTransaction transaction = connection.BeginTransaction();
 
         try
@@ -43,11 +38,6 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
     public async Task<IEnumerable<Test>> GetAllTestsAsync(int? subjectId = null)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         const string baseQuery = "SELECT test_id FROM Test";
         const string filteredQuery = $"{baseQuery} WHERE subject_id = @SubjectId";
 
@@ -76,11 +66,6 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
     public async Task UpdateTestAsync(Test test)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         using IDbTransaction transaction = connection.BeginTransaction();
 
         try
@@ -237,7 +222,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
                                  JOIN Subject subject ON test.subject_id = subject.subject_id
                                  JOIN Student student ON test_result.student_id = student.student_id
                                  JOIN User user ON student.user_id = user.user_id
-                             WHERE test_result.completion_date >= DATE_SUB(NOW(), INTERVAL @Days DAY) AND subject.is_active = TRUE
+                             WHERE test_result.completion_date >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL @Days DAY) AND subject.is_active = TRUE
                              ORDER BY test_result.completion_date DESC
                              """;
 
@@ -253,7 +238,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
     public async Task SaveTestResultAsync(int studentId, int testId, int score, int questionsCorrect)
     {
-        const string query = "INSERT INTO TestResult (student_id, test_id, score, questions_correct, completion_date) VALUES (@StudentId, @TestId, @Score, @QuestionsCorrect, NOW())";
+        const string query = "INSERT INTO TestResult (student_id, test_id, score, questions_correct, completion_date) VALUES (@StudentId, @TestId, @Score, @QuestionsCorrect, UTC_TIMESTAMP())";
         await connection.ExecuteAsync(query, new { StudentId = studentId, TestId = testId, Score = score, QuestionsCorrect = questionsCorrect });
     }
 
