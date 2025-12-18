@@ -109,12 +109,16 @@ namespace Jahoot.Display.LecturerViews
                         }
 
                         currentSubjects.Add(SelectedSubject);
-                        
-                        // Create a modified student object to pass to update service
-                        // We must set the Subjects property
-                        student.Subjects = currentSubjects;
 
-                        var result = await _studentService.UpdateStudent(student.UserId, student);
+                        // Create a separate student object to pass to update service,
+                        // so we don't mutate the original instance from the collection.
+                        var updatedStudent = new Student
+                        {
+                            UserId = student.UserId,
+                            Subjects = currentSubjects
+                        };
+
+                        var result = await _studentService.UpdateStudent(student.UserId, updatedStudent);
                         if (result.Success)
                         {
                             successCount++;
