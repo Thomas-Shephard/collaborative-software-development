@@ -54,9 +54,11 @@
             services.AddTransient<ISubjectService, SubjectService>();
             services.AddTransient<ILecturerService, LecturerService>();
             services.AddTransient<IStudentService, StudentService>();
+            services.AddTransient<ITestService, TestService>();
             services.AddTransient<LandingPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
+            services.AddTransient<LecturerViews.TestManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }
 

@@ -99,7 +99,7 @@ namespace Jahoot.Display.LecturerViews
             {
                 new NavigationTabItem { Header = "Overview", ViewType = typeof(LecturerOverviewView) },
                 new NavigationTabItem { Header = "Students", ViewType = typeof(StudentManagementView) },
-                new NavigationTabItem { Header = "Tests", ViewType = typeof(LecturerOverviewView) },
+                new NavigationTabItem { Header = "Tests", ViewType = typeof(TestManagementView) },
                 new NavigationTabItem { Header = "Progress", ViewType = typeof(LecturerOverviewView) },
                 new NavigationTabItem { Header = "Leaderboard", ViewType = typeof(LecturerOverviewView) }
             };
