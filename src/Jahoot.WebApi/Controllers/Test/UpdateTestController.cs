@@ -34,6 +34,7 @@ public class UpdateTestController(ITestRepository testRepository, ISubjectReposi
 
         test.SubjectId = requestModel.SubjectId;
         test.Name = requestModel.Name;
+        test.NumberOfQuestions = requestModel.NumberOfQuestions;
         test.Questions = requestModel.Questions.Select(question => new Question
         {
             Text = question.Text,

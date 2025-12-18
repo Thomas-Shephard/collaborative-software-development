@@ -40,6 +40,7 @@ public class CreateTestController(ITestRepository testRepository, ISubjectReposi
         {
             SubjectId = requestModel.SubjectId,
             Name = requestModel.Name,
+            NumberOfQuestions = requestModel.NumberOfQuestions,
             Questions = questions.AsReadOnly()
         };
 
