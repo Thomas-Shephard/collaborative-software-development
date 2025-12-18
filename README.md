@@ -1,5 +1,9 @@
 # Collaborative Software Development
 
+## API Testing with Scalar
+
+This project automatically compiles a list of its endpoints through scalar for testing purposes. You may access this locally at http://localhost/scalar or when deployed at https://jahoot.net/scalar.
+
 ## GitHub Pull Request Titles
 
 This project adheres to the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) for
