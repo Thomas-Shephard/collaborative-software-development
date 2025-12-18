@@ -12,5 +12,9 @@ public class UpdateLecturerRequestModel
     [EmailAddress]
     public required string Email { get; init; }
 
-    public bool IsAdmin { get; init; }
+    [Required]
+    public required bool IsAdmin { get; init; }
+
+    [Required]
+    public required bool IsDisabled { get; init; }
 }
