@@ -80,11 +80,19 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                var editWindow = new EditStudentWindow(student);
-                if (editWindow.ShowDialog() == true)
+                try
                 {
-                    await _studentService.UpdateStudent(student.UserId, student);
-                    await LoadStudents();
+                    var editWindow = new EditStudentWindow(student);
+                    if (editWindow.ShowDialog() == true)
+                    {
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error updating student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while updating the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -93,13 +101,21 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                var result = MessageBox.Show($"Are you sure you want to approve {student.Name}?", "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                try
                 {
-                    student.IsApproved = true;
-                    student.IsDisabled = false;
-                    await _studentService.UpdateStudent(student.UserId, student);
-                    await LoadStudents();
+                    var result = MessageBox.Show($"Are you sure you want to approve {student.Name}?", "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsApproved = true;
+                        student.IsDisabled = false;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error approving student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while approving the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -108,18 +124,26 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToReject)
             {
-                if (!studentToReject.IsApproved)
+                try
                 {
-                    var result = MessageBox.Show($"Are you sure you want to reject {studentToReject.Name}?", "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
+                    if (!studentToReject.IsApproved)
                     {
-                        await _studentService.DeleteStudent(studentToReject.UserId);
-                        await LoadStudents();
+                        var result = MessageBox.Show($"Are you sure you want to reject {studentToReject.Name}?", "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            await _studentService.DeleteStudent(studentToReject.UserId);
+                            await LoadStudents();
+                        }
+                    }
+                    else
+                    {
+                        // User has requested this message box be removed.
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // User has requested this message box be removed.
+                    Debug.WriteLine($"Error rejecting student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while rejecting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -128,11 +152,19 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student studentToDelete)
             {
-                var result = MessageBox.Show($"Are you sure you want to delete {studentToDelete.Name}?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Yes)
+                try
                 {
-                    await _studentService.DeleteStudent(studentToDelete.UserId);
-                    await LoadStudents();
+                    var result = MessageBox.Show($"Are you sure you want to delete {studentToDelete.Name}?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        await _studentService.DeleteStudent(studentToDelete.UserId);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deleting student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while deleting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -141,12 +173,20 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                var result = MessageBox.Show($"Are you sure you want to enable {student.Name}?", "Confirm Enable", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                try
                 {
-                    student.IsDisabled = false;
-                    await _studentService.UpdateStudent(student.UserId, student);
-                    await LoadStudents();
+                    var result = MessageBox.Show($"Are you sure you want to enable {student.Name}?", "Confirm Enable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsDisabled = false;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error enabling student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while enabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -155,12 +195,20 @@ namespace Jahoot.Display.LecturerViews
         {
             if (obj is Student student)
             {
-                var result = MessageBox.Show($"Are you sure you want to disable {student.Name}?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                try
                 {
-                    student.IsDisabled = true;
-                    await _studentService.UpdateStudent(student.UserId, student);
-                    await LoadStudents();
+                    var result = MessageBox.Show($"Are you sure you want to disable {student.Name}?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsDisabled = true;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error disabling student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while disabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
