@@ -17,8 +17,8 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
         try
         {
-            const string createTestQuery = "INSERT INTO Test (subject_id, name) VALUES (@SubjectId, @Name); SELECT LAST_INSERT_ID();";
-            int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name }, transaction);
+            const string createTestQuery = "INSERT INTO Test (subject_id, name, number_of_questions) VALUES (@SubjectId, @Name, @NumberOfQuestions); SELECT LAST_INSERT_ID();";
+            int testId = await connection.ExecuteScalarAsync<int>(createTestQuery, new { test.SubjectId, test.Name, test.NumberOfQuestions }, transaction);
 
             HashSet<int> usedQuestionIds = [];
 
@@ -84,8 +84,8 @@ public class TestRepository(IDbConnection connection) : ITestRepository
 
         try
         {
-            const string updateTestQuery = "UPDATE Test SET name = @Name, subject_id = @SubjectId WHERE test_id = @TestId";
-            await connection.ExecuteAsync(updateTestQuery, new { test.Name, test.SubjectId, test.TestId }, transaction);
+            const string updateTestQuery = "UPDATE Test SET name = @Name, subject_id = @SubjectId, number_of_questions = @NumberOfQuestions WHERE test_id = @TestId";
+            await connection.ExecuteAsync(updateTestQuery, new { test.Name, test.SubjectId, test.NumberOfQuestions, test.TestId }, transaction);
 
             Question[] currentQuestions = (await GetQuestionsInternalAsync(test.TestId, transaction)).ToArray();
             int[] currentQuestionIds = currentQuestions.Select(question => question.QuestionId).ToArray();
@@ -155,6 +155,7 @@ public class TestRepository(IDbConnection connection) : ITestRepository
             TestId = test.TestId,
             SubjectId = test.SubjectId,
             Name = test.Name,
+            NumberOfQuestions = test.NumberOfQuestions,
             CreatedAt = test.CreatedAt,
             UpdatedAt = test.UpdatedAt,
             Questions = questions.ToList().AsReadOnly()
