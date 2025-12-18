@@ -11,12 +11,25 @@
         <SolidColorBrush x:Key="SecondaryTextColor" Color="Gray"/>
         <SolidColorBrush x:Key="LightBackgroundColor" Color="#F6F7FB"/>
     </UserControl.Resources>
-    
+
     <Grid Background="{StaticResource LightBackgroundColor}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
+        <!-- Stats Row -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <controls:StatCard Grid.Column="0" Title="Total Lecturers" Value="{Binding TotalLecturers}" Icon="👨‍🏫" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="1" Title="Active Lecturers" Value="{Binding ActiveLecturers}" Icon="✅" Margin="0,0,20,0"/>
+            <controls:StatCard Grid.Column="2" Title="Inactive Lecturers" Value="{Binding InactiveLecturers}" Icon="🚫"/>
+        </Grid>
 
         <!-- Main Content Area -->
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,0">
@@ -32,7 +45,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <StackPanel Orientation="Vertical">
                         <TextBlock Text="Manage Lecturers" FontSize="18" FontWeight="SemiBold"/>
                         <TextBlock Text="View and manage lecturer accounts" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"/>
@@ -40,7 +53,8 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Refresh" Click="Refresh_Click" Margin="0,0,10,0" Padding="10,5" Background="Transparent" BorderBrush="#DDD" BorderThickness="1"/>
-                        <Button Content="+ Create New Lecturer" Click="CreateLecturer_Click" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
+                        <Button Content="Promote to Lecturer" Click="AssignLecturer_Click" Margin="0,0,10,0" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
+                        <Button Content="Create Lecturer" Click="CreateLecturer_Click" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Grid>
 
@@ -138,7 +152,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        
+
                         <DataGridTemplateColumn Header="Status" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
