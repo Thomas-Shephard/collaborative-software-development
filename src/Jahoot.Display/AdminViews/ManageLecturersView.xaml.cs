@@ -70,7 +70,7 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
 
     private async void ManageLecturersView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (IsVisible && _lecturerService != null)
+        if ((bool)e.NewValue && _lecturerService != null)
         {
             await LoadLecturers();
         }
