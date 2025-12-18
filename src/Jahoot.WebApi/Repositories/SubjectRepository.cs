@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using Jahoot.Core.Models;
+using Jahoot.WebApi.Models.Responses;
 
 namespace Jahoot.WebApi.Repositories;
 
@@ -36,6 +37,32 @@ public class SubjectRepository(IDbConnection connection) : ISubjectRepository
     {
         const string query = "SELECT * FROM Subject WHERE name = @Name";
         return await connection.QuerySingleOrDefaultAsync<Subject>(query, new { Name = name });
+    }
+
+    public async Task<IEnumerable<LeaderboardEntry>> GetLeaderboardForSubjectAsync(int subjectId)
+    {
+        const string query = """
+                             SELECT
+                                 user.name AS StudentName,
+                                 SUM(test_result.score) AS TotalScore
+                             FROM TestResult test_result
+                                 JOIN Test test ON test_result.test_id = test.test_id
+                                 JOIN Student student ON test_result.student_id = student.student_id
+                                 JOIN User user ON student.user_id = user.user_id
+                             WHERE test.subject_id = @SubjectId AND user.is_disabled = 0
+                             GROUP BY user.name
+                             ORDER BY TotalScore DESC
+                             LIMIT 5
+                             """;
+
+        IEnumerable<dynamic> results = await connection.QueryAsync(query, new { SubjectId = subjectId });
+
+        return results.Select((row, index) => new LeaderboardEntry
+        {
+            Rank = index + 1,
+            StudentName = row.StudentName,
+            TotalScore = Convert.ToInt64(row.TotalScore)
+        });
     }
 
     public async Task UpdateSubjectAsync(Subject subject)
