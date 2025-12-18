@@ -53,8 +53,10 @@
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<ISubjectService, SubjectService>();
             services.AddTransient<ILecturerService, LecturerService>();
+            services.AddTransient<IStudentService, StudentService>();
             services.AddTransient<LoginPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }
 
