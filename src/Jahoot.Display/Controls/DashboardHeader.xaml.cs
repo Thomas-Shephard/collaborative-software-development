@@ -58,7 +58,6 @@ namespace Jahoot.Display.Controls
         {
             if (string.IsNullOrWhiteSpace(newRole))
             {
-                Debug.WriteLine("[DashboardHeader] Role change aborted: new role is null or empty");
                 return;
             }
 
@@ -67,28 +66,23 @@ namespace Jahoot.Display.Controls
                 var currentWindow = Window.GetWindow(this);
                 if (currentWindow == null || !currentWindow.IsLoaded)
                 {
-                    Debug.WriteLine($"[DashboardHeader] Cannot change role: Window is null or not loaded. Role: {newRole}");
                     return;
                 }
 
                 var app = Application.Current as App;
                 if (app?.ServiceProvider == null)
                 {
-                    Debug.WriteLine("[DashboardHeader] Cannot change role: ServiceProvider is null");
                     return;
                 }
 
-                // Check if user has access to the requested dashboard
                 var userRoleService = app.ServiceProvider.GetService<IUserRoleService>();
                 if (userRoleService != null && !userRoleService.HasAccessToDashboard(newRole))
                 {
-                    Debug.WriteLine($"[DashboardHeader] Access denied: User does not have {newRole} role");
                     MessageBox.Show($"You do not have access to the {newRole} dashboard.", 
                         "Access Denied", 
                         MessageBoxButton.OK, 
                         MessageBoxImage.Warning);
                     
-                    // Revert to previous role
                     SelectedRole = (string)GetValue(SelectedRoleProperty);
                     return;
                 }
@@ -99,31 +93,27 @@ namespace Jahoot.Display.Controls
                 
                 if (!success)
                 {
-                    Debug.WriteLine($"[DashboardHeader] Navigation to {newRole} dashboard failed");
                     MessageBox.Show($"Failed to navigate to {newRole} dashboard.", 
                         "Navigation Error", 
                         MessageBoxButton.OK, 
                         MessageBoxImage.Error);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                Debug.WriteLine($"[DashboardHeader] Service resolution failed: {ex.Message}");
-                Trace.TraceError($"DashboardHeader role change failed - DI issue: {ex}");
+                Trace.TraceError("DashboardHeader role change failed - service resolution error");
                 MessageBox.Show("An error occurred while changing dashboards.", 
                     "Error", 
                     MessageBoxButton.OK, 
                     MessageBoxImage.Error);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
-                Debug.WriteLine($"[DashboardHeader] Invalid navigation parameter: {ex.Message}");
-                Trace.TraceError($"DashboardHeader role change failed - Invalid argument: {ex}");
+                Trace.TraceError("DashboardHeader role change failed - invalid argument");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Debug.WriteLine($"[DashboardHeader] Unexpected error during role change: {ex.Message}");
-                Trace.TraceError($"DashboardHeader role change failed - Unexpected error: {ex}");
+                Trace.TraceError("DashboardHeader role change failed - unexpected error");
                 MessageBox.Show("An unexpected error occurred.", 
                     "Error", 
                     MessageBoxButton.OK, 
@@ -146,7 +136,6 @@ namespace Jahoot.Display.Controls
 
                 await authService.Logout();
                 
-                // Clear user roles on logout
                 userRoleService?.ClearRoles();
 
                 MessageBox.Show("You have been successfully signed out", "Signed Out", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -157,9 +146,8 @@ namespace Jahoot.Display.Controls
                 var currentWindow = Window.GetWindow(this);
                 currentWindow?.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Debug.WriteLine($"[DashboardHeader] Logout failed: {ex.Message}");
                 MessageBox.Show("Logout failed", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

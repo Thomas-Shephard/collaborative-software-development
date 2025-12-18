@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using Jahoot.Core.Models.Requests;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -6,8 +7,6 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
-using Jahoot.Core.Models.Requests;
-using Jahoot.Core.Models;
 using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 

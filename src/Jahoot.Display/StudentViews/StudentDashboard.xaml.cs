@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -47,17 +46,11 @@ namespace Jahoot.Display.StudentViews
 
         private void OnTestItemClick(object? parameter)
         {
-            Debug.WriteLine($"[StudentDashboard] Test item clicked: {parameter?.GetType().Name}");
-            
             if (parameter is TestItem testItem)
             {
-                Debug.WriteLine($"[StudentDashboard] Test: {testItem.TestName}, Status: {testItem.StatusLabel}");
-                
                 // Only open test page for NOT TAKEN tests
                 if (testItem.StatusLabel == "NOT TAKEN")
                 {
-                    Debug.WriteLine($"[StudentDashboard] Opening test {testItem.TestId}: {testItem.TestName}");
-                    
                     try
                     {
                         // Open TestTakingPage with the selected test
@@ -69,29 +62,21 @@ namespace Jahoot.Display.StudentViews
                             // Load test data based on testId
                             viewModel.LoadMockTest(testItem.TestId, testItem.TestName, testItem.SubjectName);
                             testPage.Show();
-                            Debug.WriteLine($"[StudentDashboard] Test page opened successfully");
                         }
                         else
                         {
-                            Debug.WriteLine($"[StudentDashboard] Failed to get test page or view model");
                             MessageBox.Show("Unable to open test page.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        Debug.WriteLine($"[StudentDashboard] Error opening test: {ex.Message}");
-                        MessageBox.Show($"Error opening test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Error opening test.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"[StudentDashboard] Test already completed, cannot retake");
                     MessageBox.Show("This test has already been completed.", "Test Completed", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-            }
-            else
-            {
-                Debug.WriteLine($"[StudentDashboard] Parameter is not a TestItem");
             }
         }
 
