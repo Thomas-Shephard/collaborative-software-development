@@ -73,6 +73,7 @@ public class UpdateTestControllerTests
         {
             Name = "Updated Test",
             SubjectId = 1,
+            NumberOfQuestions = 1,
             Questions =
             [
                 new QuestionRequestModel
@@ -101,6 +102,7 @@ public class UpdateTestControllerTests
             t.TestId == testId &&
             t.Name == request.Name &&
             t.SubjectId == request.SubjectId &&
+            t.NumberOfQuestions == request.NumberOfQuestions &&
             t.Questions.Count == 1 &&
             t.Questions[0].Text == "Updated Question"
         )), Times.Once);

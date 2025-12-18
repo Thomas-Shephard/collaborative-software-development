@@ -57,6 +57,7 @@ public class CreateTestControllerTests
         {
             Name = "Unit Test",
             SubjectId = 1,
+            NumberOfQuestions = 1,
             Questions =
             [
                 new QuestionRequestModel
@@ -80,6 +81,7 @@ public class CreateTestControllerTests
         _testRepositoryMock.Verify(repo => repo.CreateTestAsync(It.Is<Core.Models.Test>(t =>
             t.Name == request.Name &&
             t.SubjectId == request.SubjectId &&
+            t.NumberOfQuestions == request.NumberOfQuestions &&
             t.Questions.Count == 1 &&
             t.Questions[0].Text == "What is 2+2?" &&
             t.Questions[0].Options.Count == 2

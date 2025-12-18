@@ -20,6 +20,7 @@ public class TestRequestModelTests
         {
             SubjectId = 1,
             Name = "Test Name",
+            NumberOfQuestions = 1,
             Questions =
             [
                 new QuestionRequestModel
@@ -77,11 +78,60 @@ public class TestRequestModelTests
 
         List<ValidationResult> results = ValidateModel(model);
 
-        Assert.That(results, Has.Count.EqualTo(1));
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(results[0].MemberNames, Contains.Item(nameof(TestRequestModel.Questions)));
-            Assert.That(results[0].ErrorMessage, Does.Contain("at least 1 question"));
+            Assert.That(results.Any(r => r.MemberNames.Contains(nameof(TestRequestModel.Questions))), Is.True);
+            Assert.That(results.Any(r => r.ErrorMessage!.Contains("at least 1 question")), Is.True);
         }
+    }
+
+    [Test]
+    public void Validate_NumberOfQuestionsExceedsCount_ReturnsError()
+    {
+        TestRequestModel model = new()
+        {
+            SubjectId = 1,
+            Name = "Test",
+            NumberOfQuestions = 2,
+            Questions =
+            [
+                new QuestionRequestModel
+                {
+                    Text = "Q1",
+                    Options = [new QuestionOptionRequestModel { OptionText = "A", IsCorrect = true }]
+                }
+            ]
+        };
+
+        List<ValidationResult> results = ValidateModel(model);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results.Any(r => r.MemberNames.Contains(nameof(TestRequestModel.NumberOfQuestions))), Is.True);
+            Assert.That(results.Any(r => r.ErrorMessage!.Contains("cannot exceed")), Is.True);
+        }
+    }
+
+    [Test]
+    public void Validate_NumberOfQuestionsLessThanOne_ReturnsError()
+    {
+        TestRequestModel model = new()
+        {
+            SubjectId = 1,
+            Name = "Test",
+            NumberOfQuestions = 0,
+            Questions =
+            [
+                new QuestionRequestModel
+                {
+                    Text = "Q1",
+                    Options = [new QuestionOptionRequestModel { OptionText = "A", IsCorrect = true }]
+                }
+            ]
+        };
+
+        List<ValidationResult> results = ValidateModel(model);
+
+        Assert.That(results.Any(r => r.MemberNames.Contains(nameof(TestRequestModel.NumberOfQuestions))), Is.True);
     }
 }
