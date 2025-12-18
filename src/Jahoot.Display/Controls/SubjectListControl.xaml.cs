@@ -48,13 +48,16 @@ namespace Jahoot.Display.Controls
             set { SetValue(ShowStatusProperty, value); }
         }
 
-        public event EventHandler<Subject>? EditSubjectRequested;
+        public event Func<object, Subject, Task>? EditSubjectRequested;
 
-        private void OnEditClick(object sender, RoutedEventArgs e)
+        private async void OnEditClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is Subject subject)
             {
-                EditSubjectRequested?.Invoke(this, subject);
+                if (EditSubjectRequested != null)
+                {
+                    await EditSubjectRequested.Invoke(this, subject);
+                }
             }
         }
     }

@@ -144,7 +144,7 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         await LoadSubjects(true);
     }
 
-    private async void SubjectListControl_EditSubjectRequested(object sender, Subject subject)
+    private async Task SubjectListControl_EditSubjectRequested(object sender, Subject subject)
     {
         if (_subjectService == null) return;
 

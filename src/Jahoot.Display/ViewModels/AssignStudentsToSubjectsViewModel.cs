@@ -114,6 +114,7 @@ namespace Jahoot.Display.ViewModels
                             Name = student.Name,
                             Email = student.Email,
                             Roles = student.Roles,
+                            IsApproved = student.IsApproved,
                             Subjects = currentSubjects
                         };
 
