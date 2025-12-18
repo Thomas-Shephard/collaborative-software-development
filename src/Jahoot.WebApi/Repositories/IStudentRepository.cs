@@ -8,5 +8,6 @@ public interface IStudentRepository
     Task CreateStudentAsync(int userId);
     Task<Student?> GetStudentByUserIdAsync(int userId);
     Task<IEnumerable<Student>> GetStudentsByApprovalStatusAsync(bool isApproved);
+    Task<bool> IsUserEnrolledInSubjectAsync(int userId, int subjectId);
     Task UpdateStudentAsync(Student student);
 }
