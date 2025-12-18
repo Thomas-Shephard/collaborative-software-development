@@ -244,6 +244,19 @@ public class TestRepository(IDbConnection connection) : ITestRepository
         return await connection.QueryAsync<CompletedTestResponse>(query, new { Days = days });
     }
 
+    public async Task<bool> HasStudentCompletedTestAsync(int studentId, int testId)
+    {
+        const string query = "SELECT COUNT(1) FROM TestResult WHERE student_id = @StudentId AND test_id = @TestId";
+        int count = await connection.ExecuteScalarAsync<int>(query, new { StudentId = studentId, TestId = testId });
+        return count > 0;
+    }
+
+    public async Task SaveTestResultAsync(int studentId, int testId, int score, int questionsCorrect)
+    {
+        const string query = "INSERT INTO TestResult (student_id, test_id, score, questions_correct, completion_date) VALUES (@StudentId, @TestId, @Score, @QuestionsCorrect, NOW())";
+        await connection.ExecuteAsync(query, new { StudentId = studentId, TestId = testId, Score = score, QuestionsCorrect = questionsCorrect });
+    }
+
     private async Task<Test?> GetTestInternalAsync(int testId)
     {
         const string query = "SELECT * FROM Test WHERE test_id = @TestId";

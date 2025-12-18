@@ -64,6 +64,25 @@ public partial class App : Application
         services.AddTransient<StudentViews.TestTakingPage>();
         services.AddTransient<Pages.AdminDashboard>();
     }
+            services.AddSingleton<ISecureStorageService, SecureStorageService>();
+
+            string baseAddress = _configuration?.GetValue<string>("BaseAddress")
+                                 ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
+
+            services.AddSingleton(new HttpClient
+            {
+                BaseAddress = new Uri(baseAddress)
+            });
+            services.AddSingleton<IHttpService, HttpService>();
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<ISubjectService, SubjectService>();
+            services.AddTransient<ILecturerService, LecturerService>();
+            services.AddTransient<IStudentService, StudentService>();
+            services.AddTransient<LandingPage>();
+            services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<LecturerViews.StudentManagementViewModel>();
+            services.AddTransient<Pages.AdminDashboard>();
+        }
 
     protected override void OnStartup(StartupEventArgs e)
     {

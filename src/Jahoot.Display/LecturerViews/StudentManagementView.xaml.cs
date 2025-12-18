@@ -1,4 +1,6 @@
 using Jahoot.Core.Models;
+using Jahoot.Display.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,8 +8,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -17,7 +21,7 @@ namespace Jahoot.Display.LecturerViews
         public StudentManagementView()
         {
             InitializeComponent();
-            DataContext = new StudentManagementViewModel();
+            DataContext = ((App)App.Current).ServiceProvider.GetRequiredService<StudentManagementViewModel>();
         }
     }
 
@@ -42,31 +46,10 @@ namespace Jahoot.Display.LecturerViews
         public ICommand DisableStudentCommand { get; }
 
 
-        public StudentManagementViewModel()
+        private readonly IStudentService _studentService;
+        public StudentManagementViewModel(IStudentService studentService)
         {
-            Students = new ObservableCollection<Student>
-            {
-                new Student { UserId = 1, Name = "John Smith", Email = "john.smith@example.com", StudentId = 1001, LastLogin = new System.DateTime(2025, 12, 1, 10, 30, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 2, Name = "Jane Doe", Email = "jane.doe@example.com", StudentId = 1002, LastLogin = new System.DateTime(2025, 12, 2, 14, 0, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 3, Name = "Peter Jones", Email = "peter.jones@example.com", StudentId = 1003, LastLogin = new System.DateTime(2025, 11, 30, 9, 15, 0), IsApproved = true, IsDisabled = true, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 4, Name = "Alice Williams", Email = "alice.williams@example.com", StudentId = 1004, LastLogin = new System.DateTime(2025, 12, 3, 11, 0, 0), IsApproved = false, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 5, Name = "Bob Brown", Email = "bob.brown@example.com", StudentId = 1005, LastLogin = new System.DateTime(2025, 12, 3, 12, 45, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 6, Name = "Charlie Davis", Email = "charlie.davis@example.com", StudentId = 1006, LastLogin = new System.DateTime(2025, 12, 3, 13, 20, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 7, Name = "Diana Miller", Email = "diana.miller@example.com", StudentId = 1007, LastLogin = new System.DateTime(2025, 12, 2, 8, 10, 0), IsApproved = false, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 8, Name = "Ethan Wilson", Email = "ethan.wilson@example.com", StudentId = 1008, LastLogin = new System.DateTime(2025, 11, 29, 18, 5, 0), IsApproved = true, IsDisabled = true, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 9, Name = "Fiona Taylor", Email = "fiona.taylor@example.com", StudentId = 1009, LastLogin = new System.DateTime(2025, 12, 1, 16, 30, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 10, Name = "George Anderson", Email = "george.anderson@example.com", StudentId = 1010, LastLogin = new System.DateTime(2025, 12, 3, 14, 55, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 11, Name = "Hannah Thomas", Email = "hannah.thomas@example.com", StudentId = 1011, LastLogin = new System.DateTime(2025, 12, 2, 11, 25, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 12, Name = "Ian Jackson", Email = "ian.jackson@example.com", StudentId = 1012, LastLogin = new System.DateTime(2025, 12, 3, 10, 10, 0), IsApproved = false, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 13, Name = "Jessica White", Email = "jessica.white@example.com", StudentId = 1013, LastLogin = new System.DateTime(2025, 11, 28, 13, 40, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 14, Name = "Kevin Harris", Email = "kevin.harris@example.com", StudentId = 1014, LastLogin = new System.DateTime(2025, 12, 3, 9, 5, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 15, Name = "Laura Martin", Email = "laura.martin@example.com", StudentId = 1015, LastLogin = new System.DateTime(2025, 12, 1, 19, 20, 0), IsApproved = true, IsDisabled = true, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 16, Name = "Megan Thompson", Email = "megan.thompson@example.com", StudentId = 1016, LastLogin = new System.DateTime(2025, 12, 3, 15, 50, 0), IsApproved = false, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 17, Name = "Nathan Garcia", Email = "nathan.garcia@example.com", StudentId = 1017, LastLogin = new System.DateTime(2025, 12, 2, 17, 15, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 18, Name = "Olivia Martinez", Email = "olivia.martinez@example.com", StudentId = 1018, LastLogin = new System.DateTime(2025, 12, 3, 16, 25, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 19, Name = "Paul Rodriguez", Email = "paul.rodriguez@example.com", StudentId = 1019, LastLogin = new System.DateTime(2025, 11, 27, 12, 0, 0), IsApproved = true, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() },
-                new Student { UserId = 20, Name = "Quincy Lee", Email = "quincy.lee@example.com", StudentId = 1020, LastLogin = new System.DateTime(2025, 12, 3, 17, 30, 0), IsApproved = false, IsDisabled = false, CreatedAt = new System.DateTime(2025, 1, 1), UpdatedAt = new System.DateTime(2025, 1, 1), PasswordHash = "", Roles = new List<Role>(), Subjects = new List<Subject>() }
-            };
+            _studentService = studentService;
 
             EditStudentCommand = new RelayCommand(EditStudent);
             ApproveStudentCommand = new RelayCommand(ApproveStudent);
@@ -74,63 +57,165 @@ namespace Jahoot.Display.LecturerViews
             DeleteStudentCommand = new RelayCommand(DeleteStudent);
             EnableStudentCommand = new RelayCommand(EnableStudent);
             DisableStudentCommand = new RelayCommand(DisableStudent);
+
+            _ = LoadStudents();
         }
 
-        private void EditStudent(object? obj)
+        private async Task LoadStudents()
         {
-            if (obj is Student student)
+            try
             {
-                var editWindow = new EditStudentWindow(student);
-                editWindow.ShowDialog();
+                var approvedTask = _studentService.GetStudents(true);
+                var unapprovedTask = _studentService.GetStudents(false);
+                await Task.WhenAll(approvedTask, unapprovedTask);
+                var approvedStudents = approvedTask.Result;
+                var unapprovedStudents = unapprovedTask.Result;
+
+                var allStudents = approvedStudents.Concat(unapprovedStudents);
+                Students = new ObservableCollection<Student>(allStudents);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "An error occurred while loading students. Please try again or contact support if the problem persists." +
+                    Environment.NewLine + Environment.NewLine +
+                    $"Details: {ex.Message}",
+                    "Error Loading Students",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
-        private void ApproveStudent(object? obj)
+        private async void EditStudent(object? obj)
         {
             if (obj is Student student)
             {
-                student.IsApproved = true;
-                student.IsDisabled = false;
+                try
+                {
+                    var editWindow = new EditStudentWindow(student);
+                    if (editWindow.ShowDialog() == true)
+                    {
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error updating student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while updating the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
-        private void RejectStudent(object? obj)
+        private async void ApproveStudent(object? obj)
+        {
+            if (obj is Student student)
+            {
+                try
+                {
+                    var result = MessageBox.Show($"Are you sure you want to approve {student.Name}?", "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsApproved = true;
+                        student.IsDisabled = false;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error approving student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while approving the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void RejectStudent(object? obj)
         {
             if (obj is Student studentToReject)
             {
-                var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToReject.UserId);
-                if (studentInCollection != null)
+                try
                 {
-                    Students.Remove(studentInCollection);
+                    if (!studentToReject.IsApproved)
+                    {
+                        var result = MessageBox.Show($"Are you sure you want to reject {studentToReject.Name}?", "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            await _studentService.DeleteStudent(studentToReject.UserId);
+                            await LoadStudents();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error rejecting student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while rejecting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
-        private void DeleteStudent(object? obj)
+        private async void DeleteStudent(object? obj)
         {
             if (obj is Student studentToDelete)
             {
-                var studentInCollection = Students.FirstOrDefault(s => s.UserId == studentToDelete.UserId);
-                if (studentInCollection != null)
+                try
                 {
-                    Students.Remove(studentInCollection);
+                    var result = MessageBox.Show($"Are you sure you want to delete {studentToDelete.Name}?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        await _studentService.DeleteStudent(studentToDelete.UserId);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deleting student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while deleting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
-        private void EnableStudent(object? obj)
+        private async void EnableStudent(object? obj)
         {
             if (obj is Student student)
             {
-                student.IsDisabled = false;
+                try
+                {
+                    var result = MessageBox.Show($"Are you sure you want to enable {student.Name}?", "Confirm Enable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsDisabled = false;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error enabling student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while enabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
-        private void DisableStudent(object? obj)
+        private async void DisableStudent(object? obj)
         {
             if (obj is Student student)
             {
-                student.IsDisabled = true;
+                try
+                {
+                    var result = MessageBox.Show($"Are you sure you want to disable {student.Name}?", "Confirm Disable", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        student.IsDisabled = true;
+                        await _studentService.UpdateStudent(student.UserId, student);
+                        await LoadStudents();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error disabling student: {ex.Message}");
+                    MessageBox.Show($"An error occurred while disabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }
