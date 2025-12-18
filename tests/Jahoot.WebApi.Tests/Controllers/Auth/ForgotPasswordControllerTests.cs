@@ -28,7 +28,7 @@ public class ForgotPasswordControllerTests
         _emailQueueMock = new Mock<IEmailQueue>();
         _securityLockoutServiceMock = new Mock<ISecurityLockoutService>();
 
-        _forgotPasswordController = new ForgotPasswordController(_userRepositoryMock.Object, _passwordResetRepositoryMock.Object, _emailQueueMock.Object);
+        _forgotPasswordController = new ForgotPasswordController(_userRepositoryMock.Object, _passwordResetRepositoryMock.Object, _emailQueueMock.Object, _securityLockoutServiceMock.Object);
 
         _httpContextMock = new Mock<HttpContext>();
         Mock<ConnectionInfo> connection = new();
@@ -100,6 +100,7 @@ public class ForgotPasswordControllerTests
 
         string plainToken = capturedEmailMessage!.Body.Split("Use the code ")[1].Split(" to reset your password")[0];
 
+        _securityLockoutServiceMock.Verify(s => s.ResetAttempts("IP:127.0.0.1", "Email:test@example.com"), Times.Once);
         _passwordResetRepositoryMock.Verify(passwordResetRepository => passwordResetRepository.CreateTokenAsync(user.UserId, capturedTokenHash), Times.Once);
         _emailQueueMock.Verify(s => s.QueueBackgroundEmailAsync(It.Is<EmailMessage>(m => m.To == user.Email && m.Body.Contains(plainToken))), Times.Once);
     }

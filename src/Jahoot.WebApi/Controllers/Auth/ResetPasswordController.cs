@@ -25,15 +25,15 @@ public class ResetPasswordController(IDbConnection connection, IUserRepository u
             return BadRequest(ModelState);
         }
 
+        User? user = await userRepository.GetUserByEmailAsync(requestModel.Email);
+        if (user is null)
+        {
+            return BadRequest(new { message = FailMessage });
+        }
+
         using IDbTransaction transaction = connection.BeginTransaction();
         try
         {
-            User? user = await userRepository.GetUserByEmailAsync(requestModel.Email, transaction);
-            if (user is null)
-            {
-                return BadRequest(new { message = FailMessage });
-            }
-
             PasswordResetToken? passwordResetToken = await passwordResetRepository.GetPasswordResetTokenByEmail(requestModel.Email, transaction);
             if (passwordResetToken is null || passwordResetToken.IsUsed || passwordResetToken.IsRevoked || passwordResetToken.Expiration <= DateTime.UtcNow
                 || !PasswordUtils.VerifyPassword(requestModel.Token, passwordResetToken.TokenHash))

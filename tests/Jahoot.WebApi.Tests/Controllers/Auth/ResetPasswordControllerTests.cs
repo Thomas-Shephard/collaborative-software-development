@@ -133,7 +133,7 @@ public class ResetPasswordControllerTests
             Assert.That(badRequestResult.Value?.ToString(), Does.Contain("Failed to reset password."));
         }
 
-        _mockConnection.Verify(c => c.BeginTransaction(), Times.Once);
+        _mockConnection.Verify(c => c.BeginTransaction(), Times.Never);
         _mockTransaction.Verify(t => t.Rollback(), Times.Never);
         _mockTransaction.Verify(t => t.Commit(), Times.Never);
     }

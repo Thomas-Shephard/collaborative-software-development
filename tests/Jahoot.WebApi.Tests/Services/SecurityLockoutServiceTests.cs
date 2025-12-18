@@ -125,4 +125,66 @@ public class SecurityLockoutServiceTests
         isLockedOut = await _securityLockoutService.IsLockedOut(EmailKey, IpKey);
         Assert.That(isLockedOut, Is.False);
     }
+
+    [Test]
+    public async Task CleanupExpiredLockouts_ShouldRemoveExpiredLockouts()
+    {
+        for (int i = 0; i < MaxFailedAttempts; i++)
+        {
+            await _securityLockoutService.RecordFailure(EmailKey);
+        }
+
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.True);
+
+        _fakeTimeProvider.Advance(LockoutDuration);
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.False);
+
+        _fakeTimeProvider.Advance(CleanupInterval);
+
+        // After cleanup, the attempt count should be reset.
+        // Recording a single failure shouldn't lockout if it was cleaned up.
+        await _securityLockoutService.RecordFailure(EmailKey);
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.False);
+
+        for (int i = 0; i < MaxFailedAttempts - 1; i++)
+        {
+            await _securityLockoutService.RecordFailure(EmailKey);
+        }
+
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.True);
+    }
+
+    [Test]
+    public async Task CleanupExpiredStaleAttempts_ShouldRemoveAttemptsWithoutLockout()
+    {
+        for (int i = 0; i < MaxFailedAttempts - 1; i++)
+        {
+            await _securityLockoutService.RecordFailure(EmailKey);
+        }
+
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.False);
+
+        // Advance just more than the FailedAttemptResetInterval and trigger cleanup
+        _fakeTimeProvider.Advance(FailedAttemptResetInterval + TimeSpan.FromMilliseconds(1));
+
+        // One more failure should NOT lockout because the previous 2 were stale and cleaned up.
+        await _securityLockoutService.RecordFailure(EmailKey);
+
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.False);
+    }
+
+    [Test]
+    public async Task Keys_ShouldBeCaseInsensitive()
+    {
+        string lowerCaseKey = EmailKey.ToLower();
+        string upperCaseKey = EmailKey.ToUpper();
+
+        await _securityLockoutService.RecordFailure(lowerCaseKey);
+        for (int i = 0; i < MaxFailedAttempts - 1; i++)
+        {
+            await _securityLockoutService.RecordFailure(upperCaseKey);
+        }
+
+        Assert.That(await _securityLockoutService.IsLockedOut(EmailKey), Is.True);
+    }
 }
