@@ -3,14 +3,20 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 using Jahoot.Core.Models.Requests;
+using Jahoot.Core.Models;
 using System.Net;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Jahoot.Display.Services;
+
 public class AuthService(HttpClient httpClient, ISecureStorageService secureStorageService) : IAuthService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly ISecureStorageService _secureStorageService = secureStorageService;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
     public async Task<Result> Login(LoginRequestModel loginRequest)
     {
@@ -27,7 +33,16 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
                     if (token != null)
                     {
                         _secureStorageService.SaveToken(token);
-                        return new Result { Success = true, ErrorMessage = string.Empty };
+                        
+                        // Extract roles from token using JWT library
+                        var roles = ExtractRolesFromToken(token);
+                        
+                        return new Result 
+                        { 
+                            Success = true, 
+                            ErrorMessage = string.Empty,
+                            UserRoles = roles
+                        };
                     }
                 }
             }
@@ -41,6 +56,41 @@ public class AuthService(HttpClient httpClient, ISecureStorageService secureStor
             }
 
             return await ParseErrorResponse(response, "An unknown error occurred.");
+        }
+    }
+
+    private List<Role> ExtractRolesFromToken(string token)
+    {
+        try
+        {
+            // Use JwtSecurityTokenHandler to safely parse the token
+            var jwtToken = _tokenHandler.ReadJwtToken(token);
+            var roles = new List<Role>();
+            
+            // JWT role claims use "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" as the key
+            const string roleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+            
+            var roleClaims = jwtToken.Claims.Where(c => c.Type == roleClaimType);
+            
+            foreach (var claim in roleClaims)
+            {
+                if (Enum.TryParse<Role>(claim.Value, out var role))
+                {
+                    roles.Add(role);
+                }
+            }
+            
+            return roles;
+        }
+        catch (ArgumentException)
+        {
+            // Token format is invalid
+            return new List<Role>();
+        }
+        catch (Exception)
+        {
+            // Any other parsing error
+            return new List<Role>();
         }
     }
 

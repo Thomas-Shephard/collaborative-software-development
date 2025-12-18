@@ -6,6 +6,8 @@ namespace Jahoot.Display.ViewModels
 {
     public class AdminDashboardViewModel : BaseViewModel
     {
+        private ObservableCollection<string> _availableRoles = new();
+        
         public string AdminInitials
         {
             get => field;
@@ -20,13 +22,13 @@ namespace Jahoot.Display.ViewModels
 
         public ObservableCollection<string> AvailableRoles
         {
-            get => field;
+            get => _availableRoles;
             set
             {
-                field = value;
+                _availableRoles = value;
                 OnPropertyChanged();
             }
-        } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+        }
 
         public string SelectedRole
         {
@@ -51,6 +53,23 @@ namespace Jahoot.Display.ViewModels
 
         public AdminDashboardViewModel()
         {
+            // Initialize with Admin role by default
+            _availableRoles = new ObservableCollection<string> { "Admin" };
+            
+            RecentActivityItems = new ObservableCollection<RecentActivityItem>
+            {
+                new RecentActivityItem { StudentInitials = "Sy", DescriptionPrefix = "System ", TestName = "Backup Completed", TimeAgo = "10 mins ago", Result = "Success" },
+                new RecentActivityItem { StudentInitials = "Us", DescriptionPrefix = "User ", TestName = "New Registration", TimeAgo = "1 hour ago", Result = "Pending" },
+                 new RecentActivityItem { StudentInitials = "Al", DescriptionPrefix = "Alert ", TestName = "High CPU Usage", TimeAgo = "2 hours ago", Result = "Resolved" }
+            };
+
+            PerformanceSubjects = new ObservableCollection<PerformanceSubject>
+            {
+                new PerformanceSubject { SubjectName = "Server Load", ScoreText = "Low", ScoreValue = 20 },
+                new PerformanceSubject { SubjectName = "Memory Usage", ScoreText = "45%", ScoreValue = 45 },
+                 new PerformanceSubject { SubjectName = "Disk Space", ScoreText = "60%", ScoreValue = 60 }
+            };
+
             TabItems = new ObservableCollection<TabItem>
             {
                 new TabItem { Header = "Manage Subjects" },

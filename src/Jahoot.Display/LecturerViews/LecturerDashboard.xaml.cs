@@ -1,14 +1,17 @@
+using Jahoot.Display.Services;
 using Jahoot.Core.Models;
 using Jahoot.Display.Controls;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using Jahoot.Display.Models;
 using System.Windows.Input;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -17,12 +20,25 @@ namespace Jahoot.Display.LecturerViews
         public LecturerDashboard()
         {
             InitializeComponent();
-            this.DataContext = new LecturerDashboardViewModel();
+            
+            // Get user roles from service and filter available roles
+            var app = Application.Current as App;
+            var userRoleService = app?.ServiceProvider?.GetService<IUserRoleService>();
+            
+            var viewModel = new LecturerDashboardViewModel();
+            
+            if (userRoleService != null)
+            {
+                var availableDashboards = userRoleService.GetAvailableDashboards();
+                viewModel.AvailableRoles = new ObservableCollection<string>(availableDashboards);
+            }
+            
+            DataContext = viewModel;
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            if (this.DataContext is LecturerDashboardViewModel viewModel &&
+            if (DataContext is LecturerDashboardViewModel viewModel &&
                 sender is NavigationalTabs tabs &&
                 tabs.SelectedItem is NavigationTabItem selectedTab)
             {
@@ -54,6 +70,8 @@ namespace Jahoot.Display.LecturerViews
     public class LecturerDashboardViewModel : BaseViewModel
     {
         private object _currentView = null!;
+        private ObservableCollection<string> _availableRoles = new();
+        
         public string LecturerInitials { get; set; } = "JD";
         public int TotalStudents { get; set; } = 120;
         public int ActiveTests { get; set; } = 5;
@@ -66,7 +84,7 @@ namespace Jahoot.Display.LecturerViews
 
         public object CurrentView
         {
-            get { return _currentView; }
+            get => _currentView;
             set
             {
                 _currentView = value;
@@ -74,12 +92,24 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        public ObservableCollection<string> AvailableRoles { get; set; } = new ObservableCollection<string> { "Student", "Lecturer", "Admin" };
+        public ObservableCollection<string> AvailableRoles
+        {
+            get => _availableRoles;
+            set
+            {
+                _availableRoles = value;
+                OnPropertyChanged();
+            }
+        }
+        
         public string SelectedRole { get; set; } = "Lecturer";
         public int SelectedTabIndex { get; set; } = 0;
 
         public LecturerDashboardViewModel()
         {
+            // Initialize with Lecturer role by default
+            _availableRoles = new ObservableCollection<string> { "Lecturer" };
+            
             RecentActivityItems = new ObservableCollection<RecentActivityItem>
             {
                 new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
@@ -106,22 +136,6 @@ namespace Jahoot.Display.LecturerViews
 
             CurrentView = new LecturerOverviewView { DataContext = this };
         }
-    }
-
-    public class RecentActivityItem
-    {
-        public required string StudentInitials { get; set; }
-        public required string DescriptionPrefix { get; set; }
-        public required string TestName { get; set; }
-        public required string TimeAgo { get; set; }
-        public required string Result { get; set; }
-    }
-
-    public class PerformanceSubject
-    {
-        public required string SubjectName { get; set; }
-        public required string ScoreText { get; set; }
-        public required double ScoreValue { get; set; }
     }
 
     public class RelayCommand : ICommand
