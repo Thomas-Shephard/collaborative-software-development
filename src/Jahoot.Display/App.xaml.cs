@@ -56,6 +56,7 @@
             services.AddTransient<IStudentService, StudentService>();
             services.AddTransient<LandingPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<LecturerViews.AssignStudentsToSubjectsViewModel>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }

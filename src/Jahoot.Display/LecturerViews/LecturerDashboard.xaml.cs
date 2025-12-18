@@ -31,7 +31,7 @@ namespace Jahoot.Display.LecturerViews
                 UserControl? view = Activator.CreateInstance(viewType) as UserControl;
                 if (view == null) return;
 
-                if (view is not StudentManagementView)
+                if (view is not StudentManagementView && view is not AssignStudentsToSubjectsView)
                 {
                     view.DataContext = viewModel;
                 }
@@ -99,8 +99,8 @@ namespace Jahoot.Display.LecturerViews
             {
                 new NavigationTabItem { Header = "Overview", ViewType = typeof(LecturerOverviewView) },
                 new NavigationTabItem { Header = "Students", ViewType = typeof(StudentManagementView) },
+                new NavigationTabItem { Header = "Assign Students to Subjects", ViewType = typeof(AssignStudentsToSubjectsView) },
                 new NavigationTabItem { Header = "Tests", ViewType = typeof(LecturerOverviewView) },
-                new NavigationTabItem { Header = "Progress", ViewType = typeof(LecturerOverviewView) },
                 new NavigationTabItem { Header = "Leaderboard", ViewType = typeof(LecturerOverviewView) }
             };
 

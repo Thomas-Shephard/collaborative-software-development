@@ -144,6 +144,17 @@ public partial class ManageSubjectsView : UserControl, INotifyPropertyChanged
         await LoadSubjects(true);
     }
 
+    private async void SubjectListControl_EditSubjectRequested(object sender, Subject subject)
+    {
+        if (_subjectService == null) return;
+
+        SubjectFormWindow form = new(_subjectService, subject);
+        if (form.ShowDialog() == true)
+        {
+            await LoadSubjects(true);
+        }
+    }
+
     private async void EditSubject_Click(object sender, RoutedEventArgs e)
     {
         if (_subjectService == null) return;
