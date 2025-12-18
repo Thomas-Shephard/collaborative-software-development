@@ -5,8 +5,9 @@
     using Microsoft.Extensions.Configuration;
     using System.IO;
     using System.Reflection;
+using Jahoot.Display.ViewModels;
 
-    namespace Jahoot.Display;
+namespace Jahoot.Display;
 
     public partial class App : Application
     {
@@ -56,7 +57,7 @@
             services.AddTransient<IStudentService, StudentService>();
             services.AddTransient<LandingPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
-            services.AddTransient<LecturerViews.AssignStudentsToSubjectsViewModel>();
+            services.AddTransient<AssignStudentsToSubjectsViewModel>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }

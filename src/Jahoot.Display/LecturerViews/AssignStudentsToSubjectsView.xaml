@@ -70,8 +70,7 @@
                 </ListBox>
 
                 <Button Grid.Row="3" Content="Assign Selected Students" 
-                        Command="{Binding AssignCommand}" 
-                        CommandParameter="{Binding ElementName=StudentListBox}"
+                        Click="Assign_Click"
                         Height="40" Background="#007ACC" Foreground="White" 
                         FontWeight="Bold" BorderThickness="0">
                     <Button.Style>

@@ -1,12 +1,11 @@
 using Jahoot.Core.Models;
+using Jahoot.Display.LecturerViews;
 using Jahoot.Display.Services;
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
-namespace Jahoot.Display.LecturerViews
+namespace Jahoot.Display.ViewModels
 {
     public class AssignStudentsToSubjectsViewModel : BaseViewModel
     {
@@ -48,13 +47,10 @@ namespace Jahoot.Display.LecturerViews
             set { _isFeedbackSuccess = value; OnPropertyChanged(); }
         }
 
-        public ICommand AssignCommand { get; }
-
         public AssignStudentsToSubjectsViewModel(ISubjectService subjectService, IStudentService studentService)
         {
             _subjectService = subjectService;
             _studentService = studentService;
-            AssignCommand = new RelayCommand(AssignStudents);
             _ = LoadData();
         }
 
@@ -79,7 +75,7 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private async void AssignStudents(object? parameter)
+        public async Task AssignStudents(System.Collections.IList selectedItems)
         {
             FeedbackMessage = string.Empty;
 
@@ -90,9 +86,9 @@ namespace Jahoot.Display.LecturerViews
                 return;
             }
 
-            if (parameter is System.Windows.Controls.ListBox listBox && listBox.SelectedItems.Count > 0)
+            if (selectedItems != null && selectedItems.Count > 0)
             {
-                var studentsToAssign = listBox.SelectedItems.Cast<Student>().ToList();
+                var studentsToAssign = selectedItems.Cast<Student>().ToList();
                 int successCount = 0;
                 int failCount = 0;
 
@@ -142,8 +138,6 @@ namespace Jahoot.Display.LecturerViews
                             FeedbackMessage = $"Successfully assigned {successCount} students to {SelectedSubject.Name}.";
                         }
                         
-                        listBox.UnselectAll();
-
                         // Refresh data to ensure UI is in sync
                         await LoadData();
                     }
@@ -152,7 +146,6 @@ namespace Jahoot.Display.LecturerViews
                          // Case where all selected students were already assigned
                          IsFeedbackSuccess = true;
                          FeedbackMessage = "Selected students are already assigned to this subject.";
-                         listBox.UnselectAll();
                     }
                 }
                 catch (Exception ex)
