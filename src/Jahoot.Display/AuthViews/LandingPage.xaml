@@ -1,4 +1,4 @@
-<Window x:Class="Jahoot.Display.LoginPage"
+<Window x:Class="Jahoot.Display.LandingPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Jahoot.Display"
         xmlns:controls="clr-namespace:Jahoot.Display.Controls"
         mc:Ignorable="d"
-        Title="Jahoot - Authentication" Height="800" Width="1200"
+        Title="Jahoot - Landing" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
@@ -91,12 +91,7 @@
                 <Image Grid.Column="1" Source="/Images/Jahoot.png" Height="50" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Grid>
 
-            <Border Grid.Row="1" x:Name="LoginErrorBanner" Background="#F8D7DA" BorderBrush="#F5C6CB" BorderThickness="1" CornerRadius="5" Margin="20,0,20,10" Padding="15" Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="⚠" Foreground="#721C24" Margin="0,0,10,0" FontSize="14"/>
-                    <TextBlock x:Name="LoginErrorText" Foreground="#721C24" Text="Error message goes here" FontSize="14" FontWeight="Medium"/>
-                </StackPanel>
-            </Border>
+            <controls:UserFeedbackBox Grid.Row="1" x:Name="FeedbackBox" Margin="20,0,20,10"/>
 
             <Border Grid.Row="2" Background="#F5F5F5" CornerRadius="10" Margin="20,10,20,20">
                 <Border.Effect>
@@ -117,10 +112,10 @@
                                     <TextBlock Text="Access your account" FontSize="16" Foreground="Gray" Margin="0,0,0,25"/>
 
                                     <TextBlock Text="Email Address" Margin="0,0,0,5" FontWeight="Medium"/>
-                                    <TextBox x:Name="SignInEmailTextBox" Padding="10"/>
+                                    <TextBox x:Name="SignInEmailTextBox" Padding="10" KeyDown="SignInForm_KeyDown"/>
 
                                     <TextBlock Text="Password" Margin="0,20,0,5" FontWeight="Medium"/>
-                                    <PasswordBox x:Name="SignInPasswordBox" Padding="10" KeyDown="SignInPasswordBox_KeyDown"/>
+                                    <PasswordBox x:Name="SignInPasswordBox" Padding="10" KeyDown="SignInForm_KeyDown"/>
 
                                     <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,20,0,0">
                                         <Hyperlink Click="ForgotPassword_Click">
@@ -141,18 +136,18 @@
                                     <TextBlock Text="Register for access" FontSize="16" Foreground="Gray" Margin="0,0,0,25"/>
 
                                     <TextBlock Text="Full Name" Margin="0,0,0,5" FontWeight="Medium"/>
-                                    <TextBox x:Name="RegisterFullNameTextBox" Padding="10"/>
+                                    <TextBox x:Name="RegisterFullNameTextBox" Padding="10" KeyDown="RegisterForm_KeyDown"/>
 
                                     <TextBlock Text="Email Address" Margin="0,20,0,5" FontWeight="Medium"/>
-                                    <TextBox x:Name="RegisterEmailTextBox" Padding="10"/>
+                                    <TextBox x:Name="RegisterEmailTextBox" Padding="10" KeyDown="RegisterForm_KeyDown"/>
 
                                     <TextBlock Text="Password" Margin="0,20,0,5" FontWeight="Medium"/>
-                                    <PasswordBox x:Name="RegisterPasswordBox" Padding="10"/>
+                                    <PasswordBox x:Name="RegisterPasswordBox" Padding="10" KeyDown="RegisterForm_KeyDown"/>
                                     <TextBlock Text="Password must be at least 8 characters long, contain a number, an uppercase and a lowercase letter." 
                                     FontSize="12" Foreground="Gray" TextWrapping="Wrap" Margin="0,5,0,0"/>
 
                                     <TextBlock Text="Confirm Password" Margin="0,20,0,5" FontWeight="Medium"/>
-                                    <PasswordBox x:Name="RegisterConfirmPasswordBox" Padding="10"/>
+                                    <PasswordBox x:Name="RegisterConfirmPasswordBox" Padding="10" KeyDown="RegisterForm_KeyDown"/>
                                 </StackPanel>
                             </DockPanel>
                         </ScrollViewer>

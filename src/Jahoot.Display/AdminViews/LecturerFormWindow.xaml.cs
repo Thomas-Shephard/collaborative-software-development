@@ -4,6 +4,7 @@ using Jahoot.Display.Services;
 using System.Windows;
 using Jahoot.Core.Attributes;
 using System.ComponentModel.DataAnnotations;
+using System.Windows.Input;
 
 namespace Jahoot.Display.AdminViews;
 
@@ -46,7 +47,8 @@ public partial class LecturerFormWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        ErrorText.Visibility = Visibility.Collapsed;
+        FeedbackBox.Message = string.Empty;
+        FeedbackBox.IsSuccess = false;
         var name = NameTextBox.Text.Trim();
         var email = EmailTextBox.Text.Trim();
         var isAdmin = IsAdminCheckBox.IsChecked.GetValueOrDefault();
@@ -54,13 +56,20 @@ public partial class LecturerFormWindow : Window
         // Basic Validation
         if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
         {
-            ShowError("Name is required and must be at least 2 characters.");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                 FeedbackBox.Message = "Name is required.";
+            }
+            else
+            {
+                 FeedbackBox.Message = "Your full name should be at least two characters.";
+            }
             return;
         }
 
         if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
         {
-             ShowError("Please enter a valid email address.");
+             FeedbackBox.Message = "Please enter a valid email address.";
              return;
         }
 
@@ -72,14 +81,14 @@ public partial class LecturerFormWindow : Window
             var password = PasswordBox.Password;
             if (string.IsNullOrWhiteSpace(password))
             {
-                ShowError("Password is required.");
+                FeedbackBox.Message = "Password is required.";
                 return;
             }
 
             var strongPass = new StrongPasswordAttribute();
             if (!strongPass.IsValid(password))
             {
-                ShowError(strongPass.ErrorMessage ?? "Password is too weak.");
+                FeedbackBox.Message = strongPass.ErrorMessage ?? "Password is too weak.";
                 return;
             }
 
@@ -114,18 +123,14 @@ public partial class LecturerFormWindow : Window
         }
         else
         {
-            ShowError(result.ErrorMessage ?? "An error occurred.");
+             FeedbackBox.Message = result.ErrorMessage ?? "An error occurred.";
         }
-    }
-
-    private void ShowError(string message)
-    {
-        ErrorText.Text = message;
-        ErrorText.Visibility = Visibility.Visible;
     }
 
     private async void ResetPassword_Click(object sender, RoutedEventArgs e)
     {
+        FeedbackBox.Message = string.Empty;
+        FeedbackBox.IsSuccess = false;
         if (_lecturer == null) return;
 
         var result = MessageBox.Show($"Are you sure you want to reset the password for {_lecturer.Name}?\nThis will send a password reset email to {_lecturer.Email}.",
@@ -138,17 +143,26 @@ public partial class LecturerFormWindow : Window
                 var resetResult = await _lecturerService.ResetLecturerPasswordAsync(_lecturer.Email);
                 if (resetResult.Success)
                 {
-                    MessageBox.Show("Password reset email has been sent.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    FeedbackBox.IsSuccess = true;
+                    FeedbackBox.Message = "Password reset email has been sent.";
                 }
                 else
                 {
-                    ShowError(resetResult.ErrorMessage ?? "Failed to send reset email.");
+                    FeedbackBox.Message = resetResult.ErrorMessage ?? "Failed to send reset email.";
                 }
             }
             catch
             {
-                ShowError($"An error occurred.");
+                FeedbackBox.Message = $"An error occurred.";
             }
+        }
+    }
+
+    private void Form_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            Save_Click(sender, e);
         }
     }
 }

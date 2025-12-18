@@ -113,7 +113,7 @@ public partial class ManageLecturersView : UserControl, INotifyPropertyChanged
 
     private async void AssignLecturer_Click(object sender, RoutedEventArgs e)
     {
-        var form = new AssignLecturerRoleWindow(_lecturerService);
+        var form = new PromoteToLecturerWindow(_lecturerService);
         form.Owner = Window.GetWindow(this);
         if (form.ShowDialog() == true)
         {

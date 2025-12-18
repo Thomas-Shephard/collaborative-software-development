@@ -55,6 +55,7 @@
             services.AddTransient<ILecturerService, LecturerService>();
             services.AddTransient<IStudentService, StudentService>();
             services.AddTransient<LoginPage>();
+            services.AddTransient<LandingPage>();
             services.AddTransient<LecturerViews.LecturerDashboard>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
@@ -63,7 +64,7 @@
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            var loginPage = ServiceProvider.GetRequiredService<LoginPage>();
-            loginPage.Show();
+            var landingPage = ServiceProvider.GetRequiredService<LandingPage>();
+            landingPage.Show();
         }
     }

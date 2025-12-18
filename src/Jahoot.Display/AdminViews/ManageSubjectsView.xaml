@@ -54,7 +54,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <ComboBox SelectedItem="{Binding SelectedFilter}" ItemsSource="{Binding FilterOptions}" Width="120" VerticalAlignment="Center" Margin="0,0,15,0"/>
                         <Button Content="Refresh" Click="Refresh_Click" Margin="0,0,10,0" Padding="10,5" Background="Transparent" BorderBrush="#DDD" BorderThickness="1"/>
-                        <Button Content="+ Create Subject" Click="CreateSubject_Click" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
+                        <Button Content="Create Subject" Click="CreateSubject_Click" Padding="15,5" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Grid>
 

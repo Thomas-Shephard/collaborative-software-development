@@ -13,4 +13,6 @@ public interface ITestRepository
     Task<bool> HasAttemptsAsync(int testId);
     Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsForStudentAsync(int studentId);
     Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsForStudentAsync(int studentId);
+    Task<StudentStatisticsResponse> GetStudentStatisticsAsync(int studentId);
+    Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTestsAsync(int days);
 }
