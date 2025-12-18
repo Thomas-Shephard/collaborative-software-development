@@ -18,48 +18,6 @@ namespace Jahoot.Display.ViewModels
             }
         } = "AD";
 
-        public int TotalUsers
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 350;
-
-        public int TotalSubjects
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 42;
-
-        public string SystemHealth
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = "99.9%";
-
-        public int ActiveSessions
-        {
-            get => field;
-            set
-            {
-                field = value;
-                OnPropertyChanged();
-            }
-        } = 12;
-
-        public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
-        public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }
         public ObservableCollection<TabItem> TabItems { get; set; }
 
         public ObservableCollection<string> AvailableRoles
@@ -114,10 +72,8 @@ namespace Jahoot.Display.ViewModels
 
             TabItems = new ObservableCollection<TabItem>
             {
-                new TabItem { Header = "Overview" },
                 new TabItem { Header = "Manage Subjects" },
-                new TabItem { Header = "Manage Lecturers" },
-                new TabItem { Header = "Settings" }
+                new TabItem { Header = "Manage Lecturers" }
             };
         }
     }
