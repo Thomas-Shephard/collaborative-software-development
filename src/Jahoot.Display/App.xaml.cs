@@ -49,20 +49,25 @@ public partial class App : Application
         services.AddSingleton<HttpClient>(sp => new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
-            });
-            services.AddSingleton<IHttpService, HttpService>();
-            services.AddTransient<IAuthService, AuthService>();
-            services.AddTransient<ISubjectService, SubjectService>();
-            services.AddTransient<ILecturerService, LecturerService>();
-            services.AddTransient<IStudentService, StudentService>();
-            services.AddTransient<LandingPage>();
-            services.AddTransient<LecturerViews.LecturerDashboard>();
-            services.AddTransient<AssignStudentsToSubjectsViewModel>();
-            services.AddTransient<LecturerViews.StudentManagementViewModel>();
-            services.AddTransient<Pages.AdminDashboard>();
-            services.AddSingleton<IUserRoleService, UserRoleService>();
-            services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
-        }
+        });
+        services.AddSingleton<IHttpService, HttpService>();
+        services.AddTransient<IAuthService, AuthService>();
+        services.AddTransient<ISubjectService, SubjectService>();
+        services.AddTransient<ILecturerService, LecturerService>();
+        services.AddTransient<IStudentService, StudentService>();
+        services.AddTransient<ITestService, TestService>();
+        
+        services.AddSingleton<IUserRoleService, UserRoleService>();
+        services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
+        
+        services.AddTransient<LandingPage>();
+        services.AddTransient<LecturerViews.LecturerDashboard>();
+        services.AddTransient<StudentViews.StudentDashboard>();
+        services.AddTransient<Pages.AdminDashboard>();
+        
+        services.AddTransient<AssignStudentsToSubjectsViewModel>();
+        services.AddTransient<LecturerViews.StudentManagementViewModel>();
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
