@@ -48,7 +48,16 @@ namespace Jahoot.Display.LecturerViews
             try
             {
                 // Fetch Recent Activity
-                var completedTests = await _testService.GetRecentCompletedTests();
+                IEnumerable<CompletedTestResponse> completedTests = new List<CompletedTestResponse>();
+                try
+                {
+                    completedTests = await _testService.GetRecentCompletedTests();
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Error fetching recent activity: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+                
                 RecentActivityItems = new ObservableCollection<RecentActivityItem>(
                     completedTests.Select(ct => new RecentActivityItem
                     {
@@ -61,18 +70,36 @@ namespace Jahoot.Display.LecturerViews
                 );
 
                 // Fetch Performance Overview
-                var subjects = await _subjectService.GetSubjects();
+                IEnumerable<Subject> subjects = new List<Subject>();
+                try
+                {
+                    subjects = await _subjectService.GetSubjects();
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Error fetching subjects for performance overview: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+
                 var performanceData = new List<PerformanceSubject>();
                 foreach (var subject in subjects)
                 {
-                    var leaderboard = await _subjectService.GetLeaderboardForSubject(subject.SubjectId);
+                    IEnumerable<LeaderboardEntry> leaderboard = new List<LeaderboardEntry>();
+                    try
+                    {
+                        leaderboard = await _subjectService.GetLeaderboardForSubject(subject.SubjectId);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show($"Error fetching leaderboard for subject {subject.Name}: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    }
+
                     if (leaderboard.Any())
                     {
                         double averageScore = leaderboard.Average(entry => entry.TotalScore);
                         performanceData.Add(new PerformanceSubject
                         {
                             SubjectName = subject.Name,
-                            ScoreText = $"{averageScore:F0}%", // Format to whole number percentage
+                            ScoreText = $"{averageScore:F0}%",
                             ScoreValue = averageScore
                         });
                     }
@@ -90,8 +117,7 @@ namespace Jahoot.Display.LecturerViews
             }
             catch (Exception ex)
             {
-                // In a real application, this would be logged or shown in a more user-friendly way
-                System.Windows.MessageBox.Show($"Error loading overview data: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"An unknown error occurred during overview data initialization: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
