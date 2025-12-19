@@ -2,11 +2,17 @@ using Jahoot.Display.Services;
 using Jahoot.Core.Models;
 using Jahoot.Display.Controls;
 using Jahoot.Display.Commands;
+using Jahoot.Display.AdminViews;
+using Jahoot.Display.StudentViews;
+using Jahoot.Display.Pages;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Windows;
 using System.Windows.Controls;
 using Jahoot.Display.Models;
@@ -22,12 +28,14 @@ namespace Jahoot.Display.LecturerViews
     {
         private readonly LecturerDashboardViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ISecureStorageService _secureStorageService;
 
-        public LecturerDashboard(LecturerDashboardViewModel viewModel, IServiceProvider serviceProvider)
+        public LecturerDashboard(LecturerDashboardViewModel viewModel, IServiceProvider serviceProvider, ISecureStorageService secureStorageService)
         {
             InitializeComponent();
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
+            _secureStorageService = secureStorageService;
             DataContext = _viewModel;
             Loaded += LecturerDashboard_Loaded;
         }
@@ -78,12 +86,14 @@ namespace Jahoot.Display.LecturerViews
         private readonly IStudentService _studentService;
         private readonly ITestService _testService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ISecureStorageService _secureStorageService;
         private object _currentView = null!;
         private ObservableCollection<string> _availableRoles = new();
         private int _totalStudents;
         private int _totalTests;
         private int _pendingStudentApprovals;
         private int _totalTestAttempts;
+        private string _selectedRole = "Lecturer";
 
         public string LecturerInitials { get; set; } = "JD";
         public int TotalStudents { get => _totalStudents; set { _totalStudents = value; OnPropertyChanged(); } }
@@ -107,15 +117,26 @@ namespace Jahoot.Display.LecturerViews
             set { _availableRoles = value; OnPropertyChanged(); }
         }
 
-        public string SelectedRole { get; set; } = "Lecturer";
+        public string SelectedRole
+        {
+            get => _selectedRole;
+            set
+            {
+                if (_selectedRole != value)
+                {
+                    _selectedRole = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public int SelectedTabIndex { get; set; } = 0;
 
-        public LecturerDashboardViewModel(IStudentService studentService, ITestService testService, IServiceProvider serviceProvider)
+        public LecturerDashboardViewModel(IStudentService studentService, ITestService testService, IServiceProvider serviceProvider, ISecureStorageService secureStorageService)
         {
             _studentService = studentService;
             _testService = testService;
             _serviceProvider = serviceProvider;
-            _availableRoles = new ObservableCollection<string> { "Lecturer" };
+            _secureStorageService = secureStorageService;
             RecentActivityItems = new ObservableCollection<RecentActivityItem>();
             PerformanceSubjects = new ObservableCollection<PerformanceSubject>();
             TabItems = new ObservableCollection<NavigationTabItem>
@@ -135,6 +156,15 @@ namespace Jahoot.Display.LecturerViews
 
         public async Task InitialiseAsync()
         {
+            var token = _secureStorageService.GetToken();
+            if (token != null)
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var roles = jwtToken.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+                AvailableRoles = new ObservableCollection<string>(roles);
+            }
+
             IEnumerable<Student> approvedStudents = new List<Student>();
             IEnumerable<Student> unapprovedStudents = new List<Student>();
             IEnumerable<Test> tests = new List<Test>();
