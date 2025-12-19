@@ -81,4 +81,25 @@ public class TokenServiceTests
         // Check it is close to the expiration time (within 1 second either way)
         Assert.That(jsonToken.ValidTo, Is.EqualTo(expectedExpiry).Within(TimeSpan.FromSeconds(1)));
     }
+
+    [Test]
+    public void GenerateToken_DisabledUser_ReturnsTokenWithoutRoles()
+    {
+        User user = new()
+        {
+            UserId = 123,
+            Email = "disabled@example.com",
+            Name = "Disabled User",
+            PasswordHash = "hashed_password",
+            Roles = [Role.Student],
+            IsDisabled = true
+        };
+
+        string token = _tokenService.GenerateToken(user);
+
+        JwtSecurityTokenHandler handler = new();
+        JwtSecurityToken jsonToken = handler.ReadJwtToken(token);
+
+        Assert.That(jsonToken.Claims.Any(c => c.Type == ClaimTypes.Role), Is.False);
+    }
 }

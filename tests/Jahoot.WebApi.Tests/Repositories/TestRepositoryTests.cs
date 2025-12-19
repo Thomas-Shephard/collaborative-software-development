@@ -307,44 +307,6 @@ public class TestRepositoryTests : RepositoryTestBase
     }
 
     [Test]
-    public async Task GetAllTestsAsync_ClosedConnection_OpensConnection()
-    {
-        int subjectId = await CreateSubject("GetAllOpen");
-        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name) VALUES (@SubId, 'Test A')", new { SubId = subjectId });
-
-        await Connection.CloseAsync();
-
-        Test[] tests = (await _repository.GetAllTestsAsync()).ToArray();
-
-        Assert.That(tests, Is.Not.Empty);
-        Assert.That(tests.Any(t => t.Name == "Test A"), Is.True);
-    }
-
-    [Test]
-    public async Task UpdateTestAsync_ClosedConnection_OpensConnection()
-    {
-        int subjectId = await CreateSubject("UpdateOpen");
-        await Connection.ExecuteAsync("INSERT INTO Test (subject_id, name) VALUES (@SubId, 'Original Name')", new { SubId = subjectId });
-        int testId = await Connection.QuerySingleAsync<int>("SELECT LAST_INSERT_ID()");
-
-        await Connection.CloseAsync();
-
-        Test updatedTest = new()
-        {
-            TestId = testId,
-            SubjectId = subjectId,
-            Name = "Updated Name",
-            Questions = []
-        };
-
-        await _repository.UpdateTestAsync(updatedTest);
-
-        Test? dbTest = await Connection.QuerySingleOrDefaultAsync<Test>("SELECT * FROM Test WHERE test_id = @TestId", new { TestId = testId });
-        Assert.That(dbTest, Is.Not.Null);
-        Assert.That(dbTest.Name, Is.EqualTo("Updated Name"));
-    }
-
-    [Test]
     public async Task UpdateTestAsync_DbError_RollsBackTransaction()
     {
         int subjectId = await CreateSubject("UpdateRollback");

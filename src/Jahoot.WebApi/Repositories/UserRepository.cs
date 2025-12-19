@@ -23,7 +23,7 @@ public class UserRepository(IDbConnection connection) : IUserRepository
     public async Task<User?> GetUserByEmailAsync(string email, IDbTransaction? transaction = null)
     {
         const string query = $"{BaseSelectQuery} WHERE user.email = @Email";
-        return await GetUserInternalAsync(query, new { Email = email }, transaction);
+        return await GetUserInternalAsync(query, new { Email = email.ToLowerInvariant() }, transaction);
     }
 
     public async Task<User?> GetUserByIdAsync(int userId)
@@ -118,6 +118,7 @@ public class UserRepository(IDbConnection connection) : IUserRepository
 
     public async Task UpdateUserAsync(User user, IDbTransaction? transaction = null)
     {
+        user.Email = user.Email.ToLowerInvariant();
         await connection.ExecuteAsync("UPDATE User SET email = @Email, name = @Name, password_hash = @PasswordHash, last_login = @LastLogin, is_disabled = @IsDisabled WHERE user_id = @UserId", user, transaction);
     }
 
