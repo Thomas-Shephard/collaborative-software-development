@@ -1,5 +1,8 @@
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
+using Jahoot.WebApi.Models.Responses;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Jahoot.Display.Services;
 
@@ -19,6 +22,11 @@ public class SubjectService(IHttpService httpService) : ISubjectService
     public async Task<IEnumerable<Subject>> GetSubjects()
     {
         return await GetAllSubjectsAsync(true);
+    }
+
+    public async Task<IEnumerable<LeaderboardEntry>> GetLeaderboardForSubject(int subjectId)
+    {
+        return await httpService.GetAsync<IEnumerable<LeaderboardEntry>>($"api/leaderboard/{subjectId}") ?? [];
     }
 
     public async Task<Result> CreateSubjectAsync(CreateSubjectRequestModel request)

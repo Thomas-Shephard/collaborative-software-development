@@ -1,5 +1,6 @@
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
+using Jahoot.WebApi.Models.Responses;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +30,17 @@ namespace Jahoot.Display.Services
             return result ?? [];
         }
 
+        public async Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTests(int? days = null)
+        {
+            var uri = "api/lecturer/recent-activity";
+            if (days.HasValue)
+            {
+                uri += $"?days={days.Value}";
+            }
+            var result = await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>(uri);
+            return result ?? [];
+        }
+
         public async Task<Result> CreateTest(Test test)
         {
             var request = new TestRequestModel
@@ -37,14 +49,14 @@ namespace Jahoot.Display.Services
                 Name = test.Name,
                 NumberOfQuestions = test.NumberOfQuestions,
                 Questions = test.Questions.Select(q => new QuestionRequestModel
-                {
-                    Text = q.Text,
-                    Options = q.Options.Select(o => new QuestionOptionRequestModel
                     {
-                        OptionText = o.OptionText,
-                        IsCorrect = o.IsCorrect
+                        Text = q.Text,
+                        Options = q.Options.Select(o => new QuestionOptionRequestModel
+                            {
+                                OptionText = o.OptionText,
+                                IsCorrect = o.IsCorrect
+                            }).ToList()
                     }).ToList()
-                }).ToList()
             };
             return await _httpService.PostAsync("api/test", request);
         }
@@ -57,14 +69,14 @@ namespace Jahoot.Display.Services
                 Name = test.Name,
                 NumberOfQuestions = test.NumberOfQuestions,
                 Questions = test.Questions.Select(q => new QuestionRequestModel
-                {
-                    Text = q.Text,
-                    Options = q.Options.Select(o => new QuestionOptionRequestModel
                     {
-                        OptionText = o.OptionText,
-                        IsCorrect = o.IsCorrect
+                        Text = q.Text,
+                        Options = q.Options.Select(o => new QuestionOptionRequestModel
+                            {
+                                OptionText = o.OptionText,
+                                IsCorrect = o.IsCorrect
+                            }).ToList()
                     }).ToList()
-                }).ToList()
             };
             return await _httpService.PutAsync($"api/test/{testId}", request);
         }
@@ -86,3 +98,4 @@ namespace Jahoot.Display.Services
         public bool HasAttempts { get; set; }
     }
 }
+

@@ -18,22 +18,21 @@ namespace Jahoot.Display.LecturerViews
 {
     public partial class LecturerDashboard : Window
     {
-        public LecturerDashboard()
+        private readonly LecturerDashboardViewModel _viewModel;
+        private readonly IServiceProvider _serviceProvider;
+
+        public LecturerDashboard(LecturerDashboardViewModel viewModel, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            
-            var app = Application.Current as App;
-            var userRoleService = app?.ServiceProvider?.GetService<IUserRoleService>();
-            
-            var viewModel = new LecturerDashboardViewModel();
-            
-            if (userRoleService != null)
-            {
-                var availableDashboards = userRoleService.GetAvailableDashboards();
-                viewModel.AvailableRoles = new ObservableCollection<string>(availableDashboards);
-            }
-            
-            DataContext = viewModel;
+            _viewModel = viewModel;
+            _serviceProvider = serviceProvider;
+            DataContext = _viewModel;
+            Loaded += LecturerDashboard_Loaded;
+        }
+
+        private async void LecturerDashboard_Loaded(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.InitialiseAsync();
         }
 
         private void MainTabs_SelectionChanged(object sender, RoutedEventArgs e)
@@ -44,7 +43,7 @@ namespace Jahoot.Display.LecturerViews
             {
                 Type viewType = selectedTab.ViewType;
 
-                UserControl? view = Activator.CreateInstance(viewType) as UserControl;
+                UserControl? view = _serviceProvider.GetService(viewType) as UserControl;
                 if (view == null) return;
                 
 
@@ -66,7 +65,7 @@ namespace Jahoot.Display.LecturerViews
 
                 if (viewModelType != null)
                 {
-                    view.DataContext = ((App)Application.Current).ServiceProvider.GetRequiredService(viewModelType);
+                    view.DataContext = _serviceProvider.GetRequiredService(viewModelType);
                 }
                 else
                 {
@@ -92,14 +91,54 @@ namespace Jahoot.Display.LecturerViews
 
     public class LecturerDashboardViewModel : BaseViewModel
     {
+        private readonly IStudentService _studentService;
+        private readonly ITestService _testService;
+        private readonly IServiceProvider _serviceProvider; // Inject IServiceProvider
         private object _currentView = null!;
         private ObservableCollection<string> _availableRoles = new();
         
+        private int _totalStudents;
+        private int _activeTests;
+        private double _averageScore;
+        private double _completionRate;
+
         public string LecturerInitials { get; set; } = "JD";
-        public int TotalStudents { get; set; } = 120;
-        public int ActiveTests { get; set; } = 5;
-        public double AverageScore { get; set; } = 78.5;
-        public double CompletionRate { get; set; } = 85;
+        public int TotalStudents
+        {
+            get => _totalStudents;
+            set
+            {
+                _totalStudents = value;
+                OnPropertyChanged();
+            }
+        }
+        public int ActiveTests
+        {
+            get => _activeTests;
+            set
+            {
+                _activeTests = value;
+                OnPropertyChanged();
+            }
+        }
+        public double AverageScore
+        {
+            get => _averageScore;
+            set
+            {
+                _averageScore = value;
+                OnPropertyChanged();
+            }
+        }
+        public double CompletionRate
+        {
+            get => _completionRate;
+            set
+            {
+                _completionRate = value;
+                OnPropertyChanged();
+            }
+        }
         public string HeaderDescription { get; } = "Welcome to your lecturer dashboard.";
 
         public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
@@ -129,24 +168,16 @@ namespace Jahoot.Display.LecturerViews
         public string SelectedRole { get; set; } = "Lecturer";
         public int SelectedTabIndex { get; set; } = 0;
 
-        public LecturerDashboardViewModel()
+        public LecturerDashboardViewModel(IStudentService studentService, ITestService testService, IServiceProvider serviceProvider)
         {
+            _studentService = studentService;
+            _testService = testService;
+            _serviceProvider = serviceProvider; // Assign injected service provider
+
             _availableRoles = new ObservableCollection<string> { "Lecturer" };
             
-            RecentActivityItems = new ObservableCollection<RecentActivityItem>
-            {
-                new RecentActivityItem { StudentInitials = "AS", DescriptionPrefix = "Student ", TestName = "Math Quiz", TimeAgo = "5 mins ago", Result = "100%" },
-                new RecentActivityItem { StudentInitials = "BM", DescriptionPrefix = "Student ", TestName = "Science Test", TimeAgo = "1 hour ago", Result = "85%" },
-                new RecentActivityItem { StudentInitials = "CJ", DescriptionPrefix = "Student ", TestName = "History Exam", TimeAgo = "2 hours ago", Result = "72%" }
-            };
-
-            PerformanceSubjects = new ObservableCollection<PerformanceSubject>
-            {
-                new PerformanceSubject { SubjectName = "Mathematics", ScoreText = "88%", ScoreValue = 88 },
-                new PerformanceSubject { SubjectName = "Science", ScoreText = "75%", ScoreValue = 75 },
-                new PerformanceSubject { SubjectName = "History", ScoreText = "60%", ScoreValue = 60 },
-                new PerformanceSubject { SubjectName = "English", ScoreText = "92%", ScoreValue = 92 }
-            };
+            RecentActivityItems = new ObservableCollection<RecentActivityItem>();
+            PerformanceSubjects = new ObservableCollection<PerformanceSubject>();
 
             TabItems = new ObservableCollection<NavigationTabItem>
             {
@@ -157,7 +188,38 @@ namespace Jahoot.Display.LecturerViews
                 new NavigationTabItem { Header = "Leaderboard", ViewType = typeof(LecturerOverviewView) }
             };
 
-            CurrentView = new LecturerOverviewView { DataContext = this };
+            // Instantiate view and set DataContext using injected IServiceProvider
+            var initialView = _serviceProvider.GetRequiredService(typeof(LecturerOverviewView)) as UserControl;
+            if (initialView != null)
+            {
+                initialView.DataContext = _serviceProvider.GetRequiredService(typeof(LecturerOverviewViewModel));
+                CurrentView = initialView;
+            }
+        }
+
+        public async Task InitialiseAsync()
+        {
+            try
+            {
+                var approvedStudentsTask = _studentService.GetStudents(true);
+                var unapprovedStudentsTask = _studentService.GetStudents(false);
+                var testsTask = _testService.GetTests();
+
+                await Task.WhenAll(approvedStudentsTask, unapprovedStudentsTask, testsTask);
+
+                TotalStudents = approvedStudentsTask.Result.Count() + unapprovedStudentsTask.Result.Count();
+                ActiveTests = testsTask.Result.Count();
+
+                // Placeholder for Average Score and Completion Rate calculation
+                AverageScore = 0; 
+                CompletionRate = 0; 
+                MessageBox.Show("No direct API endpoints for overall Average Score and Completion Rate. These are placeholders.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred during dashboard initialization: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

@@ -61,7 +61,8 @@
             
             services.AddTransient<ITestService, TestService>();
             services.AddTransient<LandingPage>();
-            services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<LecturerViews.LecturerDashboard>(); // Still need to register the view itself.
+            services.AddTransient<LecturerViews.LecturerDashboardViewModel>();
             services.AddTransient<StudentViews.StudentDashboard>();
             services.AddTransient<StudentViews.TestTakingPage>();
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
@@ -78,6 +79,9 @@
                     test
                 ));
             services.AddTransient<LecturerViews.LecturerOverviewViewModel>();
+            services.AddTransient<LecturerViews.LecturerOverviewView>();
+            services.AddTransient<LecturerViews.StudentManagementView>();
+            services.AddTransient<LecturerViews.TestManagementView>();
             services.AddTransient<Pages.AdminDashboard>();
         }
 
