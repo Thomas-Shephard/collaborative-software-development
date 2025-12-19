@@ -1,0 +1,168 @@
+using Jahoot.Core.Models;
+using Jahoot.Display.LecturerViews;
+using Jahoot.Display.Services;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
+
+namespace Jahoot.Display.ViewModels
+{
+    public class AssignStudentsToSubjectsViewModel : BaseViewModel
+    {
+        private readonly ISubjectService _subjectService;
+        private readonly IStudentService _studentService;
+
+        private ObservableCollection<Subject> _subjects = [];
+        public ObservableCollection<Subject> Subjects
+        {
+            get => _subjects;
+            set { _subjects = value; OnPropertyChanged(); }
+        }
+
+        private ObservableCollection<Student> _students = [];
+        public ObservableCollection<Student> Students
+        {
+            get => _students;
+            set { _students = value; OnPropertyChanged(); }
+        }
+
+        private Subject? _selectedSubject;
+        public Subject? SelectedSubject
+        {
+            get => _selectedSubject;
+            set { _selectedSubject = value; OnPropertyChanged(); }
+        }
+
+        private string _feedbackMessage = string.Empty;
+        public string FeedbackMessage
+        {
+            get => _feedbackMessage;
+            set { _feedbackMessage = value; OnPropertyChanged(); }
+        }
+
+        private bool _isFeedbackSuccess;
+        public bool IsFeedbackSuccess
+        {
+            get => _isFeedbackSuccess;
+            set { _isFeedbackSuccess = value; OnPropertyChanged(); }
+        }
+
+        public AssignStudentsToSubjectsViewModel(ISubjectService subjectService, IStudentService studentService)
+        {
+            _subjectService = subjectService;
+            _studentService = studentService;
+            _ = LoadData();
+        }
+
+        private async Task LoadData()
+        {
+            try
+            {
+                var subjectsTask = _subjectService.GetAllSubjectsAsync(isActive: true);
+                var approvedTask = _studentService.GetStudents(true);
+                var unapprovedTask = _studentService.GetStudents(false);
+
+                await Task.WhenAll(subjectsTask, approvedTask, unapprovedTask);
+
+                Subjects = new ObservableCollection<Subject>(subjectsTask.Result);
+
+                var allStudents = approvedTask.Result.Concat(unapprovedTask.Result).OrderBy(s => s.Name);
+                Students = new ObservableCollection<Student>(allStudents);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public async Task AssignStudents(System.Collections.IList selectedItems)
+        {
+            FeedbackMessage = string.Empty;
+
+            if (SelectedSubject == null)
+            {
+                IsFeedbackSuccess = false;
+                FeedbackMessage = "Please select a subject first.";
+                return;
+            }
+
+            if (selectedItems != null && selectedItems.Count > 0)
+            {
+                var studentsToAssign = selectedItems.Cast<Student>().ToList();
+                int successCount = 0;
+                int failCount = 0;
+
+                try
+                {
+                    foreach (var student in studentsToAssign)
+                    {
+                        var currentSubjects = student.Subjects?.ToList() ?? new List<Subject>();
+                        
+                        // Check if already assigned
+                        if (currentSubjects.Any(s => s.SubjectId == SelectedSubject.SubjectId))
+                        {
+                            continue; // Already assigned
+                        }
+
+                        currentSubjects.Add(SelectedSubject);
+
+                        // Create a separate student object to pass to update service,
+                        // so we don't mutate the original instance from the collection.
+                        var updatedStudent = new Student
+                        {
+                            UserId = student.UserId,
+                            Name = student.Name,
+                            Email = student.Email,
+                            Roles = student.Roles,
+                            IsApproved = student.IsApproved,
+                            Subjects = currentSubjects
+                        };
+
+                        var result = await _studentService.UpdateStudent(student.UserId, updatedStudent);
+                        if (result.Success)
+                        {
+                            successCount++;
+                        }
+                        else
+                        {
+                            failCount++;
+                        }
+                    }
+
+                    if (successCount > 0 || failCount > 0)
+                    {
+                        if (failCount > 0)
+                        {
+                            IsFeedbackSuccess = false;
+                            FeedbackMessage = $"Assigned {successCount} students. Failed to assign {failCount}.";
+                        }
+                        else
+                        {
+                            IsFeedbackSuccess = true;
+                            FeedbackMessage = $"Successfully assigned {successCount} students to {SelectedSubject.Name}.";
+                        }
+                        
+                        // Refresh data to ensure UI is in sync
+                        await LoadData();
+                    }
+                    else
+                    {
+                         // Case where all selected students were already assigned
+                         IsFeedbackSuccess = true;
+                         FeedbackMessage = "Selected students are already assigned to this subject.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    IsFeedbackSuccess = false;
+                    FeedbackMessage = $"Error during assignment: {ex.Message}";
+                }
+            }
+            else
+            {
+                IsFeedbackSuccess = false;
+                FeedbackMessage = "Please select at least one student.";
+            }
+        }
+    }
+}

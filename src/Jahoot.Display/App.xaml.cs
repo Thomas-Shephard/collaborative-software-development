@@ -1,11 +1,11 @@
 using Jahoot.Display.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Windows;
+using Jahoot.Display.ViewModels;
 
 namespace Jahoot.Display;
 
@@ -49,25 +49,20 @@ public partial class App : Application
         services.AddSingleton<HttpClient>(sp => new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
-        });
-        services.AddSingleton<IHttpService, HttpService>();
-        services.AddTransient<IAuthService, AuthService>();
-        services.AddTransient<ISubjectService, SubjectService>();
-        services.AddTransient<ILecturerService, LecturerService>();
-        services.AddTransient<IStudentService, StudentService>();
-        
-        services.AddSingleton<IUserRoleService, UserRoleService>();
-        
-        services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
-        
-        services.AddTransient<LandingPage>();
-        services.AddTransient<LecturerViews.LecturerDashboard>();
-        services.AddTransient<StudentViews.StudentDashboard>();
-        services.AddTransient<StudentViews.TestTakingPage>();
-        services.AddTransient<Pages.AdminDashboard>();
-        
-        services.AddTransient<LecturerViews.StudentManagementViewModel>();
-    }
+            });
+            services.AddSingleton<IHttpService, HttpService>();
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<ISubjectService, SubjectService>();
+            services.AddTransient<ILecturerService, LecturerService>();
+            services.AddTransient<IStudentService, StudentService>();
+            services.AddTransient<LandingPage>();
+            services.AddTransient<LecturerViews.LecturerDashboard>();
+            services.AddTransient<AssignStudentsToSubjectsViewModel>();
+            services.AddTransient<LecturerViews.StudentManagementViewModel>();
+            services.AddTransient<Pages.AdminDashboard>();
+            services.AddSingleton<IUserRoleService, UserRoleService>();
+            services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
+        }
 
     protected override void OnStartup(StartupEventArgs e)
     {
