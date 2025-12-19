@@ -47,7 +47,7 @@
                                    ItemsSource="{Binding TabItems}"
                                    SelectedIndex="{Binding SelectedTabIndex}"
                                    SelectionChanged="MainTabs_SelectionChanged"
-                                   TabWidthConverterParameter="3"/>
+                                   TabWidthConverterParameter="4"/>
 
         <ContentControl Grid.Row="3" Content="{Binding CurrentView}" Margin="20,10,20,20" />
     </Grid>

@@ -174,7 +174,7 @@ namespace Jahoot.Display.LecturerViews
             IEnumerable<Student> approvedStudents = new List<Student>();
             IEnumerable<Student> unapprovedStudents = new List<Student>();
             IEnumerable<Test> tests = new List<Test>();
-            IEnumerable<CompletedTestResponse> recentTests = new List<CompletedTestResponse>();
+            IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse> recentTests = new List<Jahoot.WebApi.Models.Responses.CompletedTestResponse>();
 
             try { approvedStudents = await _studentService.GetStudents(true); }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized || ex.StatusCode == System.Net.HttpStatusCode.Forbidden)

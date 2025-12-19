@@ -247,13 +247,13 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 1,
-                    Text = "What is the derivative of f(x) = 3x² + 2x - 5?",
+                    Text = "What is the derivative of f(x) = 3xï¿½ + 2x - 5?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 1, QuestionId = 1, OptionText = "6x + 2", IsCorrect = true },
                         new QuestionOption { QuestionOptionId = 2, QuestionId = 1, OptionText = "3x + 2", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "6x + 5", IsCorrect = false },
-                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "3x² + 2", IsCorrect = false }
+                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "3xï¿½ + 2", IsCorrect = false }
                     }.AsReadOnly(),
                     CreatedAt = _testStartTime,
                     UpdatedAt = _testStartTime
@@ -264,8 +264,8 @@ namespace Jahoot.Display.ViewModels
                     Text = "What is the integral of f(x) = 2x?",
                     Options = new List<QuestionOption>
                     {
-                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "x² + C", IsCorrect = true },
-                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "2x² + C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "xï¿½ + C", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "2xï¿½ + C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "x + C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "2x + C", IsCorrect = false }
                     }.AsReadOnly(),
@@ -275,7 +275,7 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 3,
-                    Text = "What is the value of sin(90°)?",
+                    Text = "What is the value of sin(90ï¿½)?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "1", IsCorrect = true },
@@ -289,7 +289,7 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 4,
-                    Text = "What is 2³?",
+                    Text = "What is 2ï¿½?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "8", IsCorrect = true },
@@ -434,7 +434,7 @@ namespace Jahoot.Display.ViewModels
                     {
                         new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "O(log n)", IsCorrect = true },
                         new QuestionOption { QuestionOptionId = 10, QuestionId = 3, OptionText = "O(n)", IsCorrect = false },
-                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(n²)", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(nï¿½)", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "O(1)", IsCorrect = false }
                     }.AsReadOnly(),
                     CreatedAt = _testStartTime,
@@ -620,6 +620,12 @@ namespace Jahoot.Display.ViewModels
 
         private async void SubmitTest()
         {
+            if (_testService == null)
+            {
+                Debug.WriteLine("Test service is not available.");
+                return;
+            }
+
             try
             {
                 IsLoading = true;

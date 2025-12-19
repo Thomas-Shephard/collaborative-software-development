@@ -48,7 +48,7 @@ namespace Jahoot.Display.LecturerViews
             try
             {
                 // Fetch Recent Activity
-                IEnumerable<CompletedTestResponse> completedTests = new List<CompletedTestResponse>();
+                IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse> completedTests = new List<Jahoot.WebApi.Models.Responses.CompletedTestResponse>();
                 try
                 {
                     completedTests = await _testService.GetRecentCompletedTests();

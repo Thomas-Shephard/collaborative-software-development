@@ -14,10 +14,10 @@ namespace Jahoot.Display.Services
         Task<Result> UpdateTest(int testId, Test test);
         Task<Result> DeleteTest(int testId);
         Task<bool> HasAttempts(int testId);
-        Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTests(int? days = null);
+        Task<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>> GetRecentCompletedTests(int? days = null);
         
-        Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsAsync();
-        Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsAsync();
+        Task<IEnumerable<Jahoot.WebApi.Models.Responses.UpcomingTestResponse>> GetUpcomingTestsAsync();
+        Task<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>> GetCompletedTestsAsync();
         Task<TestDetailsResponse?> GetTestDetailsAsync(int testId);
         Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers);
     }

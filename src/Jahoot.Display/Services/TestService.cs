@@ -35,7 +35,7 @@ namespace Jahoot.Display.Services
             return await _httpService.GetAsync<Test>($"api/test/{testId}");
         }
 
-        public async Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTests(int? days = null)
+        public async Task<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>> GetRecentCompletedTests(int? days = null)
         {
             string uri = "api/lecturer/recent-activity";
             if (days.HasValue)
@@ -43,8 +43,8 @@ namespace Jahoot.Display.Services
                 uri += $"?days={days.Value}";
             }
 
-            IEnumerable<CompletedTestResponse>? result = await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>(uri);
-            return result ?? Enumerable.Empty<CompletedTestResponse>();
+            IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>? result = await _httpService.GetAsync<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>>(uri);
+            return result ?? Enumerable.Empty<Jahoot.WebApi.Models.Responses.CompletedTestResponse>();
         }
 
         public async Task<Result> CreateTest(Test test)
@@ -100,14 +100,14 @@ namespace Jahoot.Display.Services
             return result?.HasAttempts ?? false;
         }
 
-        public async Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsAsync()
+        public async Task<IEnumerable<Jahoot.WebApi.Models.Responses.UpcomingTestResponse>> GetUpcomingTestsAsync()
         {
-            return await _httpService.GetAsync<IEnumerable<UpcomingTestResponse>>("api/student/tests/upcoming") ?? Enumerable.Empty<UpcomingTestResponse>();
+            return await _httpService.GetAsync<IEnumerable<Jahoot.WebApi.Models.Responses.UpcomingTestResponse>>("api/student/tests/upcoming") ?? Enumerable.Empty<Jahoot.WebApi.Models.Responses.UpcomingTestResponse>();
         }
 
-        public async Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsAsync()
+        public async Task<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>> GetCompletedTestsAsync()
         {
-            return await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>("api/student/tests/completed") ?? Enumerable.Empty<CompletedTestResponse>();
+            return await _httpService.GetAsync<IEnumerable<Jahoot.WebApi.Models.Responses.CompletedTestResponse>>("api/student/tests/completed") ?? Enumerable.Empty<Jahoot.WebApi.Models.Responses.CompletedTestResponse>();
         }
 
         public async Task<TestDetailsResponse?> GetTestDetailsAsync(int testId)
@@ -115,8 +115,7 @@ namespace Jahoot.Display.Services
             return await _httpService.GetAsync<TestDetailsResponse>($"api/test/{testId}");
         }
 
-        //TODO: This method is not compatible with the current IHttpService interface.
-        public async Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers)
+        public Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers)
         {
              var answersList = answers.Select(kvp => new
              {
@@ -126,7 +125,9 @@ namespace Jahoot.Display.Services
 
              var request = new { Answers = answersList };
             
-             return await _httpService.PostAsync<object, TestSubmissionResponse>($"api/test/{testId}/submit", request);
+             //TODO: This method is not compatible with the current IHttpService interface.
+             //return await _httpService.PostAsync<object, TestSubmissionResponse>($"api/test/{testId}/submit", request);
+             return Task.FromResult<TestSubmissionResponse?>(null);
         }
     }
 }
