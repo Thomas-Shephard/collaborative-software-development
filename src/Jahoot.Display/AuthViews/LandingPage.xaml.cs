@@ -10,14 +10,12 @@ namespace Jahoot.Display;
 public partial class LandingPage : Window
 {
     private readonly IAuthService _authService;
-    private readonly LecturerViews.LecturerDashboard _lecturerDashboard;
     private readonly IServiceProvider _serviceProvider;
 
-    public LandingPage(IAuthService authService, LecturerViews.LecturerDashboard lecturerDashboard, IServiceProvider serviceProvider)
+    public LandingPage(IAuthService authService, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _authService = authService;
-        _lecturerDashboard = lecturerDashboard;
         _serviceProvider = serviceProvider;
     }
 
@@ -44,8 +42,19 @@ public partial class LandingPage : Window
 
             if (result.Success)
             {
-                _lecturerDashboard.Show();
-                Close();
+                // Store user roles in the UserRoleService
+                var userRoleService = _serviceProvider.GetService<IUserRoleService>();
+                userRoleService?.SetUserRoles(result.UserRoles);
+
+                var navigationService = _serviceProvider.GetRequiredService<IDashboardNavigationService>();
+                
+                // Use centralized navigation service with role-based logic
+                bool navigationSuccess = navigationService.NavigateToDashboardByRoles(result.UserRoles, this);
+                
+                if (!navigationSuccess)
+                {
+                    FeedbackBox.Message = "Unable to navigate to dashboard. Please try again.";
+                }
             }
             else
             {
@@ -110,6 +119,7 @@ public partial class LandingPage : Window
             FeedbackBox.Message = strongPasswordAttribute.ErrorMessage ?? "Password does not meet requirements.";
             return;
         }
+        
         if (password != confirmPassword)
         {
             FeedbackBox.Message = "Passwords do not match.";
