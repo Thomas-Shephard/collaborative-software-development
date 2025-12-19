@@ -102,7 +102,7 @@
 
             <StackPanel Grid.Row="0" Margin="0,0,0,15">
                 <TextBlock Text="Student Management" FontSize="26" FontWeight="Bold" Foreground="#333333"/>
-                <TextBlock Text="Manage student accounts, view progress, and handle approvals"
+                <TextBlock Text="Manage student accounts and handle approvals"
                            Foreground="{StaticResource SecondaryTextColor}" FontSize="14" Margin="0,2,0,0"/>
             </StackPanel>
 

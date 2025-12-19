@@ -112,7 +112,7 @@
                 <ListView.View>
                     <GridView>
 
-                        <GridViewColumn Header="Test Name" Width="250">
+                        <GridViewColumn Header="Test Name" Width="300">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" Foreground="#333" Margin="0,15"/>
@@ -120,7 +120,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Subject" Width="200">
+                        <GridViewColumn Header="Subject" Width="250">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Subject.Name}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
@@ -128,7 +128,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Questions" Width="100">
+                        <GridViewColumn Header="Questions" Width="125">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding NumberOfQuestions}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
@@ -136,47 +136,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Status" Width="150">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border VerticalAlignment="Center" CornerRadius="12" Padding="8,4">
-                                        <TextBlock FontWeight="SemiBold" FontSize="12">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="Unknown"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                            <Setter Property="Text" Value="Active"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                            <Setter Property="Text" Value="Inactive"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#E5E7EB"/>
-                                                <Setter Property="TextBlock.Foreground" Value="#374151"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                        <Setter Property="Background" Value="#D1FAE5"/>
-                                                        <Setter Property="TextBlock.Foreground" Value="#065F46"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                        <Setter Property="Background" Value="#FEE2E2"/>
-                                                        <Setter Property="TextBlock.Foreground" Value="#991B1B"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                    </Border>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <GridViewColumn Header="Actions" Width="200">
+                        <GridViewColumn Header="Actions" Width="350">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
