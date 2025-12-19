@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Diagnostics;
+using Jahoot.Display.Commands;
 
 namespace Jahoot.Display.LecturerViews
 {

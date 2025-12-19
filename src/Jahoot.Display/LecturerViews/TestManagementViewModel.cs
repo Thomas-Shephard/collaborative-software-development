@@ -1,7 +1,6 @@
 using Jahoot.Core.Models;
 using Jahoot.Display.Services;
 using Jahoot.Display.ViewModels; // Added for BaseViewModel
-using Jahoot.Display.Utilities; // Added for RelayCommand
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Jahoot.Display.Commands;
 
 namespace Jahoot.Display.LecturerViews
 {
