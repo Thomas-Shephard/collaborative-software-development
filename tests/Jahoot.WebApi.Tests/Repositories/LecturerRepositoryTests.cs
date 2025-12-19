@@ -36,6 +36,16 @@ public class LecturerRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task CreateLecturerAsync_MixedCaseEmail_CreatesUserWithLowercaseEmail()
+    {
+        const string mixedCaseEmail = "Dr.MiXeD@ExAmPlE.cOm";
+        await _repository.CreateLecturerAsync("Dr. Mixed", mixedCaseEmail, "hash", false);
+
+        User user = await Connection.QuerySingleAsync<User>("SELECT * FROM User WHERE email = 'dr.mixed@example.com'");
+        Assert.That(user.Email, Is.EqualTo("dr.mixed@example.com"));
+    }
+
+    [Test]
     public async Task CreateLecturerAsync_ExistingUserId_CreatesLecturer()
     {
         await Connection.ExecuteAsync("INSERT INTO User (name, email, password_hash) VALUES ('User', 'user@test.com', 'hash')");

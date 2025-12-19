@@ -1,0 +1,464 @@
+<Window x:Class="Jahoot.Display.StudentViews.TestResultsPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Test Results - Jahoot"
+        Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        Background="#F6F7FB">
+
+    <Window.Resources>
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2B7FFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontFamily" Value="Arimo"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E6FE6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CorrectOption" TargetType="Border">
+            <Setter Property="Background" Value="#D1FAE5"/>
+            <Setter Property="BorderBrush" Value="#10B981"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <Style x:Key="IncorrectOption" TargetType="Border">
+            <Setter Property="Background" Value="#FEE2E2"/>
+            <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <Style x:Key="NormalOption" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="40,20">
+        <!-- Results Summary View -->
+        <Border x:Name="SummaryView"
+                Background="White"
+                BorderBrush="#F3F4F6"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="0">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="3"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" 
+                        Background="#F9FAFB" 
+                        BorderBrush="#F3F4F6" 
+                        BorderThickness="0,0,0,1"
+                        Padding="32,24">
+                    <StackPanel>
+                        <TextBlock Text="?? Test Complete!" 
+                                   FontSize="32" 
+                                   FontWeight="Bold"
+                                   FontFamily="Arimo"
+                                   Foreground="#0A0A0A"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="{Binding TestName}" 
+                                   FontSize="20" 
+                                   FontFamily="Arimo"
+                                   Foreground="#6B7280"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding SubjectName}" 
+                                   FontSize="16" 
+                                   FontFamily="Arimo"
+                                   Foreground="#9CA3AF"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Results Content -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="32,32,32,0">
+                        <!-- Score Display -->
+                        <Border Background="#EFF6FF"
+                                BorderBrush="#2B7FFF"
+                                BorderThickness="2"
+                                CornerRadius="16"
+                                Padding="40"
+                                Margin="0,0,0,32">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Score Percentage -->
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding ScorePercentage, StringFormat={}{0}%}" 
+                                               FontSize="72" 
+                                               FontWeight="Bold"
+                                               FontFamily="Arimo"
+                                               Foreground="#2B7FFF"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Grade, StringFormat=Grade: {0}}" 
+                                               FontSize="24" 
+                                               FontWeight="SemiBold"
+                                               FontFamily="Arimo"
+                                               Foreground="#1E40AF"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Statistics Grid -->
+                        <Grid Margin="0,0,0,32">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Correct Answers -->
+                            <Border Grid.Column="0"
+                                    Background="White"
+                                    BorderBrush="#10B981"
+                                    BorderThickness="2"
+                                    CornerRadius="12"
+                                    Padding="24">
+                                <StackPanel>
+                                    <TextBlock Text="?" 
+                                               FontSize="32" 
+                                               Foreground="#10B981"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CorrectAnswers}" 
+                                               FontSize="36" 
+                                               FontWeight="Bold"
+                                               FontFamily="Arimo"
+                                               Foreground="#10B981"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,4"/>
+                                    <TextBlock Text="Correct" 
+                                               FontSize="16" 
+                                               FontFamily="Arimo"
+                                               Foreground="#6B7280"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Incorrect Answers -->
+                            <Border Grid.Column="2"
+                                    Background="White"
+                                    BorderBrush="#EF4444"
+                                    BorderThickness="2"
+                                    CornerRadius="12"
+                                    Padding="24">
+                                <StackPanel>
+                                    <TextBlock Text="?" 
+                                               FontSize="32" 
+                                               Foreground="#EF4444"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding IncorrectAnswers}" 
+                                               FontSize="36" 
+                                               FontWeight="Bold"
+                                               FontFamily="Arimo"
+                                               Foreground="#EF4444"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,4"/>
+                                    <TextBlock Text="Incorrect" 
+                                               FontSize="16" 
+                                               FontFamily="Arimo"
+                                               Foreground="#6B7280"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Time Taken -->
+                            <Border Grid.Column="4"
+                                    Background="White"
+                                    BorderBrush="#F59E0B"
+                                    BorderThickness="2"
+                                    CornerRadius="12"
+                                    Padding="24">
+                                <StackPanel>
+                                    <TextBlock Text="?" 
+                                               FontSize="32" 
+                                               Foreground="#F59E0B"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TimeTaken, StringFormat='{}{0:mm}:{0:ss}'}" 
+                                               FontSize="36" 
+                                               FontWeight="Bold"
+                                               FontFamily="Arimo"
+                                               Foreground="#F59E0B"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,4"/>
+                                    <TextBlock Text="Time" 
+                                               FontSize="16" 
+                                               FontFamily="Arimo"
+                                               Foreground="#6B7280"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Performance Message -->
+                        <Border Background="#F9FAFB"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="24"
+                                Margin="0,0,0,32">
+                            <TextBlock x:Name="PerformanceMessage"
+                                       FontSize="18"
+                                       FontFamily="Arimo"
+                                       Foreground="#4B5563"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer Buttons -->
+                <Border Grid.Row="2"
+                        BorderBrush="#F3F4F6"
+                        BorderThickness="0,1,0,0"
+                        Padding="32,24"
+                        Background="#F9FAFB">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="Return to Dashboard"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="#6B7280"
+                                HorizontalAlignment="Left"
+                                Click="ReturnToDashboard_Click"/>
+
+                        <Button Grid.Column="1"
+                                x:Name="ReviewAnswersButton"
+                                Content="Review Your Answers ?"
+                                Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Right"
+                                Click="ReviewAnswers_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Review View -->
+        <Border x:Name="ReviewView"
+                Visibility="Collapsed"
+                Background="White"
+                BorderBrush="#F3F4F6"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="0">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="1" Color="Black" Opacity="0.1" BlurRadius="3"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Review Header -->
+                <Border Grid.Row="0" 
+                        Background="#F9FAFB" 
+                        BorderBrush="#F3F4F6" 
+                        BorderThickness="0,0,0,1"
+                        Padding="32,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="? Back to Summary"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="#6B7280"
+                                Click="BackToSummary_Click"/>
+
+                        <TextBlock Grid.Column="1"
+                                   x:Name="ReviewQuestionNumber"
+                                   Text="Question 1 of 5"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   FontFamily="Arimo"
+                                   Foreground="#0A0A0A"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock x:Name="ReviewResultIcon"
+                                       Text="?"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Margin="0,0,8,0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ReviewResultText"
+                                       Text="Correct"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       FontFamily="Arimo"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Review Content -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="32,32,32,0">
+                        <!-- Question Display -->
+                        <Border Background="#F9FAFB"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="25"
+                                Margin="0,0,0,32">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="?" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Top"/>
+                                <StackPanel>
+                                    <TextBlock Text="Question" 
+                                               FontSize="18"
+                                               FontFamily="Arimo"
+                                               FontWeight="Regular"
+                                               Foreground="#0A0A0A"
+                                               Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="ReviewQuestionText"
+                                               FontSize="16"
+                                               FontFamily="Arimo"
+                                               Foreground="#4A5565"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Answer Options -->
+                        <ItemsControl x:Name="ReviewOptionsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="OptionBorder"
+                                            CornerRadius="10"
+                                            Padding="25,16"
+                                            Margin="0,0,0,16">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding OptionText}"
+                                                       FontSize="16"
+                                                       FontFamily="Arimo"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1"
+                                                       x:Name="OptionIcon"
+                                                       FontSize="20"
+                                                       FontWeight="Bold"
+                                                       Margin="12,0,0,0"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <!-- Default: not selected -->
+                                                <Setter Property="Background" Value="White"/>
+                                                <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Style.Triggers>
+                                                    <!-- User's selected answer: highlight in blue -->
+                                                    <DataTrigger Binding="{Binding WasSelected}" Value="True">
+                                                        <Setter Property="Background" Value="#EFF6FF"/>
+                                                        <Setter Property="BorderBrush" Value="#2B7FFF"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+
+                                    <DataTemplate.Triggers>
+                                        <!-- Show arrow for selected answer -->
+                                        <DataTrigger Binding="{Binding WasSelected}" Value="True">
+                                            <Setter TargetName="OptionIcon" Property="Text" Value="?"/>
+                                            <Setter TargetName="OptionIcon" Property="Foreground" Value="#2B7FFF"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Review Navigation -->
+                <Border Grid.Row="2"
+                        BorderBrush="#F3F4F6"
+                        BorderThickness="0,1,0,0"
+                        Padding="32,24"
+                        Background="#F9FAFB">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                x:Name="PrevQuestionButton"
+                                Content="? Previous"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="#6B7280"
+                                Click="PreviousQuestion_Click"/>
+
+                        <Button Grid.Column="2"
+                                x:Name="NextQuestionButton"
+                                Content="Next ?"
+                                Style="{StaticResource PrimaryButton}"
+                                Click="NextQuestion_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

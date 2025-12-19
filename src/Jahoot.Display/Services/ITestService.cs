@@ -1,4 +1,5 @@
 using Jahoot.Core.Models;
+using Jahoot.Display.Models;
 using Jahoot.WebApi.Models.Responses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,5 +15,10 @@ namespace Jahoot.Display.Services
         Task<Result> DeleteTest(int testId);
         Task<bool> HasAttempts(int testId);
         Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTests(int? days = null);
+        
+        Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsAsync();
+        Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsAsync();
+        Task<TestDetailsResponse?> GetTestDetailsAsync(int testId);
+        Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers);
     }
 }

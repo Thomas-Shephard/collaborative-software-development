@@ -67,6 +67,11 @@ namespace Jahoot.Display.LecturerViews
                     ? _serviceProvider.GetRequiredService(viewModelType)
                     : viewModel;
 
+                if (view is not StudentManagementView && view is not AssignStudentsToSubjectsView)
+                {
+                    view.DataContext = viewModel;
+                }
+                
                 viewModel.CurrentView = view;
             }
         }
@@ -143,6 +148,7 @@ namespace Jahoot.Display.LecturerViews
             {
                 new NavigationTabItem { Header = "Overview", ViewType = typeof(LecturerOverviewView) },
                 new NavigationTabItem { Header = "Students", ViewType = typeof(StudentManagementView) },
+                new NavigationTabItem { Header = "Assign Students to Subjects", ViewType = typeof(AssignStudentsToSubjectsView) },
                 new NavigationTabItem { Header = "Tests", ViewType = typeof(TestManagementView) }
             };
 

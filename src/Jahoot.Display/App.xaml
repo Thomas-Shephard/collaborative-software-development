@@ -7,6 +7,9 @@
         <ResourceDictionary>
             <converters:BooleanToStatusConverter x:Key="BooleanToStatusConverter"/>
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <Style TargetType="Window">
+                <Setter Property="Icon" Value="/Jahoot.ico" />
+            </Style>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/DataGridStyles.xaml"/>
                 <ResourceDictionary Source="Resources/FormStyles.xaml"/>

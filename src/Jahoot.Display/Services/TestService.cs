@@ -1,6 +1,8 @@
 using Jahoot.Core.Models;
 using Jahoot.Core.Models.Requests;
 using Jahoot.WebApi.Models.Responses;
+using Jahoot.Display.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -97,7 +99,34 @@ namespace Jahoot.Display.Services
             HasAttemptsResponse? result = await _httpService.GetAsync<HasAttemptsResponse>($"api/test/{testId}/has-attempts");
             return result?.HasAttempts ?? false;
         }
+
+        public async Task<IEnumerable<UpcomingTestResponse>> GetUpcomingTestsAsync()
+        {
+            return await _httpService.GetAsync<IEnumerable<UpcomingTestResponse>>("api/student/tests/upcoming") ?? Enumerable.Empty<UpcomingTestResponse>();
+        }
+
+        public async Task<IEnumerable<CompletedTestResponse>> GetCompletedTestsAsync()
+        {
+            return await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>("api/student/tests/completed") ?? Enumerable.Empty<CompletedTestResponse>();
+        }
+
+        public async Task<TestDetailsResponse?> GetTestDetailsAsync(int testId)
+        {
+            return await _httpService.GetAsync<TestDetailsResponse>($"api/test/{testId}");
+        }
+
+        //TODO: This method is not compatible with the current IHttpService interface.
+        public async Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers)
+        {
+             var answersList = answers.Select(kvp => new
+             {
+                 QuestionId = kvp.Key,
+                 SelectedOptionId = kvp.Value
+             }).ToList();
+
+             var request = new { Answers = answersList };
+            
+             return await _httpService.PostAsync<object, TestSubmissionResponse>($"api/test/{testId}/submit", request);
+        }
     }
 }
-
-

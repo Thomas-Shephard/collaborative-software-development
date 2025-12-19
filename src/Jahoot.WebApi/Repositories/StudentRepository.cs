@@ -24,15 +24,10 @@ public class StudentRepository(IDbConnection connection, IUserRepository userRep
 
     public async Task CreateStudentAsync(string name, string email, string hashedPassword)
     {
-        if (connection.State != ConnectionState.Open)
-        {
-            connection.Open();
-        }
-
         using IDbTransaction transaction = connection.BeginTransaction();
 
         const string createUserQuery = "INSERT INTO User (name, email, password_hash) VALUES (@Name, @Email, @HashedPassword); SELECT LAST_INSERT_ID();";
-        int userId = await connection.ExecuteScalarAsync<int>(createUserQuery, new { Name = name, Email = email, HashedPassword = hashedPassword }, transaction);
+        int userId = await connection.ExecuteScalarAsync<int>(createUserQuery, new { Name = name, Email = email.ToLowerInvariant(), HashedPassword = hashedPassword }, transaction);
 
         await connection.ExecuteAsync(CreateStudentQuery, new { UserId = userId }, transaction);
 
