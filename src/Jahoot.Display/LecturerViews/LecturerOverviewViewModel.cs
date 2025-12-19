@@ -124,10 +124,24 @@ namespace Jahoot.Display.LecturerViews
         private string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return string.Empty;
+
             var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
-            if (parts.Length >= 2) return $"{parts[0][0]}{parts[1][0]}".ToUpper();
-            return string.Empty;
+            if (parts.Length == 0) return string.Empty;
+
+            string initials = string.Empty;
+            foreach (var part in parts)
+            {
+                if (!string.IsNullOrEmpty(part))
+                {
+                    initials += char.ToUpper(part[0]);
+                    if (initials.Length >= 2)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return initials;
         }
 
         private string FormatTimeAgo(DateTime completionTime)
