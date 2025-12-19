@@ -51,20 +51,12 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private int _numberOfQuestions;
-        public int NumberOfQuestions
-        {
-            get => _numberOfQuestions;
-            set
-            {
-                _numberOfQuestions = value;
-                OnPropertyChanged();
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
+        public ObservableCollection<QuestionViewModel> Questions { get; set; } = new ObservableCollection<QuestionViewModel>();
 
         public ICommand SaveCommand { get; }
         public ICommand DiscardCommand { get; }
+        public ICommand AddQuestionCommand { get; }
+        public ICommand RemoveQuestionCommand { get; }
 
         public CreateTestViewModel(ITestService testService, ISubjectService subjectService)
         {
@@ -73,8 +65,30 @@ namespace Jahoot.Display.LecturerViews
 
             SaveCommand = new RelayCommand(async _ => await SaveTest(), CanSaveTest);
             DiscardCommand = new RelayCommand(DiscardChanges);
+            AddQuestionCommand = new RelayCommand(_ => AddQuestion());
+            RemoveQuestionCommand = new RelayCommand(RemoveQuestion, CanRemoveQuestion);
 
             _ = LoadSubjects();
+        }
+
+        private void AddQuestion()
+        {
+            Questions.Add(new QuestionViewModel());
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private void RemoveQuestion(object? obj)
+        {
+            if (obj is QuestionViewModel question)
+            {
+                Questions.Remove(question);
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private bool CanRemoveQuestion(object? obj)
+        {
+            return obj is QuestionViewModel;
         }
 
         private async Task LoadSubjects()
@@ -92,21 +106,36 @@ namespace Jahoot.Display.LecturerViews
 
         private bool CanSaveTest(object? arg)
         {
-            return !string.IsNullOrWhiteSpace(TestName) && SelectedSubject != null && NumberOfQuestions > 0;
+            return !string.IsNullOrWhiteSpace(TestName) &&
+                   SelectedSubject != null &&
+                   Questions.Any() &&
+                   Questions.All(q => !string.IsNullOrWhiteSpace(q.QuestionText) &&
+                                      q.Options.Any(o => !string.IsNullOrWhiteSpace(o.OptionText)) &&
+                                      q.Options.Count(o => o.IsCorrect) == 1);
         }
 
         private async Task SaveTest()
         {
             try
             {
+                var questionsToSave = Questions.Select(qvm => new Question
+                {
+                    Text = qvm.QuestionText,
+                    Options = qvm.Options.Select(ovm => new QuestionOption
+                    {
+                        OptionText = ovm.OptionText,
+                        IsCorrect = ovm.IsCorrect
+                    }).ToList().AsReadOnly()
+                }).ToList().AsReadOnly();
+
                 var newTest = new Test
                 {
                     Name = TestName,
                     SubjectId = SelectedSubject!.SubjectId,
-                    NumberOfQuestions = NumberOfQuestions, // This is where the value is taken from
-                    Questions = new List<Question>().AsReadOnly() // No questions are added during creation from this view
+                    NumberOfQuestions = questionsToSave.Count,
+                    Questions = questionsToSave
                 };
-                Debug.WriteLine($"Attempting to create test with NumberOfQuestions: {NumberOfQuestions}");
+                Debug.WriteLine($"Attempting to create test with NumberOfQuestions: {newTest.NumberOfQuestions}");
                 var result = await _testService.CreateTest(newTest);
 
                 if (result.Success)
@@ -125,6 +154,7 @@ namespace Jahoot.Display.LecturerViews
                 MessageBox.Show($"An error occurred while creating the test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void DiscardChanges(object? obj)
         {

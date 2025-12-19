@@ -7,9 +7,10 @@ namespace Jahoot.Display.LecturerViews
     /// </summary>
     public partial class CreateTestWindow : Window
     {
-        public CreateTestWindow()
+        public CreateTestWindow(CreateTestViewModel viewModel)
         {
             InitializeComponent();
+            DataContext = viewModel;
         }
     }
 }

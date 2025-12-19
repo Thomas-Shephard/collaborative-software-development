@@ -107,10 +107,7 @@ namespace Jahoot.Display.LecturerViews
             var createTestViewModel = ((App)Application.Current).ServiceProvider.GetService<CreateTestViewModel>();
             if (createTestViewModel != null)
             {
-                var createTestWindow = new CreateTestWindow
-                {
-                    DataContext = createTestViewModel
-                };
+                var createTestWindow = new CreateTestWindow(createTestViewModel);
 
                 createTestWindow.Owner = Application.Current.MainWindow;
                 createTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
