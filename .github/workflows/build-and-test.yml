@@ -60,7 +60,7 @@ jobs:
                         **/*.csproj
                         **/Directory.Build.props
             -   name: Test
-                run: dotnet test backend.slnx --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage --settings coverlet.runsettings
+                run: dotnet test backend.slnx --configuration Release -p:DebugType=portable -p:DebugSymbols=true --collect:"XPlat Code Coverage" --results-directory ./coverage --settings coverlet.runsettings
             -   name: Install Coverage Checker
                 run: dotnet tool install --global CoverageChecker.CommandLine
             -   name: Check Coverage

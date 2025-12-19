@@ -353,6 +353,60 @@ public class UserRepositoryTests : RepositoryTestBase
     }
 
     [Test]
+    public async Task GetUserByEmailAsync_EmailIsMixedCase_ReturnsUser()
+    {
+        User user = new()
+        {
+            Email = "test@example.com",
+            Name = "Test User",
+            PasswordHash = "password_hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        await InsertUser(user);
+
+        User? result = await _userRepository.GetUserByEmailAsync("TeSt@ExAmPlE.cOm");
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Email, Is.EqualTo("test@example.com"));
+    }
+
+    [Test]
+    public async Task UpdateUserAsync_EmailIsMixedCase_SavesAsLowercase()
+    {
+        User originalUser = new()
+        {
+            Email = "old@example.com",
+            Name = "Name",
+            PasswordHash = "hash",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+        int userId = await InsertUser(originalUser);
+
+        User updatedUser = new()
+        {
+            UserId = userId,
+            Email = "uPpErCaSe@ExAmPlE.cOm",
+            Name = "Name",
+            PasswordHash = "hash",
+            CreatedAt = originalUser.CreatedAt,
+            UpdatedAt = DateTime.UtcNow,
+            Roles = [],
+            IsDisabled = false
+        };
+
+        await _userRepository.UpdateUserAsync(updatedUser);
+
+        dynamic result = await Connection.QuerySingleAsync<dynamic>("SELECT email FROM User WHERE user_id = @UserId", new { UserId = userId });
+        Assert.That(result.email, Is.EqualTo("uppercase@example.com"));
+    }
+
+    [Test]
     public async Task GetRolesByUserIdsAsync_MultipleUsers_ReturnsExpectedRoles()
     {
         DateTime now = DateTime.UtcNow;
