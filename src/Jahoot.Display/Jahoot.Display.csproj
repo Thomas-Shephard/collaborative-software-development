@@ -5,6 +5,7 @@
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <AssemblyName>Jahoot</AssemblyName>
+    <ApplicationIcon>Jahoot.ico</ApplicationIcon>
   </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Resource Include="Jahoot.ico" />
         <Resource Include="..\Jahoot.WebApi\wwwroot\logos\Jahoot.png" Link="Images\Jahoot.png" />
     </ItemGroup>
 
