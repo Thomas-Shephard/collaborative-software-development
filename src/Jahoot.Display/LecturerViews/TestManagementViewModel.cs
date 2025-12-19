@@ -1,6 +1,6 @@
 using Jahoot.Core.Models;
 using Jahoot.Display.Services;
-using Jahoot.Display.ViewModels; // Added for BaseViewModel
+using Jahoot.Display.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
@@ -51,24 +51,21 @@ namespace Jahoot.Display.LecturerViews
 
         private async Task LoadTests()
         {
-            Debug.WriteLine("LoadTests method initiated.");
+
             try
             {
                 var tests = await _testService.GetTests();
                 if (tests != null)
                 {
                     Tests = new ObservableCollection<Test>(tests);
-                    Debug.WriteLine($"Successfully loaded {Tests.Count} tests.");
+    
                 }
-                else
-                {
-                    Debug.WriteLine("TestService.GetTests returned null.");
-                }
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred while loading tests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Error in LoadTests: {ex.Message}");
+
             }
         }
 

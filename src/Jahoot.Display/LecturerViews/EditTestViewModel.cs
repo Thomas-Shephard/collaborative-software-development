@@ -16,7 +16,7 @@ namespace Jahoot.Display.LecturerViews
     {
         private readonly ITestService _testService;
         private readonly ISubjectService _subjectService;
-        private readonly Test _originalTest; // To hold the original test data
+        private readonly Test _originalTest;
 
         private int _testId;
         public int TestId
@@ -90,7 +90,7 @@ namespace Jahoot.Display.LecturerViews
         {
             TestId = test.TestId;
             TestName = test.Name;
-            // SelectedSubject will be set when subjects are loaded
+
             
             Questions.Clear();
             foreach (var question in test.Questions)
@@ -137,7 +137,7 @@ namespace Jahoot.Display.LecturerViews
             {
                 var subjects = await _subjectService.GetSubjects();
                 Subjects = new ObservableCollection<Subject>(subjects);
-                // Set SelectedSubject after subjects are loaded
+
                 SelectedSubject = Subjects.FirstOrDefault(s => s.SubjectId == _originalTest.SubjectId);
             }
             catch (Exception ex)
@@ -178,7 +178,7 @@ namespace Jahoot.Display.LecturerViews
                     NumberOfQuestions = questionsToSave.Count,
                     Questions = questionsToSave
                 };
-                Debug.WriteLine($"Attempting to update test with TestId: {TestId}");
+
                 var result = await _testService.UpdateTest(TestId, updatedTest);
 
                 if (result.Success)

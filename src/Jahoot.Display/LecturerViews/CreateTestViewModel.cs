@@ -136,13 +136,13 @@ namespace Jahoot.Display.LecturerViews
                     NumberOfQuestions = questionsToSave.Count,
                     Questions = questionsToSave
                 };
-                Debug.WriteLine($"Attempting to create test with NumberOfQuestions: {newTest.NumberOfQuestions}");
+
                 var result = await _testService.CreateTest(newTest);
 
                 if (result.Success)
                 {
                     MessageBox.Show("Test created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    // Close the window
+
                     Application.Current.Windows.OfType<CreateTestWindow>().FirstOrDefault()?.Close();
                 }
                 else

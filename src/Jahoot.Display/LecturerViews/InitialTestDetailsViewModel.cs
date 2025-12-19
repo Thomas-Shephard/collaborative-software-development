@@ -64,7 +64,6 @@ namespace Jahoot.Display.LecturerViews
 
         public ICommand NextCommand { get; }
 
-        // Action to signal the parent (CreateTestViewModel) to proceed
         public Action? ProceedToQuestionCreation { get; set; }
 
         public InitialTestDetailsViewModel(ISubjectService subjectService)
@@ -96,7 +95,6 @@ namespace Jahoot.Display.LecturerViews
 
         private void ExecuteNextCommand(object? obj)
         {
-            // Signal the orchestrating ViewModel (CreateTestViewModel) to proceed
             ProceedToQuestionCreation?.Invoke();
         }
     }

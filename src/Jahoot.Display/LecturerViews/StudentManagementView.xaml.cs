@@ -102,7 +102,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error updating student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while updating the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -125,7 +125,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error approving student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while approving the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -149,7 +149,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error rejecting student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while rejecting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -170,7 +170,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error deleting student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while deleting the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -192,7 +192,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error enabling student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while enabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -214,7 +214,7 @@ namespace Jahoot.Display.LecturerViews
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error disabling student: {ex.Message}");
+
                     MessageBox.Show($"An error occurred while disabling the student: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }

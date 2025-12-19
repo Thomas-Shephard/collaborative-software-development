@@ -47,11 +47,11 @@ namespace Jahoot.Display.LecturerViews
                 UserControl? view = Activator.CreateInstance(viewType) as UserControl;
                 if (view == null) return;
                 
-                // Determine the corresponding ViewModel type
+
                 Type? viewModelType = null;
                 if (viewType == typeof(LecturerOverviewView))
                 {
-                    // Assuming LecturerOverviewViewModel is created and registered
+    
                     viewModelType = typeof(LecturerOverviewViewModel);
                 }
                 else if (viewType == typeof(StudentManagementView))
@@ -62,7 +62,7 @@ namespace Jahoot.Display.LecturerViews
                 {
                     viewModelType = typeof(TestManagementViewModel);
                 }
-                // Add more conditions for other views as needed
+
 
                 if (viewModelType != null)
                 {
@@ -70,8 +70,8 @@ namespace Jahoot.Display.LecturerViews
                 }
                 else
                 {
-                    // Fallback or error handling if no ViewModel is found for the ViewType
-                    // For now, keep existing behavior for unmapped views, but this should ideally not happen
+    
+    
                     view.DataContext = viewModel; 
                 }
                 
