@@ -18,27 +18,31 @@ namespace Jahoot.Display.Services
 
         public async Task<IEnumerable<Test>> GetTests(int? subjectId = null)
         {
-            var uri = "api/test/list";
+            string uri = "api/test/list";
             if (subjectId.HasValue)
             {
                 uri += $"?subjectId={subjectId.Value}";
             }
 
-            var result = await _httpService.GetAsync<IEnumerable<Test>>(uri);
+            IEnumerable<Test>? result = await _httpService.GetAsync<IEnumerable<Test>>(uri);
+            return result ?? Enumerable.Empty<Test>();
+        }
 
-
-            return result ?? [];
+        public async Task<Test?> GetTestById(int testId)
+        {
+            return await _httpService.GetAsync<Test>($"api/test/{testId}");
         }
 
         public async Task<IEnumerable<CompletedTestResponse>> GetRecentCompletedTests(int? days = null)
         {
-            var uri = "api/lecturer/recent-activity";
+            string uri = "api/lecturer/recent-activity";
             if (days.HasValue)
             {
                 uri += $"?days={days.Value}";
             }
-            var result = await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>(uri);
-            return result ?? [];
+
+            IEnumerable<CompletedTestResponse>? result = await _httpService.GetAsync<IEnumerable<CompletedTestResponse>>(uri);
+            return result ?? Enumerable.Empty<CompletedTestResponse>();
         }
 
         public async Task<Result> CreateTest(Test test)
@@ -58,6 +62,7 @@ namespace Jahoot.Display.Services
                     }).ToList()
                 }).ToList()
             };
+
             return await _httpService.PostAsync("api/test", request);
         }
 
@@ -78,6 +83,7 @@ namespace Jahoot.Display.Services
                     }).ToList()
                 }).ToList()
             };
+
             return await _httpService.PutAsync($"api/test/{testId}", request);
         }
 
@@ -88,7 +94,7 @@ namespace Jahoot.Display.Services
 
         public async Task<bool> HasAttempts(int testId)
         {
-            var result = await _httpService.GetAsync<HasAttemptsResponse>($"api/test/{testId}/has-attempts");
+            HasAttemptsResponse? result = await _httpService.GetAsync<HasAttemptsResponse>($"api/test/{testId}/has-attempts");
             return result?.HasAttempts ?? false;
         }
     }

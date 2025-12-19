@@ -8,6 +8,7 @@ namespace Jahoot.Display.Services
     public interface ITestService
     {
         Task<IEnumerable<Test>> GetTests(int? subjectId = null);
+        Task<Test?> GetTestById(int testId);
         Task<Result> CreateTest(Test test);
         Task<Result> UpdateTest(int testId, Test test);
         Task<Result> DeleteTest(int testId);

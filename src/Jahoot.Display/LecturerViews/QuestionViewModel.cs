@@ -28,7 +28,7 @@ namespace Jahoot.Display.LecturerViews
         {
             Options = new ObservableCollection<QuestionOptionViewModel>();
             AddOptionCommand = new RelayCommand(_ => AddOption());
-            RemoveOptionCommand = new RelayCommand(RemoveOption, CanRemoveOption);
+            RemoveOptionCommand = new RelayCommand(RemoveOption);
         }
 
         private void AddOption()

@@ -54,6 +54,22 @@ namespace Jahoot.Display.LecturerViews
 
         public ObservableCollection<QuestionViewModel> Questions { get; set; } = new ObservableCollection<QuestionViewModel>();
 
+        private int _selectedNumberOfQuestions;
+        public int SelectedNumberOfQuestions
+        {
+            get => _selectedNumberOfQuestions;
+            set
+            {
+                if (_selectedNumberOfQuestions != value)
+                {
+                    _selectedNumberOfQuestions = value;
+                    OnPropertyChanged();
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+
         public ICommand SaveCommand { get; }
         public ICommand DiscardCommand { get; }
         public ICommand AddQuestionCommand { get; }
@@ -113,7 +129,10 @@ namespace Jahoot.Display.LecturerViews
             return !string.IsNullOrWhiteSpace(TestName) &&
                    SelectedSubject != null &&
                    Questions.Any() &&
+                   SelectedNumberOfQuestions > 0 &&
+                   SelectedNumberOfQuestions <= Questions.Count &&
                    Questions.All(q => !string.IsNullOrWhiteSpace(q.QuestionText) &&
+                                      q.Options.Count >= 2 && // Added validation for minimum 2 options
                                       q.Options.Any(o => !string.IsNullOrWhiteSpace(o.OptionText)) &&
                                       q.Options.Count(o => o.IsCorrect) == 1);
         }
@@ -136,7 +155,7 @@ namespace Jahoot.Display.LecturerViews
                 {
                     Name = TestName,
                     SubjectId = SelectedSubject!.SubjectId,
-                    NumberOfQuestions = questionsToSave.Count,
+                    NumberOfQuestions = SelectedNumberOfQuestions,
                     Questions = questionsToSave
                 };
 

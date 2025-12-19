@@ -128,7 +128,7 @@
                         <GridViewColumn Header="Subject" Width="250">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Subject.Name}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
+                                    <TextBlock Text="{Binding SubjectName}" VerticalAlignment="Center" Margin="0,15" Foreground="#333"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

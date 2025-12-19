@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Input;
+using System.Text.RegularExpressions;
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -19,5 +21,12 @@ namespace Jahoot.Display.LecturerViews
                 await viewModel.InitialiseAsync();
             }
         }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
     }
 }
+

@@ -14,7 +14,7 @@ namespace Jahoot.WebApi.Controllers.Test;
 public class GetTestController(ITestRepository testRepository, ISubjectRepository subjectRepository, IStudentRepository studentRepository) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = nameof(Role.Student))]
+    [Authorize(Roles = $"{nameof(Role.Student)},{nameof(Role.Lecturer)}")]
     public async Task<ActionResult<StudentTestDetailResponse>> GetTest(int testId)
     {
         Core.Models.Test? test = await testRepository.GetTestByIdAsync(testId);

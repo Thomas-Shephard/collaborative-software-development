@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Jahoot.Display.Commands;
+using Jahoot.Display.Models; // Import the new TestDisplayModel
 
 namespace Jahoot.Display.LecturerViews
 {
@@ -20,8 +21,8 @@ namespace Jahoot.Display.LecturerViews
         private readonly Func<Test, EditTestViewModel> _editTestViewModelFactory;
         private readonly Func<CreateTestViewModel> _createTestViewModelFactory;
 
-        private ObservableCollection<Test> _tests = new ObservableCollection<Test>();
-        public ObservableCollection<Test> Tests
+        private ObservableCollection<TestDisplayModel> _tests = new ObservableCollection<TestDisplayModel>();
+        public ObservableCollection<TestDisplayModel> Tests
         {
             get => _tests;
             set
@@ -30,6 +31,8 @@ namespace Jahoot.Display.LecturerViews
                 OnPropertyChanged();
             }
         }
+
+        private ObservableCollection<Subject> _allSubjects = new ObservableCollection<Subject>();
 
         public ICommand LoadTestsCommand { get; }
         public ICommand EditTestCommand { get; }
@@ -51,36 +54,66 @@ namespace Jahoot.Display.LecturerViews
 
         public async Task InitialiseAsync()
         {
+            await LoadAllSubjects();
             await LoadTests();
+        }
+
+        private async Task LoadAllSubjects()
+        {
+            try
+            {
+                var subjects = await _subjectService.GetSubjects();
+                _allSubjects = new ObservableCollection<Subject>(subjects);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while loading subjects: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task LoadTests()
         {
-
             try
             {
                 var tests = await _testService.GetTests();
                 if (tests != null)
                 {
-                    Tests = new ObservableCollection<Test>(tests);
-    
+                    var displayTests = new ObservableCollection<TestDisplayModel>();
+                    foreach (var test in tests)
+                    {
+                        var subject = _allSubjects.FirstOrDefault(s => s.SubjectId == test.SubjectId);
+                        displayTests.Add(new TestDisplayModel
+                        {
+                            TestId = test.TestId,
+                            Name = test.Name,
+                            NumberOfQuestions = test.NumberOfQuestions,
+                            SubjectName = subject?.Name ?? "Unknown Subject"
+                        });
+                    }
+                    Tests = displayTests;
                 }
-
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred while loading tests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
             }
         }
 
         private async Task EditTest(object? obj)
         {
-            if (obj is Test testToEdit)
+            if (obj is TestDisplayModel testToEdit) // Changed to TestDisplayModel
             {
                 try
                 {
-                    var editTestViewModel = _editTestViewModelFactory(testToEdit);
+                    // Need to get the full Test object from service for editing if EditTestViewModel expects it
+                    var fullTest = await _testService.GetTestById(testToEdit.TestId);
+                    if (fullTest == null)
+                    {
+                        MessageBox.Show("Could not find test details for editing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    var editTestViewModel = _editTestViewModelFactory(fullTest);
                     var editTestWindow = new EditTestWindow(editTestViewModel);
 
                     editTestWindow.Owner = Application.Current.MainWindow;
@@ -98,7 +131,7 @@ namespace Jahoot.Display.LecturerViews
 
         private async Task DeleteTest(object? obj)
         {
-            if (obj is Test testToDelete)
+            if (obj is TestDisplayModel testToDelete) // Changed to TestDisplayModel
             {
                 try
                 {
