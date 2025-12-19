@@ -49,14 +49,14 @@ namespace Jahoot.Display.Services
                 Name = test.Name,
                 NumberOfQuestions = test.NumberOfQuestions,
                 Questions = test.Questions.Select(q => new QuestionRequestModel
+                {
+                    Text = q.Text,
+                    Options = q.Options.Select(o => new QuestionOptionRequestModel
                     {
-                        Text = q.Text,
-                        Options = q.Options.Select(o => new QuestionOptionRequestModel
-                            {
-                                OptionText = o.OptionText,
-                                IsCorrect = o.IsCorrect
-                            }).ToList()
+                        OptionText = o.OptionText,
+                        IsCorrect = o.IsCorrect
                     }).ToList()
+                }).ToList()
             };
             return await _httpService.PostAsync("api/test", request);
         }
@@ -69,14 +69,14 @@ namespace Jahoot.Display.Services
                 Name = test.Name,
                 NumberOfQuestions = test.NumberOfQuestions,
                 Questions = test.Questions.Select(q => new QuestionRequestModel
+                {
+                    Text = q.Text,
+                    Options = q.Options.Select(o => new QuestionOptionRequestModel
                     {
-                        Text = q.Text,
-                        Options = q.Options.Select(o => new QuestionOptionRequestModel
-                            {
-                                OptionText = o.OptionText,
-                                IsCorrect = o.IsCorrect
-                            }).ToList()
+                        OptionText = o.OptionText,
+                        IsCorrect = o.IsCorrect
                     }).ToList()
+                }).ToList()
             };
             return await _httpService.PutAsync($"api/test/{testId}", request);
         }
@@ -92,10 +92,6 @@ namespace Jahoot.Display.Services
             return result?.HasAttempts ?? false;
         }
     }
-
-    public class HasAttemptsResponse
-    {
-        public bool HasAttempts { get; set; }
-    }
 }
+
 
