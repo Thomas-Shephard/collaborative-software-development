@@ -150,7 +150,10 @@ namespace Jahoot.Display.ViewModels
             _testStartTime = DateTime.Now;
             NextCommand = new RelayCommand<object>(() => GoToNext(), () => CanGoNext);
             BackCommand = new RelayCommand<object>(() => GoToBack(), () => CanGoBack);
-            SubmitCommand = new RelayCommand<object>(() => SubmitTest(), () => CanSubmit);
+            SubmitCommand = new RelayCommand<object>(
+                async () => await SubmitTest(),
+                () => CanSubmit
+            );
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace Jahoot.Display.ViewModels
         {
             if (_testService == null)
             {
-                Debug.WriteLine("Test service is not available.");
+                MessageBox.Show("Test service is not available.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -177,7 +180,7 @@ namespace Jahoot.Display.ViewModels
                 
                 if (testDetails == null || testDetails.Questions == null || !testDetails.Questions.Any())
                 {
-                    Debug.WriteLine($"Unable to load test {testId} - no questions available");
+                    MessageBox.Show($"Unable to load test {testId} - no questions available", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -201,7 +204,7 @@ namespace Jahoot.Display.ViewModels
                 
                 if (TotalQuestions == 0)
                 {
-                    Debug.WriteLine($"Test {testId} loaded but has no questions");
+                    MessageBox.Show($"Test {testId} loaded but has no questions", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 
@@ -209,7 +212,7 @@ namespace Jahoot.Display.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading test: {ex.Message}");
+                MessageBox.Show($"Error loading test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -247,13 +250,13 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 1,
-                    Text = "What is the derivative of f(x) = 3x² + 2x - 5?",
+                    Text = "What is the derivative of f(x) = 3xï¿½ + 2x - 5?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 1, QuestionId = 1, OptionText = "6x + 2", IsCorrect = true },
                         new QuestionOption { QuestionOptionId = 2, QuestionId = 1, OptionText = "3x + 2", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 3, QuestionId = 1, OptionText = "6x + 5", IsCorrect = false },
-                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "3x² + 2", IsCorrect = false }
+                        new QuestionOption { QuestionOptionId = 4, QuestionId = 1, OptionText = "3xï¿½ + 2", IsCorrect = false }
                     }.AsReadOnly(),
                     CreatedAt = _testStartTime,
                     UpdatedAt = _testStartTime
@@ -264,8 +267,8 @@ namespace Jahoot.Display.ViewModels
                     Text = "What is the integral of f(x) = 2x?",
                     Options = new List<QuestionOption>
                     {
-                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "x² + C", IsCorrect = true },
-                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "2x² + C", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 5, QuestionId = 2, OptionText = "xï¿½ + C", IsCorrect = true },
+                        new QuestionOption { QuestionOptionId = 6, QuestionId = 2, OptionText = "2xï¿½ + C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 7, QuestionId = 2, OptionText = "x + C", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 8, QuestionId = 2, OptionText = "2x + C", IsCorrect = false }
                     }.AsReadOnly(),
@@ -275,7 +278,7 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 3,
-                    Text = "What is the value of sin(90°)?",
+                    Text = "What is the value of sin(90ï¿½)?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "1", IsCorrect = true },
@@ -289,7 +292,7 @@ namespace Jahoot.Display.ViewModels
                 new Question
                 {
                     QuestionId = 4,
-                    Text = "What is 2³?",
+                    Text = "What is 2ï¿½?",
                     Options = new List<QuestionOption>
                     {
                         new QuestionOption { QuestionOptionId = 13, QuestionId = 4, OptionText = "8", IsCorrect = true },
@@ -434,7 +437,7 @@ namespace Jahoot.Display.ViewModels
                     {
                         new QuestionOption { QuestionOptionId = 9, QuestionId = 3, OptionText = "O(log n)", IsCorrect = true },
                         new QuestionOption { QuestionOptionId = 10, QuestionId = 3, OptionText = "O(n)", IsCorrect = false },
-                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(n²)", IsCorrect = false },
+                        new QuestionOption { QuestionOptionId = 11, QuestionId = 3, OptionText = "O(nï¿½)", IsCorrect = false },
                         new QuestionOption { QuestionOptionId = 12, QuestionId = 3, OptionText = "O(1)", IsCorrect = false }
                     }.AsReadOnly(),
                     CreatedAt = _testStartTime,
@@ -618,8 +621,14 @@ namespace Jahoot.Display.ViewModels
             }
         }
 
-        private async void SubmitTest()
+        private async Task SubmitTest()
         {
+            if (_testService == null)
+            {
+                Debug.WriteLine("Test service is not available.");
+                return;
+            }
+
             try
             {
                 IsLoading = true;

@@ -1,10 +1,10 @@
 using Jahoot.Display.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
+using System.Windows;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
-using System.Windows;
 using Jahoot.Display.ViewModels;
 
 namespace Jahoot.Display;
@@ -44,9 +44,9 @@ public partial class App : Application
         services.AddSingleton<ISecureStorageService, SecureStorageService>();
 
         string baseAddress = _configuration?.GetValue<string>("BaseAddress")
-                             ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
+                                ?? throw new InvalidOperationException("BaseAddress is missing from configuration.");
 
-        services.AddSingleton<HttpClient>(sp => new HttpClient
+        services.AddSingleton(new HttpClient
         {
             BaseAddress = new Uri(baseAddress)
         });
@@ -55,18 +55,44 @@ public partial class App : Application
         services.AddTransient<ISubjectService, SubjectService>();
         services.AddTransient<ILecturerService, LecturerService>();
         services.AddTransient<IStudentService, StudentService>();
-        services.AddTransient<ITestService, TestService>();
-        
+            
         services.AddSingleton<IUserRoleService, UserRoleService>();
+            
         services.AddSingleton<IDashboardNavigationService, DashboardNavigationService>();
-        
+            
+        services.AddTransient<ITestService, TestService>();
         services.AddTransient<LandingPage>();
-        services.AddTransient<LecturerViews.LecturerDashboard>();
+                    services.AddTransient<LecturerViews.LecturerDashboard>(s => new LecturerViews.LecturerDashboard(
+                        s.GetRequiredService<LecturerViews.LecturerDashboardViewModel>(),
+                        s.GetRequiredService<IServiceProvider>()
+                    ));        services.AddTransient<LecturerViews.LecturerDashboardViewModel>(s => new LecturerViews.LecturerDashboardViewModel(
+            s.GetRequiredService<IStudentService>(),
+            s.GetRequiredService<ITestService>(),
+            s.GetRequiredService<IServiceProvider>(),
+            s.GetRequiredService<ISecureStorageService>()
+        ));
         services.AddTransient<StudentViews.StudentDashboard>();
-        services.AddTransient<Pages.AdminDashboard>();
-        
-        services.AddTransient<AssignStudentsToSubjectsViewModel>();
+        services.AddTransient<StudentViews.TestTakingPage>();
         services.AddTransient<LecturerViews.StudentManagementViewModel>();
+        services.AddTransient<LecturerViews.TestManagementViewModel>();
+        services.AddTransient<LecturerViews.CreateTestViewModel>();
+        services.AddTransient<Func<LecturerViews.CreateTestViewModel>>(s =>
+            () => s.GetRequiredService<LecturerViews.CreateTestViewModel>()
+        );
+
+        services.AddTransient<Func<Jahoot.Core.Models.Test, LecturerViews.EditTestViewModel>>(s =>
+            (test) => new LecturerViews.EditTestViewModel(
+                s.GetRequiredService<ITestService>(),
+                s.GetRequiredService<ISubjectService>(),
+                test
+            ));
+        services.AddTransient<LecturerViews.LecturerOverviewViewModel>();
+        services.AddTransient<LecturerViews.LecturerOverviewView>();
+        services.AddTransient<LecturerViews.StudentManagementView>();
+        services.AddTransient<LecturerViews.TestManagementView>();
+        services.AddTransient<LecturerViews.AssignStudentsToSubjectsView>();
+        services.AddTransient<Pages.AdminDashboard>();
+        services.AddTransient<AssignStudentsToSubjectsViewModel>();
     }
 
     protected override void OnStartup(StartupEventArgs e)

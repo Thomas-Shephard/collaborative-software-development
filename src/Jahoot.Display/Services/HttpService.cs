@@ -37,7 +37,13 @@ public class HttpService(HttpClient httpClient, ISecureStorageService secureStor
             return await response.Content.ReadFromJsonAsync<T>(_jsonOptions);
         }
 
-        throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
+        // Read response body for diagnostic information
+        var responseBody = await response.Content.ReadAsStringAsync();
+        string method = response.RequestMessage?.Method.Method ?? "GET";
+        string requestUri = response.RequestMessage?.RequestUri?.ToString() ?? uri;
+
+        // Include method, uri, status and body in the exception to help debugging
+        throw new HttpRequestException($"HTTP {method} {requestUri} failed with status {(int)response.StatusCode} ({response.StatusCode}). Response body: {responseBody}");
     }
 
     public async Task<TResponse?> PostAsync<TRequest, TResponse>(string uri, TRequest data)

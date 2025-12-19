@@ -23,7 +23,6 @@ public class StudentDashboardViewModel : BaseViewModel
     private bool _isLoading = false;
     private bool _isShowingTest = false;
     private object? _currentView = null;
-    private static readonly DateTime _baseDate = new DateTime(2024, 11, 1);
 
     public string StudentInitials
     {
