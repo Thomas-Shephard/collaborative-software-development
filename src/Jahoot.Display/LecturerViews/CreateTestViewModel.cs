@@ -106,7 +106,7 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private bool CanRemoveQuestion(object? obj)
+        private static bool CanRemoveQuestion(object? obj)
         {
             return obj is QuestionViewModel;
         }
@@ -179,7 +179,7 @@ namespace Jahoot.Display.LecturerViews
         }
 
 
-        private void DiscardChanges(object? obj)
+        private static void DiscardChanges(object? obj)
         {
             var result = MessageBox.Show("Are you sure you want to discard changes?", "Confirm Discard", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes)

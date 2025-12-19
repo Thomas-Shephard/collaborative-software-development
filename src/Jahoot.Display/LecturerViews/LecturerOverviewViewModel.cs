@@ -121,7 +121,7 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private string GetInitials(string fullName)
+        private static string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return string.Empty;
 
@@ -144,7 +144,7 @@ namespace Jahoot.Display.LecturerViews
             return initials;
         }
 
-        private string FormatTimeAgo(DateTime completionTime)
+        private static string FormatTimeAgo(DateTime completionTime)
         {
             TimeSpan timeSinceCompletion = DateTime.UtcNow - completionTime.ToUniversalTime();
 
