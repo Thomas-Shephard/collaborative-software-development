@@ -29,14 +29,12 @@ namespace Jahoot.Display.LecturerViews
     {
         private readonly LecturerDashboardViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ISecureStorageService _secureStorageService;
 
-        public LecturerDashboard(LecturerDashboardViewModel viewModel, IServiceProvider serviceProvider, ISecureStorageService secureStorageService)
+        public LecturerDashboard(LecturerDashboardViewModel viewModel, IServiceProvider serviceProvider)
         {
             InitializeComponent();
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
-            _secureStorageService = secureStorageService;
             DataContext = _viewModel;
             Loaded += LecturerDashboard_Loaded;
         }

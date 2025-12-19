@@ -150,7 +150,10 @@ namespace Jahoot.Display.ViewModels
             _testStartTime = DateTime.Now;
             NextCommand = new RelayCommand<object>(() => GoToNext(), () => CanGoNext);
             BackCommand = new RelayCommand<object>(() => GoToBack(), () => CanGoBack);
-            SubmitCommand = new RelayCommand<object>(() => SubmitTest(), () => CanSubmit);
+            SubmitCommand = new RelayCommand<object>(
+                async () => await SubmitTest(),
+                () => CanSubmit
+            );
         }
 
         /// <summary>
@@ -618,7 +621,7 @@ namespace Jahoot.Display.ViewModels
             }
         }
 
-        private async void SubmitTest()
+        private async Task SubmitTest()
         {
             if (_testService == null)
             {

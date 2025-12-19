@@ -62,12 +62,10 @@ public partial class App : Application
             
         services.AddTransient<ITestService, TestService>();
         services.AddTransient<LandingPage>();
-        services.AddTransient<LecturerViews.LecturerDashboard>(s => new LecturerViews.LecturerDashboard(
-            s.GetRequiredService<LecturerViews.LecturerDashboardViewModel>(),
-            s.GetRequiredService<IServiceProvider>(),
-            s.GetRequiredService<ISecureStorageService>()
-        ));
-        services.AddTransient<LecturerViews.LecturerDashboardViewModel>(s => new LecturerViews.LecturerDashboardViewModel(
+                    services.AddTransient<LecturerViews.LecturerDashboard>(s => new LecturerViews.LecturerDashboard(
+                        s.GetRequiredService<LecturerViews.LecturerDashboardViewModel>(),
+                        s.GetRequiredService<IServiceProvider>()
+                    ));        services.AddTransient<LecturerViews.LecturerDashboardViewModel>(s => new LecturerViews.LecturerDashboardViewModel(
             s.GetRequiredService<IStudentService>(),
             s.GetRequiredService<ITestService>(),
             s.GetRequiredService<IServiceProvider>(),
