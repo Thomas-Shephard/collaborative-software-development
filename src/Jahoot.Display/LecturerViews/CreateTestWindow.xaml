@@ -30,6 +30,37 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4"/>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                            <TextBlock Text="{TemplateBinding Tag}"
+                                       Foreground="Gray"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="ComboBox">
@@ -117,7 +148,7 @@
 
             <StackPanel Grid.Row="1" Margin="0,0,0,10">
                 <Label Content="Test Name:"/>
-                <TextBox Text="{Binding TestName, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox Text="{Binding TestName, UpdateSourceTrigger=PropertyChanged}" Tag="Enter test name"/>
 
                 <Label Content="Subject:"/>
                 <ComboBox ItemsSource="{Binding Subjects}" SelectedItem="{Binding SelectedSubject}" DisplayMemberPath="Name"/>
@@ -134,7 +165,7 @@
                     <ItemsControl ItemsSource="{Binding Questions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type local:QuestionViewModel}">
-                                <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Margin="0,5,0,15" Padding="15" CornerRadius="4">
+                                <Border x:Name="QuestionBorder" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Margin="0,5,0,15" Padding="15" CornerRadius="4">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -143,7 +174,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Label Content="Question Text:" Grid.Column="0" Margin="0,0,0,5"/>
                                             <TextBox Text="{Binding QuestionText, UpdateSourceTrigger=PropertyChanged}" 
-                                                     Margin="0,0,5,5" Grid.Column="0"/>
+                                                     Margin="0,0,5,5" Grid.Column="0" Tag="Enter question text"/>
                                             <Button Content="Remove Question" 
                                                     Command="{Binding DataContext.RemoveQuestionCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
                                                     CommandParameter="{Binding}" 
@@ -163,10 +194,10 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
                                                             <TextBox Text="{Binding OptionText, UpdateSourceTrigger=PropertyChanged}" 
-                                                                     Grid.Column="0" Margin="0,0,5,0"/>
+                                                                     Grid.Column="0" Margin="0,0,5,0" Tag="Enter option text"/>
                                                             <CheckBox Content="Correct" IsChecked="{Binding IsCorrect}" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                                             <Button Content="Remove" 
-                                                                    Command="{Binding DataContext.RemoveOptionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:QuestionViewModel}}}"
+                                                                    Command="{Binding DataContext.RemoveOptionCommand, ElementName=QuestionBorder}"
                                                                     CommandParameter="{Binding}" 
                                                                     Grid.Column="2"
                                                                     Style="{StaticResource RejectButtonStyle}"/>
@@ -182,6 +213,14 @@
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
+
+            <TextBlock Text="* A question must have at least 2 options, with 1 correct, to be valid."
+                       Foreground="Gray"
+                       FontStyle="Italic"
+                       Grid.Row="4"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       Margin="0,20,0,0"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Margin="0,20,0,0">
                 <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,0,10,0" Style="{StaticResource ApproveButtonStyle}"/>

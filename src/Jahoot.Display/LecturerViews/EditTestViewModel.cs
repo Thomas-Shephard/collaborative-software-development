@@ -104,7 +104,7 @@ namespace Jahoot.Display.LecturerViews
                 };
                 foreach (var option in question.Options)
                 {
-                    questionVm.Options.Add(new QuestionOptionViewModel
+                    questionVm.Options.Add(new QuestionOptionViewModel(questionVm)
                     {
                         OptionText = option.OptionText,
                         IsCorrect = option.IsCorrect

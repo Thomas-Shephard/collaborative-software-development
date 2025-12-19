@@ -19,35 +19,113 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        public ObservableCollection<QuestionOptionViewModel> Options { get; set; }
+        private ObservableCollection<QuestionOptionViewModel> _options;
+        public ObservableCollection<QuestionOptionViewModel> Options
+        {
+            get => _options;
+            set
+            {
+                _options = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand AddOptionCommand { get; }
         public ICommand RemoveOptionCommand { get; }
 
-        public QuestionViewModel()
-        {
-            Options = new ObservableCollection<QuestionOptionViewModel>();
-            AddOptionCommand = new RelayCommand(_ => AddOption());
-            RemoveOptionCommand = new RelayCommand(RemoveOption);
-        }
+                        public QuestionViewModel()
 
-        private void AddOption()
-        {
-            Options.Add(new QuestionOptionViewModel());
-        }
+                        {
 
-        private void RemoveOption(object? obj)
-        {
-            if (obj is QuestionOptionViewModel option)
-            {
-                Options.Remove(option);
-            }
-        }
+                            _options = new ObservableCollection<QuestionOptionViewModel>
 
-        private bool CanRemoveOption(object? obj)
-        {
-            return obj is QuestionOptionViewModel;
-        }
+                            {
+
+                                new QuestionOptionViewModel(this),
+
+                                new QuestionOptionViewModel(this)
+
+                            };
+
+                            AddOptionCommand = new RelayCommand(_ => AddOption(), _ => CanAddOption());
+
+                            RemoveOptionCommand = new RelayCommand(RemoveOption, CanRemoveOption);
+
+                        }
+
+                
+
+                        private void AddOption()
+
+                        {
+
+                            _options.Add(new QuestionOptionViewModel(this));
+
+                            CommandManager.InvalidateRequerySuggested();
+
+                        }
+
+                
+
+                        private bool CanAddOption()
+
+                        {
+
+                            return _options.Count < 4;
+
+                        }
+
+                
+
+                        private void RemoveOption(object? obj)
+
+                        {
+
+                            if (obj is QuestionOptionViewModel option)
+
+                            {
+
+                                _options.Remove(option);
+
+                                CommandManager.InvalidateRequerySuggested();
+
+                            }
+
+                        }
+
+                
+
+                        private bool CanRemoveOption(object? obj)
+
+                        {
+
+                            return obj is QuestionOptionViewModel && _options.Count > 2;
+
+                        }
+
+                
+
+                        public void SetSelectedOption(QuestionOptionViewModel selectedOption)
+
+                        {
+
+                            foreach (var option in _options)
+
+                            {
+
+                                if (option != selectedOption)
+
+                                {
+
+                                    option.SetIsCorrect(false);
+
+                                }
+
+                            }
+
+                        }
+
+        
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

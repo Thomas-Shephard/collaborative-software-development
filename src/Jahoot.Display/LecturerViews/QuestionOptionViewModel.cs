@@ -5,6 +5,8 @@ namespace Jahoot.Display.LecturerViews
 {
     public class QuestionOptionViewModel : INotifyPropertyChanged
     {
+        private readonly QuestionViewModel _parent;
+
         private string _optionText = string.Empty;
         public string OptionText
         {
@@ -24,7 +26,16 @@ namespace Jahoot.Display.LecturerViews
             {
                 _isCorrect = value;
                 OnPropertyChanged();
+                if (_isCorrect)
+                {
+                    _parent.SetSelectedOption(this);
+                }
             }
+        }
+
+        public QuestionOptionViewModel(QuestionViewModel parent)
+        {
+            _parent = parent;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -32,6 +43,12 @@ namespace Jahoot.Display.LecturerViews
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        internal void SetIsCorrect(bool value)
+        {
+            _isCorrect = value;
+            OnPropertyChanged(nameof(IsCorrect));
         }
     }
 }
