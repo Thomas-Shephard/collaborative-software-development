@@ -71,8 +71,11 @@ namespace Jahoot.Display.LecturerViews
             _subjectService = subjectService;
 
             NextCommand = new RelayCommand(ExecuteNextCommand, CanExecuteNextCommand);
+        }
 
-            _ = LoadSubjects();
+        public async Task InitialiseAsync()
+        {
+            await LoadSubjects();
         }
 
         private async Task LoadSubjects()

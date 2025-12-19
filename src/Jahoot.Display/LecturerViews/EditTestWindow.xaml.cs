@@ -9,6 +9,15 @@ namespace Jahoot.Display.LecturerViews
         {
             InitializeComponent();
             DataContext = viewModel;
+            Loaded += EditTestWindow_Loaded;
+        }
+
+        private async void EditTestWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is EditTestViewModel viewModel)
+            {
+                await viewModel.InitialiseAsync();
+            }
         }
     }
 }

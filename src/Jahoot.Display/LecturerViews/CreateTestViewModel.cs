@@ -68,8 +68,11 @@ namespace Jahoot.Display.LecturerViews
             DiscardCommand = new RelayCommand(DiscardChanges);
             AddQuestionCommand = new RelayCommand(_ => AddQuestion());
             RemoveQuestionCommand = new RelayCommand(RemoveQuestion, CanRemoveQuestion);
+        }
 
-            _ = LoadSubjects();
+        public async Task InitialiseAsync()
+        {
+            await LoadSubjects();
         }
 
         private void AddQuestion()

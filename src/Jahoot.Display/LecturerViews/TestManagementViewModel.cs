@@ -45,8 +45,11 @@ namespace Jahoot.Display.LecturerViews
             EditTestCommand = new RelayCommand(EditTest);
             DeleteTestCommand = new RelayCommand(DeleteTest);
             CreateTestCommand = new RelayCommand(async _ => await CreateTest());
+        }
 
-            LoadTestsCommand.Execute(null);
+        public async Task InitialiseAsync()
+        {
+            await LoadTests();
         }
 
         private async Task LoadTests()
