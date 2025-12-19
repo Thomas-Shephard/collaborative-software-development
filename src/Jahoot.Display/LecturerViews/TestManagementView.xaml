@@ -180,11 +180,6 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15">
-                                        <Button Content="View" Command="{Binding DataContext.ViewTestCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource ActionButtonStyle}"
-                                                Margin="0,0,5,0"
-                                                AutomationProperties.Name="{Binding Name, StringFormat='View {0}'}"/>
                                         <Button Content="Edit" Command="{Binding DataContext.EditTestCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
                                                 CommandParameter="{Binding}"
                                                 Style="{StaticResource ActionButtonStyle}"

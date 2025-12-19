@@ -83,6 +83,7 @@ namespace Jahoot.Display.LecturerViews
         public int ActiveTests { get; set; } = 5;
         public double AverageScore { get; set; } = 78.5;
         public double CompletionRate { get; set; } = 85;
+        public string HeaderDescription { get; } = "Welcome to your lecturer dashboard.";
 
         public ObservableCollection<RecentActivityItem> RecentActivityItems { get; set; }
         public ObservableCollection<PerformanceSubject> PerformanceSubjects { get; set; }

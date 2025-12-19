@@ -60,6 +60,13 @@
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<LecturerViews.TestManagementViewModel>();
             services.AddTransient<LecturerViews.CreateTestViewModel>();
+
+            services.AddTransient<Func<Jahoot.Core.Models.Test, LecturerViews.EditTestViewModel>>(s =>
+                (test) => new LecturerViews.EditTestViewModel(
+                    s.GetRequiredService<ITestService>(),
+                    s.GetRequiredService<ISubjectService>(),
+                    test
+                ));
             services.AddTransient<LecturerViews.LecturerOverviewViewModel>();
             services.AddTransient<Pages.AdminDashboard>();
         }

@@ -17,6 +17,7 @@ namespace Jahoot.Display.LecturerViews
     {
         private readonly ITestService _testService;
         private readonly ISubjectService _subjectService;
+        private readonly Func<Test, EditTestViewModel> _editTestViewModelFactory;
 
         private ObservableCollection<Test> _tests = new ObservableCollection<Test>();
         public ObservableCollection<Test> Tests
@@ -30,18 +31,17 @@ namespace Jahoot.Display.LecturerViews
         }
 
         public ICommand LoadTestsCommand { get; }
-        public ICommand ViewTestCommand { get; }
         public ICommand EditTestCommand { get; }
         public ICommand DeleteTestCommand { get; }
         public ICommand CreateTestCommand { get; }
 
-        public TestManagementViewModel(ITestService testService, ISubjectService subjectService)
+        public TestManagementViewModel(ITestService testService, ISubjectService subjectService, Func<Test, EditTestViewModel> editTestViewModelFactory)
         {
             _testService = testService;
             _subjectService = subjectService;
+            _editTestViewModelFactory = editTestViewModelFactory;
 
             LoadTestsCommand = new RelayCommand(async _ => await LoadTests());
-            ViewTestCommand = new RelayCommand(ViewTest);
             EditTestCommand = new RelayCommand(EditTest);
             DeleteTestCommand = new RelayCommand(DeleteTest);
             CreateTestCommand = new RelayCommand(async _ => await CreateTest());
@@ -72,14 +72,20 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private void ViewTest(object? obj)
+        private async void EditTest(object? obj)
         {
-            // Not implemented yet
-        }
+            if (obj is Test testToEdit)
+            {
+                var editTestViewModel = _editTestViewModelFactory(testToEdit);
+                var editTestWindow = new EditTestWindow(editTestViewModel);
 
-        private void EditTest(object? obj)
-        {
-            // Not implemented yet
+                editTestWindow.Owner = Application.Current.MainWindow;
+                editTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                editTestWindow.ShowDialog();
+
+                // Refresh tests after the EditTestWindow is closed
+                await LoadTests();
+            }
         }
 
         private async void DeleteTest(object? obj)

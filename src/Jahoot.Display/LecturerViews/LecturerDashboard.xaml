@@ -26,7 +26,7 @@
                                   AvailableRoles="{Binding AvailableRoles}"
                                   SelectedRole="{Binding SelectedRole}"
                                   UserInitials="{Binding LecturerInitials}"
-                                  SubHeaderText="{Binding HeaderDescription}"/>
+                                  SubHeaderText="{Binding HeaderDescription, Mode=OneWay}"/>
 
         <Grid x:Name="StatsGrid" Grid.Row="1" Background="{StaticResource LightBackgroundColor}" Margin="20,0,20,15">
             <Grid.ColumnDefinitions>
