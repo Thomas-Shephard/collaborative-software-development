@@ -18,6 +18,7 @@ namespace Jahoot.Display.LecturerViews
         private readonly ITestService _testService;
         private readonly ISubjectService _subjectService;
         private readonly Func<Test, EditTestViewModel> _editTestViewModelFactory;
+        private readonly Func<CreateTestViewModel> _createTestViewModelFactory;
 
         private ObservableCollection<Test> _tests = new ObservableCollection<Test>();
         public ObservableCollection<Test> Tests
@@ -35,16 +36,17 @@ namespace Jahoot.Display.LecturerViews
         public ICommand DeleteTestCommand { get; }
         public ICommand CreateTestCommand { get; }
 
-        public TestManagementViewModel(ITestService testService, ISubjectService subjectService, Func<Test, EditTestViewModel> editTestViewModelFactory)
+        public TestManagementViewModel(ITestService testService, ISubjectService subjectService, Func<Test, EditTestViewModel> editTestViewModelFactory, Func<CreateTestViewModel> createTestViewModelFactory)
         {
             _testService = testService;
             _subjectService = subjectService;
             _editTestViewModelFactory = editTestViewModelFactory;
+            _createTestViewModelFactory = createTestViewModelFactory;
 
             LoadTestsCommand = new RelayCommand(async _ => await LoadTests());
-            EditTestCommand = new RelayCommand(EditTest);
-            DeleteTestCommand = new RelayCommand(DeleteTest);
-            CreateTestCommand = new RelayCommand(async _ => await CreateTest());
+            EditTestCommand = new AsyncRelayCommand(EditTest);
+            DeleteTestCommand = new AsyncRelayCommand(DeleteTest);
+            CreateTestCommand = new AsyncRelayCommand(async _ => await CreateTest());
         }
 
         public async Task InitialiseAsync()
@@ -72,23 +74,29 @@ namespace Jahoot.Display.LecturerViews
             }
         }
 
-        private async void EditTest(object? obj)
+        private async Task EditTest(object? obj)
         {
             if (obj is Test testToEdit)
             {
-                var editTestViewModel = _editTestViewModelFactory(testToEdit);
-                var editTestWindow = new EditTestWindow(editTestViewModel);
+                try
+                {
+                    var editTestViewModel = _editTestViewModelFactory(testToEdit);
+                    var editTestWindow = new EditTestWindow(editTestViewModel);
 
-                editTestWindow.Owner = Application.Current.MainWindow;
-                editTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                editTestWindow.ShowDialog();
+                    editTestWindow.Owner = Application.Current.MainWindow;
+                    editTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    editTestWindow.ShowDialog();
 
-                // Refresh tests after the EditTestWindow is closed
-                await LoadTests();
+                    await LoadTests();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while editing the test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
-        private async void DeleteTest(object? obj)
+        private async Task DeleteTest(object? obj)
         {
             if (obj is Test testToDelete)
             {
@@ -125,22 +133,14 @@ namespace Jahoot.Display.LecturerViews
 
         private async Task CreateTest()
         {
-            var createTestViewModel = ((App)Application.Current).ServiceProvider.GetService<CreateTestViewModel>();
-            if (createTestViewModel != null)
-            {
-                var createTestWindow = new CreateTestWindow(createTestViewModel);
+            var createTestViewModel = _createTestViewModelFactory();
+            var createTestWindow = new CreateTestWindow(createTestViewModel);
 
-                createTestWindow.Owner = Application.Current.MainWindow;
-                createTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                createTestWindow.ShowDialog();
+            createTestWindow.Owner = Application.Current.MainWindow;
+            createTestWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            createTestWindow.ShowDialog();
 
-                // Refresh tests after the CreateTestWindow is closed
-                await LoadTests();
-            }
-            else
-            {
-                MessageBox.Show("Failed to initialise CreateTestViewModel.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            await LoadTests();
         }
     }
 }

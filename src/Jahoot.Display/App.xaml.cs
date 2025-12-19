@@ -67,6 +67,9 @@
             services.AddTransient<LecturerViews.StudentManagementViewModel>();
             services.AddTransient<LecturerViews.TestManagementViewModel>();
             services.AddTransient<LecturerViews.CreateTestViewModel>();
+            services.AddTransient<Func<LecturerViews.CreateTestViewModel>>(s =>
+                () => s.GetRequiredService<LecturerViews.CreateTestViewModel>()
+            );
 
             services.AddTransient<Func<Jahoot.Core.Models.Test, LecturerViews.EditTestViewModel>>(s =>
                 (test) => new LecturerViews.EditTestViewModel(

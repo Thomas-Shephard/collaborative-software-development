@@ -1,5 +1,3 @@
-using Jahoot.Display.LecturerViews;
-
 namespace Jahoot.Display.LecturerViews
 {
     public class LecturerOverviewViewModel : BaseViewModel

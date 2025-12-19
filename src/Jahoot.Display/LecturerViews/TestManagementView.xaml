@@ -105,7 +105,12 @@
                 <TextBlock Text="Test Management" FontSize="26" FontWeight="Bold" Foreground="#333333"/>
                 <TextBlock Text="Manage and create tests for your subjects"
                            Foreground="{StaticResource SecondaryTextColor}" FontSize="14" Margin="0,2,0,0"/>
-                <Button Content="Create New Test" HorizontalAlignment="Left" Margin="0,15,0,0" Command="{Binding CreateTestCommand}" Style="{StaticResource ApproveButtonStyle}"/>
+                <Button Content="Create New Test"
+                        HorizontalAlignment="Left"
+                        Margin="0,15,0,0"
+                        Command="{Binding CreateTestCommand}"
+                        Style="{StaticResource ApproveButtonStyle}"
+                        AutomationProperties.Name="Create New Test"/>
             </StackPanel>
 
             <ListView Grid.Row="1" ItemsSource="{Binding Tests}" BorderThickness="0" Background="White">
