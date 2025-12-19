@@ -92,6 +92,7 @@ public partial class App : Application
         services.AddTransient<LecturerViews.LecturerOverviewView>();
         services.AddTransient<LecturerViews.StudentManagementView>();
         services.AddTransient<LecturerViews.TestManagementView>();
+        services.AddTransient<LecturerViews.AssignStudentsToSubjectsView>();
         services.AddTransient<Pages.AdminDashboard>();
         services.AddTransient<AssignStudentsToSubjectsViewModel>();
     }

@@ -5,6 +5,7 @@ using Jahoot.Display.Commands;
 using Jahoot.Display.AdminViews;
 using Jahoot.Display.StudentViews;
 using Jahoot.Display.Pages;
+using Jahoot.Display.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -60,17 +61,14 @@ namespace Jahoot.Display.LecturerViews
                     viewModelType = typeof(LecturerOverviewViewModel);
                 else if (viewType == typeof(StudentManagementView))
                     viewModelType = typeof(StudentManagementViewModel);
+                else if (viewType == typeof(AssignStudentsToSubjectsView))
+                    viewModelType = typeof(AssignStudentsToSubjectsViewModel);
                 else if (viewType == typeof(TestManagementView))
                     viewModelType = typeof(TestManagementViewModel);
 
                 view.DataContext = viewModelType != null
                     ? _serviceProvider.GetRequiredService(viewModelType)
                     : viewModel;
-
-                if (view is not StudentManagementView && view is not AssignStudentsToSubjectsView)
-                {
-                    view.DataContext = viewModel;
-                }
                 
                 viewModel.CurrentView = view;
             }

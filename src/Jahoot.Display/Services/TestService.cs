@@ -115,7 +115,7 @@ namespace Jahoot.Display.Services
             return await _httpService.GetAsync<TestDetailsResponse>($"api/test/{testId}");
         }
 
-        public Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers)
+        public async Task<TestSubmissionResponse?> SubmitTestAsync(int testId, Dictionary<int, int> answers)
         {
              var answersList = answers.Select(kvp => new
              {
@@ -125,9 +125,7 @@ namespace Jahoot.Display.Services
 
              var request = new { Answers = answersList };
             
-             //TODO: This method is not compatible with the current IHttpService interface.
-             //return await _httpService.PostAsync<object, TestSubmissionResponse>($"api/test/{testId}/submit", request);
-             return Task.FromResult<TestSubmissionResponse?>(null);
+             return await _httpService.PostAsync<object, TestSubmissionResponse>($"api/test/{testId}/submit", request);
         }
     }
 }

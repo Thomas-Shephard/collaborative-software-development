@@ -160,7 +160,7 @@ namespace Jahoot.Display.ViewModels
         {
             if (_testService == null)
             {
-                Debug.WriteLine("Test service is not available.");
+                MessageBox.Show("Test service is not available.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -177,7 +177,7 @@ namespace Jahoot.Display.ViewModels
                 
                 if (testDetails == null || testDetails.Questions == null || !testDetails.Questions.Any())
                 {
-                    Debug.WriteLine($"Unable to load test {testId} - no questions available");
+                    MessageBox.Show($"Unable to load test {testId} - no questions available", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -201,7 +201,7 @@ namespace Jahoot.Display.ViewModels
                 
                 if (TotalQuestions == 0)
                 {
-                    Debug.WriteLine($"Test {testId} loaded but has no questions");
+                    MessageBox.Show($"Test {testId} loaded but has no questions", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 
@@ -209,7 +209,7 @@ namespace Jahoot.Display.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading test: {ex.Message}");
+                MessageBox.Show($"Error loading test: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
