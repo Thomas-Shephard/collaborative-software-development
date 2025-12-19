@@ -91,7 +91,22 @@ namespace Jahoot.Display.LecturerViews
             {
                 try
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete {testToDelete.Name}?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    bool hasAttempts = await _testService.HasAttempts(testToDelete.TestId);
+                    string message;
+                    MessageBoxImage icon;
+
+                    if (hasAttempts)
+                    {
+                        message = $"WARNING: Students have already attempted '{testToDelete.Name}'. Deleting this test will remove all associated student results. Are you absolutely sure you want to proceed?";
+                        icon = MessageBoxImage.Stop;
+                    }
+                    else
+                    {
+                        message = $"Are you sure you want to delete '{testToDelete.Name}'?";
+                        icon = MessageBoxImage.Warning;
+                    }
+
+                    var result = MessageBox.Show(message, "Confirm Deletion", MessageBoxButton.YesNo, icon);
                     if (result == MessageBoxResult.Yes)
                     {
                         await _testService.DeleteTest(testToDelete.TestId);
