@@ -81,6 +81,32 @@ public class QuestionRequestModelTests
     }
 
     [Test]
+    public void Validate_MoreThanFourOptions_ReturnsError()
+    {
+        QuestionRequestModel model = new()
+        {
+            Text = "Question?",
+            Options =
+            [
+                new QuestionOptionRequestModel { OptionText = "A", IsCorrect = true },
+                new QuestionOptionRequestModel { OptionText = "B", IsCorrect = false },
+                new QuestionOptionRequestModel { OptionText = "C", IsCorrect = false },
+                new QuestionOptionRequestModel { OptionText = "D", IsCorrect = false },
+                new QuestionOptionRequestModel { OptionText = "E", IsCorrect = false }
+            ]
+        };
+
+        List<ValidationResult> results = ValidateModel(model);
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results[0].MemberNames, Contains.Item(nameof(QuestionRequestModel.Options)));
+            Assert.That(results[0].ErrorMessage, Does.Contain("at most 4 options"));
+        }
+    }
+
+    [Test]
     public void Validate_NoCorrectOption_ReturnsValidationError()
     {
         QuestionRequestModel model = new()

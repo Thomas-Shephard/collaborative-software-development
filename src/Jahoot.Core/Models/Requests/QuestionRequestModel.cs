@@ -9,6 +9,7 @@ public class QuestionRequestModel : IValidatableObject
 
     [Required]
     [MinLength(2, ErrorMessage = "A question must have at least 2 options.")]
+    [MaxLength(4, ErrorMessage = "A question can have at most 4 options.")]
     public required IReadOnlyList<QuestionOptionRequestModel> Options { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
